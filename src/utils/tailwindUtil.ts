@@ -1,18 +1,18 @@
 /** tailwind darkmode util */
-export namespace darkMode {
-  export function toDark() {
+export const darkMode = {
+  toDark() {
     document.documentElement.classList.add("dark");
     localStorage.theme = "dark";
-  }
-  export function toLight() {
+  },
+  toLight() {
     document.documentElement.classList.remove("dark");
     localStorage.theme = "light";
-  }
-  export function toggle() {
+  },
+  toggle() {
     if (document.documentElement.classList.contains("dark")) {
-      toLight();
+      this.toLight();
     } else {
-      toDark();
+      this.toDark();
     }
   }
 }
