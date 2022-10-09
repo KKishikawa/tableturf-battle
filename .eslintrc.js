@@ -1,5 +1,3 @@
-const path = require("path");
-
 module.exports = {
   parser: '@typescript-eslint/parser', // Specifies the ESLint parser
   extends: [
@@ -15,6 +13,7 @@ module.exports = {
   rules: {
     // Place to specify ESLint rules. Can be used to overwrite rules specified from the extended configs
     // e.g. '@typescript-eslint/explicit-function-return-type': 'off',
+    "@typescript-eslint/no-explicit-any": "off"
   },
   settings: {
     'import/resolver': "webpack",
