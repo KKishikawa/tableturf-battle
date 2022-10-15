@@ -28,6 +28,25 @@
     @apply cursor-pointer relative after:absolute after:inset-0 after:transition-opacity after:opacity-0 after:pointer-events-none hover:after:opacity-25 dark:hover:after:opacity-30 after:bg-gray-700 dark:after:bg-gray-200;
   }
 }
+[data-selected="1"] {
+  .icon-check {
+    @apply !block mr-2 text-green-600 dark:text-green-500;
+  }
+}
+.card-list-container {
+  .button-delete {
+    @apply hidden;
+  }
+  [data-selected="1"] {
+    .button-add {
+      @apply hidden;
+    }
+    .button-delete {
+      @apply inline-block;
+    }
+  }
+}
+
 .cardlist_table {
   .card--hidden {
     display: none !important;
@@ -81,7 +100,7 @@
       &:hover,
       &:active {
         .grid__wrapper {
-          @apply block absolute -bottom-8 left-1 w-max p-1 bg-black;
+          @apply block absolute -bottom-8 left-8 w-max p-1 bg-black;
         }
       }
     }
@@ -110,8 +129,8 @@
         @apply bg-gray-100 dark:bg-gray-600;
       }
     }
-    .card_no {
-      @apply text-end;
+    .card_no > * {
+      @apply justify-between;
     }
     .card_sp {
       @apply text-center;
@@ -144,14 +163,14 @@
       @apply flex flex-wrap gap-4 py-2;
     }
     tr {
-      @apply inline-grid drop-shadow-md shadow-black dark:shadow-white grid-cols-8 w-44 row-auto gap-1 border-2 rounded-lg p-1 after:content-none;
+      @apply inline-grid drop-shadow-md shadow-black hover:bg-gray-100 dark:hover:bg-gray-600 dark:shadow-white grid-cols-8 w-44 row-auto gap-1 border-2 rounded-lg p-1 after:content-none;
     }
     td {
       @apply block border-none px-1 py-0;
     }
     .card_no {
       @apply order-first col-span-4;
-      &::before {
+      .value::before {
         content: "No.";
         @apply mr-px;
       }
@@ -196,10 +215,7 @@
       @apply -order-3 col-span-3 mt-1 flex items-center;
     }
     .card_action {
-      @apply flex col-start-6 ml-3;
-      i {
-        @apply relative after:rounded-full after:absolute after:-inset-2 after:opacity-30 hover:after:bg-gray-400 dark:hover:after:bg-gray-300;
-      }
+      @apply flex col-start-7;
       .label {
         @apply hidden;
       }

@@ -1,7 +1,7 @@
 <div class="deck-tab-item table__wrapper">
   <div class="table-caption-title">
     <div class="flex flex-wrap items-center -mt-3">
-      <span class="mt-3 mr-12">カードリスト</span>
+      <span class="mt-3 mr-12 table-title-text">{{title}}</span>
       {{#srch}}
       <form class="flex items-center cardlist_serch search-container">
         <div class="relative w-56 mt-3 transition-all duration-300" data-clearable>
@@ -48,18 +48,18 @@
           <th class="w-0 !p-0">
             <!-- マス表示 -->
           </th>
-          <th class="w-16 text-center lg:w-28">
-            <span class="lg:hidden">No.</span
-            ><span class="hidden lg:inline">ナンバー</span>
+          <th class="w-20 text-center xl:w-28">
+            <span class="xl:hidden">No.</span
+            ><span class="hidden xl:inline">ナンバー</span>
           </th>
-          <th class="w-20 text-center lg:w-28">マス数</th>
-          <th class="w-20 text-center lg:w-28">
-            <span class="lg:hidden">SP</span
-            ><span class="hidden lg:inline">スペシャルポイント</span>
+          <th class="w-16 text-center">マス数</th>
+          <th class="w-20 text-center xl:w-28">
+            <span class="xl:hidden">SP</span
+            ><span class="hidden xl:inline">スペシャル<br />ポイント</span>
           </th>
           <th class="w-20 !px-2 text-center lg:w-26">レア度</th>
           <th class="text-start">名前</th>
-          <th class="w-16 md:w-40"></th>
+          <th class="w-16"></th>
         </tr>
       </thead>
       <tbody></tbody>

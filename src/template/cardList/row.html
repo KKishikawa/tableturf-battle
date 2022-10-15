@@ -7,7 +7,15 @@
   <td class="card_grid">
     <div class="grid__wrapper"></div>
   </td>
-  <td class="card_no" title="ナンバー">{{n}}</td>
+  <td class="card_no" title="ナンバー">
+    <div class="flex items-center">
+      {{#notDeck}}
+      <i class="hidden icon-check fa-regular fa-circle-check"></i>
+      {{/notDeck}}
+      <span></span>
+      <span class="value">{{n}}</span>
+    </div>
+  </td>
   <td class="card_gridcount" title="マス数">{{gridCount}}</td>
   <td class="card_sp" title="スペシャルポイント">
     <div class="inline-block cardgrid-cell sp-fill"></div>
@@ -16,10 +24,13 @@
   <td class="card_rarity" title="レア度"><div>{{rarity}}</div></td>
   <td class="card_name" title="カード名"><span>{{ja}}</span></td>
   <td class="card_action">
-    <button class="action button-edit">
-      <i class="fa fa-edit"></i><span class="label">編集</span></button
-    ><button class="action action--danger button-delete">
-      <i class="fa fa-trash-can"></i><span class="label">削除</span>
+    {{#notDeck}}
+    <button class="button-add button button-xs button-primary" title="デッキに追加">
+      <i class="fa fa-plus"></i>
+    </button>
+    {{/notDeck}}
+    <button class="button-delete button button-xs button-danger" title="デッキから削除">
+      <i class="fa fa-trash-can"></i>
     </button>
   </td>
 </tr>

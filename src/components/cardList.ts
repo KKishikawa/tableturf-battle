@@ -14,14 +14,20 @@ interface IListOparationOpt {
   name?: string;
 }
 
+export interface ICardListOption {
+  search: boolean;
+  title: string;
+}
 export class CardList {
   readonly wrapper: HTMLElement;
   readonly body: HTMLTableSectionElement;
-  private readonly srch: boolean;
-  constructor(hasSearch: boolean) {
-    this.wrapper = htmlToElement(render(tableHTML, { srch: hasSearch }));
+  protected readonly srch: boolean;
+  constructor(option: ICardListOption) {
+    this.wrapper = htmlToElement(
+      render(tableHTML, { srch: option.search, title: option.title })
+    );
     this.body = this.wrapper.querySelector("tbody")!;
-    this.srch = hasSearch;
+    this.srch = option.search;
     {
       // レイアウト変更ボタン
       const layoutButtons =
@@ -37,7 +43,7 @@ export class CardList {
         });
       });
     }
-    if (hasSearch) {
+    if (option.search) {
       const form = this.wrapper.querySelector(".cardlist_serch")!;
       form.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -53,50 +59,103 @@ export class CardList {
       );
     }
   }
-  addRow(...cards: ICard[]) {
-    const trs = cards.map(createCardRow);
-    this.body.append(...trs);
-    if (this.srch) this.filterSortRow();
-  }
-  findCardByNo(card_no: number) {
-    const tr = this.body.querySelector<HTMLTableRowElement>(
+  findRowByNo(card_no: number) {
+    return this.body.querySelector<HTMLTableRowElement>(
       `tr[data-card_no="${card_no}"]`
     );
+  }
+  addRow(...cards: ICard[]) {
+    const trs = cards.map((c) => createCardRow(c, this.srch));
+    this.body.append(...trs);
+    this.filterSortRow();
+  }
+  findCardByNo(card_no: number) {
+    const tr = this.findRowByNo(card_no);
     if (!tr) return null;
     return getCardRowInfo(tr);
+  }
+  removeRowByNo(card_no: number) {
+    this.findRowByNo(card_no)?.remove();
   }
   /** リストをフィルター/ソートします */
   filterSortRow() {
     const trs = Array.from(
       this.body.children as HTMLCollectionOf<HTMLTableRowElement>
     );
-    const text = (
-      this.wrapper.querySelector(".input_cardlist_serch") as HTMLInputElement
-    ).value;
-    const r = filerRow(trs, { name: text });
+    const infoR = generateRowInfo(trs);
     if (this.srch) {
-      sortRow(r);
+      const text = (
+        this.wrapper.querySelector(".input_cardlist_serch") as HTMLInputElement
+      ).value;
+      filerRow(infoR, { name: text });
     }
-    r.forEach((infos) => {
+    sortRow(infoR);
+    infoR.forEach((infos) => {
       this.body.append(infos.row);
+    });
+  }
+  checkRow(tr?: HTMLTableRowElement) {
+    const tableRows = Array.from(this.body.childNodes) as HTMLTableRowElement[];
+    tableRows.forEach((row) => {
+      if (row == tr) {
+        tr.dataset["selected"] = "1";
+      } else {
+        row.dataset["selected"] = undefined;
+      }
     });
   }
 }
 
-function filerRow(trs: HTMLTableRowElement[], opt: IListOparationOpt) {
+function generateDeckInfoTitle(count: number) {
+  return `デッキ (${count}/15)`;
+}
+export class DeckInfo extends CardList {
+  constructor() {
+    super({ search: false, title: generateDeckInfoTitle(0) });
+  }
+  removeRowByNo(card_no: number) {
+    const row = super.findRowByNo(card_no);
+    if (row) this.removeRow(row);
+  }
+  addRow(...cards: ICard[]): void {
+    super.addRow(...cards);
+    this.internalSetTitleAndCount();
+  }
+  removeRow(row: HTMLTableRowElement) {
+    row.remove();
+    this.internalSetTitleAndCount();
+  }
+  protected internalSetTitleAndCount() {
+    const count = this.body.children.length;
+    let icon = "";
+    if (count > 15) {
+      icon = `<i title="カードが多すぎます" class="fa-solid fa-triangle-exclamation text-yellow-700 dark:text-yellow-800 mr-2"></i>`;
+    } else if (count == 15) {
+      icon = `<i class="fa-regular fa-circle-check text-green-600 dark:text-green-500 mr-2"></i>`;
+    }
+    this.wrapper.querySelector(".table-title-text")!.innerHTML = icon + generateDeckInfoTitle(count);
+  }
+}
+
+function generateRowInfo(trs: HTMLTableRowElement[]): IinternalRowInfo[] {
+  return trs.map((row) => {
+    const info = getCardRowInfo(row);
+    return { row, info };
+  });
+}
+function filerRow(trs: IinternalRowInfo[], opt: IListOparationOpt) {
   const filterCondition = (info: ICard) => {
     if (isValidString(opt.name) && !info.ja.includes(opt.name)) return false;
 
     return true;
   };
-  return trs.map<IinternalRowInfo>((row) => {
-    const info = getCardRowInfo(row);
-    if (filterCondition(info)) {
-      row.classList.remove("card--hidden");
+  return trs.map<IinternalRowInfo>((t) => {
+    if (filterCondition(t.info)) {
+      t.row.classList.remove("card--hidden");
     } else {
-      row.classList.add("card--hidden");
+      t.row.classList.add("card--hidden");
     }
-    return { row, info };
+    return t;
   });
 }
 
@@ -124,12 +183,13 @@ export function getCardRowInfo(tr: HTMLTableRowElement): ICard {
   };
 }
 
-function createCardRow(cardInfo: ICard) {
+function createCardRow(cardInfo: ICard, notDeck: boolean) {
   const gridCount = inkCount(cardInfo.sg, cardInfo.g);
   const row = htmlToElement(
     render(tableRowHTML, {
       ...cardInfo,
       gridCount,
+      notDeck,
       rarity: RARITY[cardInfo.r],
     })
   );
