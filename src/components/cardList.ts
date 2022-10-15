@@ -6,10 +6,15 @@ import { CardGrid } from "@/components/cardGrid";
 import tableHTML from "@/template/cardList/table.html";
 import tableRowHTML from "@/template/cardList/row.html";
 
-interface IinternalRowInfo {
+interface IinternalSortRowInfo {
   row: HTMLTableRowElement;
   info: ICard;
+  gcount: number;
 }
+type sortJudgeFunc = (
+  a: IinternalSortRowInfo,
+  b: IinternalSortRowInfo
+) => number;
 interface IListOparationOpt {
   name?: string;
 }
@@ -41,6 +46,13 @@ export class CardList {
           const layoutName = button.dataset["button_type"]!;
           table.dataset["layout"] = layoutName;
         });
+      });
+
+      // ソート変更
+      (
+        this.wrapper.querySelector(".table-sort") as HTMLSelectElement
+      ).addEventListener("change", () => {
+        this.filterSortRow();
       });
     }
     if (option.search) {
@@ -82,14 +94,17 @@ export class CardList {
     const trs = Array.from(
       this.body.children as HTMLCollectionOf<HTMLTableRowElement>
     );
-    const infoR = generateRowInfo(trs);
+    const infoR = generateSortRowInfo(trs);
     if (this.srch) {
       const text = (
         this.wrapper.querySelector(".input_cardlist_serch") as HTMLInputElement
       ).value;
       filerRow(infoR, { name: text });
     }
-    sortRow(infoR);
+    const sortVal = (
+      this.wrapper.querySelector(".table-sort") as HTMLSelectElement
+    ).value;
+    infoR.sort(getSortRow(sortVal));
     infoR.forEach((infos) => {
       this.body.append(infos.row);
     });
@@ -133,23 +148,29 @@ export class DeckInfo extends CardList {
     } else if (count == 15) {
       icon = `<i class="fa-regular fa-circle-check text-green-600 dark:text-green-500 mr-2"></i>`;
     }
-    this.wrapper.querySelector(".table-title-text")!.innerHTML = icon + generateDeckInfoTitle(count);
+    this.wrapper.querySelector(".table-title-text")!.innerHTML =
+      icon + generateDeckInfoTitle(count);
   }
 }
 
-function generateRowInfo(trs: HTMLTableRowElement[]): IinternalRowInfo[] {
+function generateSortRowInfo(
+  trs: HTMLTableRowElement[]
+): IinternalSortRowInfo[] {
   return trs.map((row) => {
     const info = getCardRowInfo(row);
-    return { row, info };
+    const gcount = toInt(
+      row.querySelector(".card_gridcount")!.textContent?.trim()
+    );
+    return { row, info, gcount };
   });
 }
-function filerRow(trs: IinternalRowInfo[], opt: IListOparationOpt) {
+function filerRow(trs: IinternalSortRowInfo[], opt: IListOparationOpt) {
   const filterCondition = (info: ICard) => {
     if (isValidString(opt.name) && !info.ja.includes(opt.name)) return false;
 
     return true;
   };
-  return trs.map<IinternalRowInfo>((t) => {
+  return trs.map<IinternalSortRowInfo>((t) => {
     if (filterCondition(t.info)) {
       t.row.classList.remove("card--hidden");
     } else {
@@ -159,10 +180,49 @@ function filerRow(trs: IinternalRowInfo[], opt: IListOparationOpt) {
   });
 }
 
-function sortRow(rows: IinternalRowInfo[]) {
-  return rows.sort((a, b) => {
-    return a.info.n - b.info.n;
-  });
+const noAsc: sortJudgeFunc = (a, b) => a.info.n - b.info.n;
+const gJudge: sortJudgeFunc = (a, b) => a.gcount - b.gcount;
+const spJudge: sortJudgeFunc = (a, b) => a.info.sp - b.info.sp;
+const rarityJudge: sortJudgeFunc = (a, b) => a.info.r - b.info.r;
+
+const gcountAsc: sortJudgeFunc = (a, b) => {
+  let inf = gJudge(a, b);
+  if (inf != 0) return inf;
+  inf = spJudge(a, b);
+  if (inf != 0) return inf;
+  return noAsc(a, b);
+};
+const spAsc: sortJudgeFunc = (a, b) => {
+  let inf = spJudge(a, b);
+  if (inf != 0) return inf;
+  inf = gJudge(a, b);
+  if (inf != 0) return inf;
+  return noAsc(a, b);
+};
+const rarityAsc: sortJudgeFunc = (a, b) => {
+  const inf = rarityJudge(a, b);
+  if (inf != 0) return inf;
+  return gcountAsc(a, b);
+};
+function getSortRow(orderType: string): sortJudgeFunc {
+  switch (orderType) {
+    case "1":
+      return (a, b) => noAsc(b, a);
+    case "2":
+      return gcountAsc;
+    case "3":
+      return (a, b) => gcountAsc(b, a);
+    case "4":
+      return spAsc;
+    case "5":
+      return (a, b) => spAsc(b, a);
+    case "6":
+      return rarityAsc;
+    case "7":
+      return (a, b) => rarityAsc(b, a);
+    default:
+      return noAsc;
+  }
 }
 
 /** 行の内容からカードの情報に変換する */

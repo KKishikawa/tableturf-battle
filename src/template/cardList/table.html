@@ -5,7 +5,10 @@
       <div class="flex flex-wrap">
         {{#srch}}
         <form class="flex items-center cardlist_serch search-container">
-          <div class="relative w-56 mt-3 transition-all duration-300" data-clearable>
+          <div
+            class="relative w-56 mt-3 transition-all duration-300"
+            data-clearable
+          >
             <input
               class="w-full pr-16 form-input input_cardlist_serch"
               type="search"
@@ -22,7 +25,19 @@
         </form>
         {{/srch}}
         <div>
-
+          <div class="w-48 mx-3 mb-3">
+            <label class="form-label form-label-input">ソート順</label>
+            <select class="form-input table-sort">
+              <option value="0">カードNo(昇順)</option>
+              <option value="1">カードNo(降順)</option>
+              <option value="2">マス数(昇順)</option>
+              <option value="3">マス数(降順)</option>
+              <option value="4">SP数(昇順)</option>
+              <option value="5">SP数(降順)</option>
+              <option value="6">レア度(昇順)</option>
+              <option value="7">レア度(降順)</option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="flex-auto"></div>
@@ -46,7 +61,10 @@
       </div>
     </div>
   </div>
-  <div class="relative flex-shrink-0 flex-grow h-[calc(100vh-220px)] overflow-y-scroll" style="min-height: 400px;">
+  <div
+    class="relative flex-shrink-0 flex-grow h-[calc(100vh-220px)] overflow-y-scroll"
+    style="min-height: 400px"
+  >
     <table class="table cardlist_table" data-layout="grid">
       <thead>
         <tr>
