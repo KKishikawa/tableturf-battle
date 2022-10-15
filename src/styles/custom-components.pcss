@@ -81,7 +81,23 @@
       &:hover,
       &:active {
         .grid__wrapper {
-          @apply block absolute bottom-0 left-1 w-max p-1 bg-black;
+          @apply block absolute -bottom-8 left-1 w-max p-1 bg-black;
+        }
+      }
+    }
+    tr:first-child {
+      &:hover,
+      &:active {
+        .grid__wrapper {
+          @apply -top-6 bottom-auto;
+        }
+      }
+    }
+    tr:last-child {
+      &:hover,
+      &:active {
+        .grid__wrapper {
+          @apply bottom-0 top-auto;
         }
       }
     }
@@ -195,9 +211,15 @@
   @apply py-1 relative left-1 z-10 text-center after:bg-violet-600 after:border-violet-900 text-white text-base after:-z-10 after:-rotate-45 after:absolute after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:w-6 after:h-6 after:border-2 after:rounded-sm;
 }
 
-.deck-tab-groups {
+.deck-tab-items {
   @apply -mx-2 flex;
   & > * {
-    @apply mx-2
+    @apply mx-2;
   }
+}
+.deck-tab-item {
+  @apply hidden md:flex flex-col w-full my-3;
+}
+.deck-tab-item--active {
+  @apply flex;
 }
