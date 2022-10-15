@@ -78,8 +78,7 @@ export class CardList {
   }
   addRow(...cards: ICard[]) {
     const trs = cards.map((c) => createCardRow(c, this.srch));
-    this.body.append(...trs);
-    this.filterSortRow();
+    this.filterSortRow(...trs);
   }
   findCardByNo(card_no: number) {
     const tr = this.findRowByNo(card_no);
@@ -90,10 +89,11 @@ export class CardList {
     this.findRowByNo(card_no)?.remove();
   }
   /** リストをフィルター/ソートします */
-  filterSortRow() {
-    const trs = Array.from(
-      this.body.children as HTMLCollectionOf<HTMLTableRowElement>
-    );
+  filterSortRow(...added: HTMLTableRowElement[]) {
+    const trs = [
+      ...(this.body.children as HTMLCollectionOf<HTMLTableRowElement>),
+      ...added,
+    ];
     const infoR = generateSortRowInfo(trs);
     if (this.srch) {
       const text = (
@@ -263,5 +263,5 @@ function createCardRow(cardInfo: ICard, notDeck: boolean) {
   const cardGrid = new CardGrid();
   cardGrid.fill(cardInfo.g, cardInfo.sg);
   row.querySelector(".grid__wrapper")!.prepend(cardGrid.element);
-  return row;
+  return row as HTMLTableRowElement;
 }
