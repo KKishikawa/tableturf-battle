@@ -1,5 +1,5 @@
 .cardgrid {
-  @apply relative inline-grid grid-cols-8 gap-px w-fit place-items-center place-content-center bg-gray-300 dark:bg-gray-500;
+  @apply relative grid grid-cols-8 gap-px w-fit place-items-center place-content-center bg-gray-300 dark:bg-gray-500;
 }
 .cardgrid-border {
   @apply absolute -inset-px z-10 border border-gray-300 pointer-events-none dark:border-gray-500;
@@ -74,22 +74,25 @@
     .grid__wrapper {
       @apply hidden absolute z-10;
     }
+    .card_grid {
+      @apply relative;
+    }
     tr {
       &:hover,
       &:active {
         .grid__wrapper {
-          @apply grid absolute right-40 top-0 origin-top -translate-y-full w-max p-1 bg-black;
+          @apply block absolute bottom-0 left-1 w-max p-1 bg-black;
         }
       }
+    }
+    thead {
+      @apply sticky top-0 z-10;
     }
     tbody tr:hover {
       td,
       th {
         @apply bg-gray-100 dark:bg-gray-600;
       }
-    }
-    .card_grid {
-      @apply relative;
     }
     .card_no {
       @apply text-end;
@@ -190,4 +193,11 @@
 
 .gridcount {
   @apply py-1 relative left-1 z-10 text-center after:bg-violet-600 after:border-violet-900 text-white text-base after:-z-10 after:-rotate-45 after:absolute after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:w-6 after:h-6 after:border-2 after:rounded-sm;
+}
+
+.deck-tab-groups {
+  @apply -mx-2 flex;
+  & > * {
+    @apply mx-2
+  }
 }

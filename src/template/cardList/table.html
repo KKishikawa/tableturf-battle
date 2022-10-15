@@ -1,62 +1,68 @@
-<div class="mt-3 table__wrapper">
-  <table class="table cardlist_table" data-layout="grid">
-    <caption class="table-caption-title">
-      <div class="flex items-center">
-        <span class="mr-12">カードリスト</span>
-        {{#srch}}
-        <form class="flex items-center cardlist_serch search-container">
-          <div class="relative w-56 transition-all duration-300" data-clearable>
-            <input
-              class="w-full pr-16 form-input input_cardlist_serch"
-              type="search"
-              placeholder="カード名検索"
-            />
-            <button
-              class="absolute top-0 bottom-0 right-0 px-3 rounded-l-none button button-primary"
-              type="submit"
-            >
-              <i class="fa fa-search"></i>
-            </button>
-            <i class="input-clear right-12 fa fa-circle-xmark"></i>
-          </div>
-        </form>
-        {{/srch}}
-        <div class="flex-auto"></div>
-        <div class="button-toggle" role="group">
+<div class="flex flex-col w-full my-3 table__wrapper">
+  <div class="table-caption-title">
+    <div class="flex flex-wrap items-center -mt-3">
+      <span class="mt-3 mr-12">カードリスト</span>
+      {{#srch}}
+      <form class="flex items-center cardlist_serch search-container">
+        <div class="relative w-56 mt-3 transition-all duration-300" data-clearable>
+          <input
+            class="w-full pr-16 form-input input_cardlist_serch"
+            type="search"
+            placeholder="カード名検索"
+          />
           <button
-            type="button"
-            data-button_type="grid"
-            class="button button-sm button-default button-active"
-            title="グリッド表示"
+            class="absolute top-0 bottom-0 right-0 px-3 rounded-l-none button button-primary"
+            type="submit"
           >
-            <i class="fa-solid fa-table-cells-large"></i>
+            <i class="fa fa-search"></i>
           </button>
-          <button
-            type="button"
-            data-button_type="table"
-            class="button button-sm button-default"
-            title="リスト表示"
-          >
-            <i class="fa-solid fa-list"></i>
-          </button>
+          <i class="input-clear right-12 fa fa-circle-xmark"></i>
         </div>
+      </form>
+      {{/srch}}
+      <div class="flex-auto"></div>
+      <div class="mt-3 button-toggle" role="group">
+        <button
+          type="button"
+          data-button_type="grid"
+          class="button button-sm button-default button-active"
+          title="グリッド表示"
+        >
+          <i class="fa-solid fa-table-cells-large"></i>
+        </button>
+        <button
+          type="button"
+          data-button_type="table"
+          class="button button-sm button-default"
+          title="リスト表示"
+        >
+          <i class="fa-solid fa-list"></i>
+        </button>
       </div>
-    </caption>
-    <thead>
-      <tr>
-        <th class="w-16 text-center lg:w-28">
-          <span class="lg:hidden">No.</span
-          ><span class="hidden lg:inline">ナンバー</span>
-        </th>
-        <th class="w-20 text-center lg:w-28">マス数</th>
-        <th class="w-20 text-center lg:w-28">
-          <span class="lg:hidden">SP</span><span class="hidden lg:inline">スペシャルポイント</span>
-        </th>
-        <th class="w-20 text-center lg:w-32">レア度</th>
-        <th class="text-start">名前</th>
-        <th class="w-16 md:w-40"></th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    </div>
+  </div>
+  <div class="relative flex-shrink-0 flex-grow h-[calc(100vh-220px)] overflow-y-scroll" style="min-height: 400px;">
+    <table class="table cardlist_table" data-layout="grid">
+      <thead>
+        <tr>
+          <th class="w-0 !p-0">
+            <!-- マス表示 -->
+          </th>
+          <th class="w-16 text-center lg:w-28">
+            <span class="lg:hidden">No.</span
+            ><span class="hidden lg:inline">ナンバー</span>
+          </th>
+          <th class="w-20 text-center lg:w-28">マス数</th>
+          <th class="w-20 text-center lg:w-28">
+            <span class="lg:hidden">SP</span
+            ><span class="hidden lg:inline">スペシャルポイント</span>
+          </th>
+          <th class="w-20 !px-2 text-center lg:w-26">レア度</th>
+          <th class="text-start">名前</th>
+          <th class="w-16 md:w-40"></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>

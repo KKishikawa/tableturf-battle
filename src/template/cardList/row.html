@@ -4,6 +4,9 @@
   data-card_spx="{{sg}}"
   data-card_px="{{g}}"
 >
+  <td class="card_grid">
+    <div class="grid__wrapper"></div>
+  </td>
   <td class="card_no" title="ナンバー">{{n}}</td>
   <td class="card_gridcount" title="マス数">{{gridCount}}</td>
   <td class="card_sp" title="スペシャルポイント">
@@ -15,11 +18,8 @@
   <td class="card_action">
     <button class="action button-edit">
       <i class="fa fa-edit"></i><span class="label">編集</span></button
-      ><button class="action action--danger button-delete">
-        <i class="fa fa-trash-can"></i><span class="label">削除</span>
-      </button>
-    </td>
-    <td class="card_grid">
-      <div class="grid__wrapper"></div>
-    </td>
+    ><button class="action action--danger button-delete">
+      <i class="fa fa-trash-can"></i><span class="label">削除</span>
+    </button>
+  </td>
 </tr>

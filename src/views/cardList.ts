@@ -3,7 +3,8 @@ import { getCardList } from "@/models/card";
 
 const allCardManager = new CardList(true);
 allCardManager.addRow(...getCardList().c);
-document.getElementById("all_card")!.append(allCardManager.wrapper);
-
 const deckManager = new CardList(false);
-document.getElementById("edited_deck")!.append(deckManager.wrapper);
+
+document
+  .querySelector(".deck-tab-groups")!
+  .append(allCardManager.wrapper, deckManager.wrapper);
