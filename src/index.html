@@ -93,65 +93,9 @@
       </div>
     </nav>
     <div class="container mx-auto">
-      <div class="mt-3 table__wrapper">
-        <table id="cardlist_table" class="table" data-layout="grid">
-          <caption class="table-caption-title">
-            <div class="flex items-center">
-              <span class="mr-12">カードリスト</span>
-              <form id="cardlist_serch" class="flex items-center search-container">
-                <div
-                  class="relative w-56 transition-all duration-300"
-                  data-clearable
-                >
-                  <input
-                    id="input_cardlist_serch"
-                    class="w-full pr-16 form-input"
-                    type="search"
-                    placeholder="カード名検索"
-                  />
-                  <button
-                    class="absolute top-0 bottom-0 right-0 px-3 rounded-l-none button button-primary"
-                    type="submit"
-                  >
-                    <i class="fa fa-search"></i>
-                  </button>
-                  <i class="input-clear right-12 fa fa-circle-xmark"></i>
-                </div>
-              </form>
-              <div class="flex-auto"></div>
-              <div class="button-toggle" role="group">
-                <button
-                  type="button"
-                  data-button_type="grid"
-                  class="button button-sm button-default button-active"
-                  title="グリッド表示"
-                >
-                  <i class="fa-solid fa-table-cells-large"></i>
-                </button>
-                <button
-                  type="button"
-                  data-button_type="table"
-                  class="button button-sm button-default"
-                  title="リスト表示"
-                >
-                  <i class="fa-solid fa-list"></i>
-                </button>
-              </div>
-            </div>
-          </caption>
-          <thead>
-            <tr>
-              <th class="text-center w-28">ナンバー</th>
-              <th class="text-center w-28">マス数</th>
-              <th class="text-center w-28">スペシャルポイント</th>
-              <th class="w-32 text-center">レア度</th>
-              <th class="text-start">名前</th>
-              <th class="w-40"></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+      <div id="all_card">
       </div>
+      <div id="edited_deck"></div>
     </div>
     <div
       aria-hidden="true"

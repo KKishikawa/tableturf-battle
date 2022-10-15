@@ -1,3 +1,7 @@
+export function isValidString(str: string | null | undefined): str is string {
+  return str != null && str != "";
+}
+
 function generateDomFragment(html: string) {
   const template = document.createElement("template");
   template.innerHTML = html.trim();
@@ -11,17 +15,6 @@ function generateDomFragment(html: string) {
 export function htmlToElement<T extends HTMLElement>(html: string): T {
   const template = generateDomFragment(html);
   return template.content.firstChild as T;
-}
-/**
- * html to dom elements
- * @param html representing some elements
- * @returns
- */
-export function htmlToElements<T extends HTMLElement>(
-  html: string
-): HTMLCollectionOf<T> {
-  const template = generateDomFragment(html);
-  return template.content.children as HTMLCollectionOf<T>;
 }
 export function mesureWidth(str: string, className?: string){
   const div = document.createElement("div");

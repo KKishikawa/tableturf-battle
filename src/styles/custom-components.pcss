@@ -28,12 +28,17 @@
     @apply cursor-pointer relative after:absolute after:inset-0 after:transition-opacity after:opacity-0 after:pointer-events-none hover:after:opacity-25 dark:hover:after:opacity-30 after:bg-gray-700 dark:after:bg-gray-200;
   }
 }
-
-#cardlist_table {
+.cardlist_table {
+  .card--hidden {
+    display: none !important;
+  }
   .card_action {
     .label {
       @apply ml-1;
     }
+  }
+  .card_grid {
+    @apply px-0;
   }
   .card_rarity {
     @apply text-black;
@@ -66,8 +71,25 @@
     }
   }
   &[data-layout="table"] {
-    .cardgrid {
-      @apply hidden;
+    .grid__wrapper {
+      @apply hidden absolute z-10;
+    }
+    tr {
+      &:hover,
+      &:active {
+        .grid__wrapper {
+          @apply grid absolute right-40 top-0 origin-top -translate-y-full w-max p-1 bg-black;
+        }
+      }
+    }
+    tbody tr:hover {
+      td,
+      th {
+        @apply bg-gray-100 dark:bg-gray-600;
+      }
+    }
+    .card_grid {
+      @apply relative;
     }
     .card_no {
       @apply text-end;
@@ -82,10 +104,13 @@
       @apply text-end;
     }
     .card_rarity {
-      @apply text-center;
+      @apply text-center px-2 text-xs;
     }
     .card_action {
       @apply text-center;
+      .label {
+        @apply hidden md:inline;
+      }
     }
   }
   &[data-layout="grid"] {
@@ -109,7 +134,7 @@
       @apply order-first col-span-4;
       &::before {
         content: "No.";
-        @apply mr-px
+        @apply mr-px;
       }
     }
     .card_rarity {
@@ -142,7 +167,7 @@
         @apply scale-100;
       }
     }
-    .cardgrid {
+    .card_grid {
       @apply -order-9 col-span-full place-self-center;
     }
     .card_gridcount {

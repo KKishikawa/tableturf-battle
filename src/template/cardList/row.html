@@ -6,11 +6,20 @@
 >
   <td class="card_no" title="ナンバー">{{n}}</td>
   <td class="card_gridcount" title="マス数">{{gridCount}}</td>
-  <td class="card_sp" title="スペシャルポイント"><div class="inline-block cardgrid-cell sp-fill"></div> <i class="mx-1 fa fa-xmark"></i><span>{{sp}}</span></td>
-  <td class="card_rarity" title="レア度"><div>{{rarity_label}}</div></td>
+  <td class="card_sp" title="スペシャルポイント">
+    <div class="inline-block cardgrid-cell sp-fill"></div>
+    <i class="mx-1 fa fa-xmark"></i><span>{{sp}}</span>
+  </td>
+  <td class="card_rarity" title="レア度"><div>{{rarity}}</div></td>
   <td class="card_name" title="カード名"><span>{{ja}}</span></td>
   <td class="card_action">
-    <button class="action button-edit"><i class="fa fa-edit"></i><span class="label">編集</span></button
-    ><button class="action action--danger button-delete"><i class="fa fa-trash-can"></i><span class="label">削除</span></button>
-  </td>
+    <button class="action button-edit">
+      <i class="fa fa-edit"></i><span class="label">編集</span></button
+      ><button class="action action--danger button-delete">
+        <i class="fa fa-trash-can"></i><span class="label">削除</span>
+      </button>
+    </td>
+    <td class="card_grid">
+      <div class="grid__wrapper"></div>
+    </td>
 </tr>
