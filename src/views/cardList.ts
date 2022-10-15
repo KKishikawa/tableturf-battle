@@ -13,37 +13,42 @@ deckManager.wrapper.classList.add("deck-container");
 const tabBtns = Array.from(document.querySelectorAll(".tab-group .tab"));
 {
   function showDeckCount() {
-    tabBtns[1].innerHTML = deckManager.wrapper.querySelector(".table-title-text")!.innerHTML;
+    tabBtns[1].innerHTML =
+      deckManager.wrapper.querySelector(".table-title-text")!.innerHTML;
   }
   // カードクリック
   allCardManager.body.addEventListener("click", (e) => {
     if (!e.target) return;
     const el = e.target as HTMLElement;
-    if (el.closest(".button-add")) {
-      const row = el.closest("tr")!;
-      const info = getCardRowInfo(row);
-      deckManager.addRow(info);
-      showDeckCount();
-      row.dataset["selected"] = "1";
-    } else if (el.closest(".button-delete")) {
-      const row = el.closest("tr")!;
-      const no = toInt(row.dataset["card_no"]);
-      deckManager.removeRowByNo(no);
-      showDeckCount();
-      row.dataset["selected"] = "";
-    }
+    window.setTimeout(() => {
+      if (el.closest(".button-add")) {
+        const row = el.closest("tr")!;
+        const info = getCardRowInfo(row);
+        deckManager.addRow(info);
+        showDeckCount();
+        row.dataset["selected"] = "1";
+      } else if (el.closest(".button-delete")) {
+        const row = el.closest("tr")!;
+        const no = toInt(row.dataset["card_no"]);
+        deckManager.removeRowByNo(no);
+        showDeckCount();
+        row.dataset["selected"] = "";
+      }
+    });
   });
   deckManager.body.addEventListener("click", (e) => {
     if (!e.target) return;
     const el = e.target as HTMLElement;
-     if (el.closest(".button-delete")) {
-      const row = el.closest("tr")!;
-      const no = toInt(row.dataset["card_no"]);
-      const r = allCardManager.findRowByNo(no);
-      if (r) r.dataset["selected"] = "";
-      deckManager.removeRow(row);
-      showDeckCount();
-    }
+    window.setTimeout(() => {
+      if (el.closest(".button-delete")) {
+        const row = el.closest("tr")!;
+        const no = toInt(row.dataset["card_no"]);
+        const r = allCardManager.findRowByNo(no);
+        if (r) r.dataset["selected"] = "";
+        deckManager.removeRow(row);
+        showDeckCount();
+      }
+    });
   });
 }
 

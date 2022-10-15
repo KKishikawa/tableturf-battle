@@ -2,24 +2,29 @@
   <div class="table-caption-title">
     <div class="flex flex-wrap items-center -mt-3">
       <span class="mt-3 mr-12 table-title-text">{{title}}</span>
-      {{#srch}}
-      <form class="flex items-center cardlist_serch search-container">
-        <div class="relative w-56 mt-3 transition-all duration-300" data-clearable>
-          <input
-            class="w-full pr-16 form-input input_cardlist_serch"
-            type="search"
-            placeholder="カード名検索"
-          />
-          <button
-            class="absolute top-0 bottom-0 right-0 px-3 rounded-l-none button button-primary"
-            type="submit"
-          >
-            <i class="fa fa-search"></i>
-          </button>
-          <i class="input-clear right-12 fa fa-circle-xmark"></i>
+      <div class="flex flex-wrap">
+        {{#srch}}
+        <form class="flex items-center cardlist_serch search-container">
+          <div class="relative w-56 mt-3 transition-all duration-300" data-clearable>
+            <input
+              class="w-full pr-16 form-input input_cardlist_serch"
+              type="search"
+              placeholder="カード名検索"
+            />
+            <button
+              class="absolute top-0 bottom-0 right-0 px-3 rounded-l-none button button-primary"
+              type="submit"
+            >
+              <i class="fa fa-search"></i>
+            </button>
+            <i class="input-clear right-12 fa fa-circle-xmark"></i>
+          </div>
+        </form>
+        {{/srch}}
+        <div>
+
         </div>
-      </form>
-      {{/srch}}
+      </div>
       <div class="flex-auto"></div>
       <div class="mt-3 button-toggle" role="group">
         <button
