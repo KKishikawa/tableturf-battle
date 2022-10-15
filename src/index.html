@@ -4,8 +4,160 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ナワバトラーデッキビルダー</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+      integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <title>非公式 ナワバトラーデッキビルダー</title>
   </head>
-  <body>
+  <body class="break-all bg-gray-100 dark:bg-gray-900">
+    <nav
+      class="px-2 bg-blue-300 border-gray-200 rounded sm:px-4 py-2.5 dark:bg-indigo-900"
+    >
+      <div
+        class="container flex flex-wrap items-center justify-between mx-auto"
+      >
+        <div class="flex items-center">
+          <span
+            class="mr-6 text-xl font-semibold whitespace-nowrap dark:text-white"
+            >非公式 ナワバトラーデッキビルダー</span
+          >
+        </div>
+        <button
+          id="save_cardlist_file"
+          class="mr-2 button button-sm button-default"
+          title="ファイルに保存"
+          type="button"
+        >
+          <i class="fa-solid fa-download"></i>
+        </button>
+        <button
+          id="load_cardlist_file"
+          class="mr-2 button button-sm button-default"
+          title="ファイルの読み込み"
+          type="button"
+        >
+          <i class="fa-solid fa-file-import"></i
+          ><input type="file" class="hidden" accept="application/json" />
+        </button>
+        <div class="flex-auto"></div>
+        <div class="relative">
+          <button
+            id="themeSettingButton"
+            type="button"
+            class="relative flex items-center button button-sm button-default"
+            title="テーマの変更"
+          >
+            <i class="w-4 h-4 fa-solid fa-circle-half-stroke"></i>
+            <span class="theme-setting-label">テーマ変更</span>
+          </button>
+          <div id="themeButtonGroup">
+            <button
+              data-theme_mode="light"
+              title="ライトモード"
+              type="button"
+              class="flex items-center mt-1 pointer-events-auto button button-sm button-default"
+            >
+              <i class="w-4 h-4 fa-regular fa-sun"></i>
+              <span class="theme-setting-label">ライト</span>
+            </button>
+            <button
+              data-theme_mode="dark"
+              title="ダークモード"
+              type="button"
+              class="flex items-center mt-1 pointer-events-auto button button-sm button-default"
+            >
+              <i class="w-4 h-4 fa-solid fa-moon"></i>
+              <span class="theme-setting-label">ダーク</span>
+            </button>
+            <button
+              data-theme_mode="system"
+              title="システム設定を使用"
+              type="button"
+              class="flex items-center mt-1 pointer-events-auto button button-sm button-default"
+            >
+              <i class="w-4 h-4 fa-solid fa-computer"></i>
+              <span class="theme-setting-label">システム</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <div class="container mx-auto">
+      <div class="mt-3 table__wrapper">
+        <table id="cardlist_table" class="table" data-layout="grid">
+          <caption class="table-caption-title">
+            <div class="flex items-center">
+              <span class="mr-12">カードリスト</span>
+              <form id="cardlist_serch" class="flex items-center search-container">
+                <div
+                  class="relative w-56 transition-all duration-300"
+                  data-clearable
+                >
+                  <input
+                    id="input_cardlist_serch"
+                    class="w-full pr-16 form-input"
+                    type="search"
+                    placeholder="カード名検索"
+                  />
+                  <button
+                    class="absolute top-0 bottom-0 right-0 px-3 rounded-l-none button button-primary"
+                    type="submit"
+                  >
+                    <i class="fa fa-search"></i>
+                  </button>
+                  <i class="input-clear right-12 fa fa-circle-xmark"></i>
+                </div>
+              </form>
+              <div class="flex-auto"></div>
+              <div class="button-toggle" role="group">
+                <button
+                  type="button"
+                  data-button_type="grid"
+                  class="button button-sm button-default button-active"
+                  title="グリッド表示"
+                >
+                  <i class="fa-solid fa-table-cells-large"></i>
+                </button>
+                <button
+                  type="button"
+                  data-button_type="table"
+                  class="button button-sm button-default"
+                  title="リスト表示"
+                >
+                  <i class="fa-solid fa-list"></i>
+                </button>
+              </div>
+            </div>
+          </caption>
+          <thead>
+            <tr>
+              <th class="text-center w-28">ナンバー</th>
+              <th class="text-center w-28">マス数</th>
+              <th class="text-center w-28">スペシャルポイント</th>
+              <th class="w-32 text-center">レア度</th>
+              <th class="text-start">名前</th>
+              <th class="w-40"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      tabindex="-1"
+      id="app-modal_container"
+      class="fixed inset-0 z-50 pointer-events-none"
+    ></div>
   </body>
 </html>

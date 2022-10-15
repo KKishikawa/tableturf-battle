@@ -1,0 +1,168 @@
+.cardgrid {
+  @apply relative inline-grid grid-cols-8 gap-px w-fit place-items-center place-content-center bg-gray-300 dark:bg-gray-500;
+}
+.cardgrid-border {
+  @apply absolute -inset-px z-10 border border-gray-300 pointer-events-none dark:border-gray-500;
+}
+.cardgrid-cell {
+  @apply relative z-10 w-3 h-3 bg-gray-400 dark:bg-gray-700;
+  &.n-fill,
+  &.sp-fill {
+    @apply z-0 border -m-px box-content border-gray-800 dark:border-black;
+  }
+  &.n-fill {
+    @apply bg-yellow-300;
+  }
+  &.sp-fill {
+    @apply bg-amber-600;
+  }
+}
+[data-grid_size="md"] .cardgrid-cell {
+  @apply w-5 h-5;
+}
+[data-grid_size="lg"] .cardgrid-cell {
+  @apply w-8 h-8;
+}
+.cardgrid__clickable {
+  [data-idx] {
+    @apply cursor-pointer relative after:absolute after:inset-0 after:transition-opacity after:opacity-0 after:pointer-events-none hover:after:opacity-25 dark:hover:after:opacity-30 after:bg-gray-700 dark:after:bg-gray-200;
+  }
+}
+
+#cardlist_table {
+  .card_action {
+    .label {
+      @apply ml-1;
+    }
+  }
+  .card_rarity {
+    @apply text-black;
+    & > * {
+      @apply rounded-sm;
+    }
+  }
+  [data-card_rarity="0"] {
+    .card_rarity > * {
+      @apply bg-yellow-100 dark:bg-yellow-50 text-gray-800;
+    }
+    .card_name {
+      @apply text-gray-800 dark:text-gray-200;
+    }
+  }
+  [data-card_rarity="1"] {
+    .card_rarity > * {
+      @apply bg-amber-400;
+    }
+    .card_name {
+      @apply text-amber-800 dark:text-amber-300;
+    }
+  }
+  [data-card_rarity="2"] {
+    .card_rarity > * {
+      @apply bg-gradient-to-br from-pink-300 via-cyan-300 to-yellow-300;
+    }
+    .card_name {
+      @apply text-blue-800 dark:text-blue-300;
+    }
+  }
+  &[data-layout="table"] {
+    .cardgrid {
+      @apply hidden;
+    }
+    .card_no {
+      @apply text-end;
+    }
+    .card_sp {
+      @apply text-center;
+    }
+    .card_name {
+      @apply text-start;
+    }
+    .card_gridcount {
+      @apply text-end;
+    }
+    .card_rarity {
+      @apply text-center;
+    }
+    .card_action {
+      @apply text-center;
+    }
+  }
+  &[data-layout="grid"] {
+    @apply block;
+    caption {
+      @apply block;
+    }
+    thead {
+      @apply hidden;
+    }
+    tbody {
+      @apply flex flex-wrap gap-4 py-2;
+    }
+    tr {
+      @apply inline-grid drop-shadow-md shadow-black dark:shadow-white grid-cols-8 w-44 row-auto gap-1 border-2 rounded-lg p-1 after:content-none;
+    }
+    td {
+      @apply block border-none px-1 py-0;
+    }
+    .card_no {
+      @apply order-first col-span-4;
+      &::before {
+        content: "No.";
+        @apply mr-px
+      }
+    }
+    .card_rarity {
+      @apply -order-12 col-span-4 p-0 text-xs place-self-end;
+      & > * {
+        @apply px-2;
+      }
+    }
+    [data-card_rarity="0"] {
+      @apply border-gray-600;
+      .card_gridcount {
+        @apply after:bg-violet-600 after:border-violet-900;
+      }
+    }
+    [data-card_rarity="1"] {
+      @apply border-amber-500;
+      .card_gridcount {
+        @apply after:bg-gradient-to-b after:from-yellow-500 after:via-amber-700   after:to-yellow-700 after:border-amber-900;
+      }
+    }
+    [data-card_rarity="2"] {
+      @apply border-purple-600;
+      .card_gridcount {
+        @apply after:bg-gradient-to-b after:from-pink-400 after:via-blue-600 after:to-cyan-400 after:border-blue-800;
+      }
+    }
+    .card_name {
+      @apply -order-10 flex justify-center whitespace-nowrap col-span-full font-bold text-sm pb-1 -mx-2;
+      * {
+        @apply scale-100;
+      }
+    }
+    .cardgrid {
+      @apply -order-9 col-span-full place-self-center;
+    }
+    .card_gridcount {
+      @apply -order-5 p-0 w-9 h-9 flex items-center justify-center col-span-2 relative z-10 text-center text-white text-base after:-z-10 after:-rotate-45 after:absolute after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:w-6 after:h-6 after:border-2 after:rounded-sm;
+    }
+    .card_sp {
+      @apply -order-3 col-span-3 mt-1 flex items-center;
+    }
+    .card_action {
+      @apply flex col-start-6 ml-3;
+      i {
+        @apply relative after:rounded-full after:absolute after:-inset-2 after:opacity-30 hover:after:bg-gray-400 dark:hover:after:bg-gray-300;
+      }
+      .label {
+        @apply hidden;
+      }
+    }
+  }
+}
+
+.gridcount {
+  @apply py-1 relative left-1 z-10 text-center after:bg-violet-600 after:border-violet-900 text-white text-base after:-z-10 after:-rotate-45 after:absolute after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:w-6 after:h-6 after:border-2 after:rounded-sm;
+}

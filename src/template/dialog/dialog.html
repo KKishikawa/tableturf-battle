@@ -1,0 +1,57 @@
+<div
+  tabindex="-1"
+  aria-hidden="true"
+  class="fixed inset-0 z-50 transition-opacity bg-gray-900 bg-opacity-50 pointer-events-auto dark:bg-opacity-80"
+>
+  <div
+    tabindex="-1"
+    aria-hidden="true"
+    class="fixed top-0 left-0 right-0 z-50 flex items-center justify-center w-full overflow-x-hidden overflow-y-auto modal md:inset-0 md:h-full"
+  >
+    <div class="relative w-full h-full max-w-2xl p-4 md:h-auto">
+      <div
+        class="relative transition-transform duration-200 bg-white rounded-lg shadow modal-content dark:bg-gray-700"
+      >
+        <!-- header -->
+        <div
+          class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600"
+        >
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+            {{ title }}
+          </h3>
+          <button
+            type="button"
+            class="modal-close text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-base text-center w-8 h-8 p-1.5 ml-auto inline-flex items-center justify-center dark:hover:bg-gray-600 dark:hover:text-white"
+            data-modal-toggle="defaultModal"
+          >
+            <i aria-hidden="true" class="fa fa-xmark"></i>
+            <span class="sr-only">Close modal</span>
+          </button>
+        </div>
+        <!-- /header -->
+        <!-- body -->
+        <div
+          class="p-6 space-y-6 text-base leading-relaxed text-gray-500 dark:text-gray-400"
+        >
+          {{ body }} {{{ bodyHTML }}}
+        </div>
+        <!-- /body -->
+        <!-- footer -->
+        {{#buttons.length}}
+        <div
+          class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600"
+        >
+          {{#buttons}}
+          <button type="button" class="button modal-action {{buttonClass}}">
+            {{#icon}}
+            <i class="mr-2 {{.}}"></i>
+            {{/icon}} {{label}}
+          </button>
+          {{/buttons}}
+        </div>
+        {{/buttons.length}}
+        <!-- /footer -->
+      </div>
+    </div>
+  </div>
+</div>

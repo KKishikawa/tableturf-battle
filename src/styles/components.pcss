@@ -1,0 +1,144 @@
+.table__wrapper {
+  @apply overflow-x-auto relative shadow-md sm:rounded-lg;
+}
+.table {
+  @apply w-full text-sm text-left text-gray-500 dark:text-gray-400;
+  thead {
+    @apply text-xs text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400;
+    th {
+      @apply py-3 px-6;
+    }
+  }
+  tbody {
+    th {
+      @apply font-medium text-gray-900 whitespace-nowrap dark:text-white;
+    }
+    th,
+    td {
+      @apply py-4 px-6;
+    }
+    tr {
+      @apply bg-white border-b dark:bg-gray-900 dark:border-gray-700;
+    }
+    .action {
+      @apply font-medium text-blue-600 dark:text-blue-500 hover:underline;
+    }
+    .action--danger {
+      @apply text-red-600 dark:text-red-500;
+    }
+    .action + .action {
+      @apply ml-3;
+    }
+  }
+}
+.table-hover {
+  tbody tr {
+    @apply hover:bg-gray-100 dark:hover:bg-gray-600;
+  }
+}
+.table-striped {
+  tbody {
+    tr:nth-child(even) {
+      @apply bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-600;
+    }
+  }
+}
+.table-caption-title {
+  @apply p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800;
+}
+.table-caption {
+  @apply mt-1 text-sm font-normal text-gray-500 dark:text-gray-400;
+}
+
+.form-label {
+  @apply text-sm font-medium text-gray-900 dark:text-gray-300;
+}
+.form-label-input {
+  @apply block mb-2;
+}
+.form-input {
+  @apply bg-white border border-gray-500 text-gray-900 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-400 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
+  &:disabled {
+    @apply cursor-not-allowed bg-gray-100 text-gray-700 border-gray-300 dark:bg-zinc-600 dark:border-gray-600 dark:text-zinc-400 dark:placeholder-zinc-500;
+  }
+  &[type="number"] {
+    -moz-appearance: textfield;
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+}
+.form-input {
+  option {
+    @apply text-gray-900 dark:text-white;
+  }
+  select&:invalid,
+  option:first-child {
+    @apply text-gray-400;
+  }
+}
+.form-label-checkbox {
+  @apply ml-2 select-none;
+}
+.form-checkbox {
+  @apply w-4 h-4 bg-white rounded border border-gray-500 checked:bg-blue-600 focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 dark:bg-gray-800 dark:checked:bg-blue-600 dark:border-gray-400 dark:focus:ring-blue-600 dark:ring-offset-gray-800;
+}
+.form-label-radio {
+  @apply ml-2 select-none;
+}
+.form-radio {
+  @apply w-4 h-4 checked:bg-blue-600 bg-white border-gray-500 focus:ring-blue-500 dark:checked:bg-blue-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-offset-2 focus:ring-2 dark:bg-gray-800 dark:border-gray-400;
+}
+.input-clear {
+  @apply hidden absolute top-1/2 right-2.5 -translate-y-1/2;
+}
+[data-clearable="1"] {
+  .input-clear {
+    @apply block cursor-pointer text-gray-500 dark:text-gray-100;
+  }
+}
+.card {
+  @apply p-4 bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700;
+}
+.card__title {
+  @apply mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white;
+}
+.card__body {
+  @apply font-normal text-gray-700 dark:text-gray-400;
+}
+.card__actions {
+  @apply -mx-4 -mb-4 p-4 flex flex-wrap space-x-3 border-t border-gray-200 dark:border-gray-700;
+}
+.card-divider {
+  @apply -mx-4 border-gray-200 dark:border-gray-700;
+}
+.button {
+  @apply focus:ring-4 focus:outline-none rounded-lg text-sm font-medium px-5 py-2.5 focus:z-10;
+}
+.button-primary {
+  @apply text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800;
+}
+.button-alt {
+  @apply text-gray-500 bg-white hover:bg-gray-100 focus:ring-blue-300 border border-gray-200 hover:text-gray-900 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600;
+}
+.button-default {
+  @apply text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 focus:ring-gray-200 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700;
+}
+.button-sm {
+  @apply focus:ring-4 px-3 py-2 rounded-md text-sm;
+}
+.button-xs {
+  @apply focus:ring-4 px-3 py-2 rounded-md text-xs;
+}
+
+.button-toggle {
+  @apply inline-flex rounded-md shadow-sm -space-x-px;
+  .button {
+    @apply rounded-none first:rounded-l-lg first:border-l last:rounded-r-lg;
+  }
+  .button-active {
+    @apply text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:bg-gray-700 dark:text-white;
+  }
+}

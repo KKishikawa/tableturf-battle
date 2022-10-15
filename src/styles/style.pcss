@@ -1,0 +1,27 @@
+@import "./override.pcss";
+@import "tailwindcss/base";
+@import "./components.pcss";
+@import "./custom-components.pcss";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+* {
+  border: 0 solid #e5e7eb;
+}
+#app-main {
+  @apply m-5;
+}
+#themeButtonGroup {
+  @apply absolute p-1 overflow-hidden transition-all duration-300 pointer-events-none w-fit z-40 max-h-0 top-full -left-1;
+}
+.theme-setting-label {
+  @apply w-0 transition-all duration-300 overflow-hidden whitespace-nowrap;
+}
+.theme-settig--is-setting {
+  #themeButtonGroup {
+    @apply max-h-36;
+  }
+  .theme-setting-label {
+    @apply w-24;
+  }
+}
