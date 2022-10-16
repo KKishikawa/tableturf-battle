@@ -6,6 +6,7 @@ import {
   IDeck,
   savetToLS,
   loadFromLS,
+  loadFromQuery,
 } from "@/models/card";
 import { htmlToElement, isValidString, nowYMD } from "@/utils";
 import { toInt } from "@/utils/convert";
@@ -19,9 +20,11 @@ import {
   replaceDeckInfo,
 } from "@/components/deck";
 import saveDeckButtonHTML from "@/template/views/saveDeck.html";
+import shareButtonHTML from "@/template/views/shareBtn.html";
 import saveDeckDialogBodyHTML from "@/template/views/saveDeckDialogBody.html";
 import deleteConfHtml from "@/template/views/deleteConf.html";
 import loadConfHtml from "@/template/views/deckLoadConf.html";
+import { showShareMsg } from "@/components/deckShare";
 
 const allCardManager = new CardList({ search: true, title: "カードリスト" });
 allCardManager.addRow(...getCardList().c);
@@ -129,7 +132,17 @@ function loadDeck(code: string | null | undefined) {
   const btnWrapper =
     deckManager.wrapper.getElementsByClassName("action-wrapper")[0];
   const saveButton = htmlToElement(saveDeckButtonHTML);
+  const shareButton = htmlToElement(shareButtonHTML);
+  shareButton.onclick = function () {
+    const deckCode = deckManager.generateDeckCode();
+    if (isValidString(deckCode)) {
+      showShareMsg(deckCode);
+    } else {
+      Message.error("デッキにカードが含まれていません。");
+    }
+  };
   btnWrapper.append(saveButton);
+  btnWrapper.append(shareButton);
   saveButton.addEventListener("click", function () {
     const decks = allDeckInfo().map((d, idx) => ({ ...d, idx }));
     const saveDialog = new dialog.ModalDialog({
@@ -235,7 +248,7 @@ function loadDeck(code: string | null | undefined) {
             if (deckManager.getCount() > 0) {
               const ret = await dialog
                 .confirm({
-                  title: "デッキ編集",
+                  title: "デッキ読み込み",
                   html: render(loadConfHtml, info),
                 })
                 .then(
@@ -273,6 +286,27 @@ function loadDeck(code: string | null | undefined) {
             Message.error("削除処理に失敗しました。");
           });
         break;
+      case "share":
+        if (isValidString(info.c)) {
+          showShareMsg(info.c);
+        } else {
+          Message.error("選択したデッキにはカードが含まれていません。");
+        }
+        break;
     }
   });
+}
+
+
+{
+  // urlからデッキを読み込む
+  const code = loadFromQuery();
+  if (isValidString(code)) {
+    try {
+      loadDeck(code);
+      Message.info("URLからデッキを読み込みました。");
+    } catch (error) {
+
+    }
+  }
 }

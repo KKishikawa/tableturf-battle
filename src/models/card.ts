@@ -46,7 +46,7 @@ export function inkCount(...g: (string | null | undefined)[]) {
 
 /** デッキコードをカードリストに変換します */
 export function decodeDeckCode(code: string | null | undefined) {
-  const cardNums = RecordUtil.readVariableRecord(code);
+  const cardNums = [...new Set(RecordUtil.readVariableRecord(code))];
   const cardList = getCardList();
   return cardNums.reduce<ICard[]>((arr, n) => {
     const card = cardList.c.find((cc) => cc.n == n);
@@ -75,4 +75,18 @@ export function loadFromLS(): IDeck[] {
   const d = getFromStorage<IDeck[]>(stragekey);
   if (!d) return [];
   return d;
+}
+
+/** URLからデッキを読み込む */
+export function loadFromQuery() {
+  const query = new URLSearchParams(window.location.search);
+  const code = query.get("c");
+  return code;
+}
+/** urlを共有用URLを作成します */
+export function createShareURL(code: string) {
+  const url = new URL(window.location.href);
+  url.search = "";
+  url.searchParams.set("c", code);
+  return url.href;
 }
