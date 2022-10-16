@@ -1,11 +1,8 @@
 .cardgrid {
-  @apply relative grid grid-cols-8 gap-px w-fit place-items-center place-content-center bg-gray-300 dark:bg-gray-500;
-}
-.cardgrid-border {
-  @apply absolute -inset-px z-10 border border-gray-300 pointer-events-none dark:border-gray-500;
+  @apply grid grid-cols-8 gap-px p-px w-fit place-items-center place-content-center bg-gray-300 dark:bg-gray-500;
 }
 .cardgrid-cell {
-  @apply relative z-10 w-3 h-3 bg-gray-400 dark:bg-gray-700;
+  @apply z-10 w-3 h-3 bg-gray-400 dark:bg-gray-700;
   &.n-fill,
   &.sp-fill {
     @apply z-0 border -m-px box-content border-gray-800 dark:border-black;
@@ -89,7 +86,7 @@
       &:hover,
       &:active {
         .grid__wrapper {
-          @apply block absolute -bottom-8 left-8 w-max p-1 bg-black;
+          @apply block absolute -bottom-8 left-8 w-max p-1 bg-gray-600 dark:bg-gray-800;
         }
       }
     }

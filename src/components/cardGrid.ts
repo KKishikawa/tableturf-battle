@@ -12,7 +12,7 @@ export class CardGrid {
   readonly element: HTMLElement;
   constructor() {
     this.element = htmlToElement(
-      `<div class="cardgrid"><div class="cardgrid-border"></div></div>`
+      `<div class="cardgrid">`
     );
     for (let i = 0; i < 64; i++) {
       this.element.append(createCell());
