@@ -231,10 +231,11 @@ function saveToLocalStrage() {
 
 {
   // デッキ一覧
-  window.setTimeout(() => {
+  try {
     const data = loadFromLS();
     addDeck(...data);
-  });
+  } catch (error) {}
+
   const tbody = document.querySelector(
     "#created_decks tbody"
   ) as HTMLTableSectionElement;
@@ -301,7 +302,6 @@ function saveToLocalStrage() {
   });
 }
 
-
 {
   // urlからデッキを読み込む
   const code = loadFromQuery();
@@ -309,8 +309,6 @@ function saveToLocalStrage() {
     try {
       loadDeck(code);
       Message.info("URLからデッキを読み込みました。");
-    } catch (error) {
-
-    }
+    } catch (error) {}
   }
 }

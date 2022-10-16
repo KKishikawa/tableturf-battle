@@ -8,7 +8,7 @@ export function addDeck(...deck: IDeck[]) {
   const tbody = document.querySelector(
     "#created_decks tbody"
   ) as HTMLTableSectionElement;
-  tbody.append(...deck.map((dc) => htmlToElement(render(deckRowHTML, dc))));
+  tbody.prepend(...deck.map((dc) => htmlToElement(render(deckRowHTML, dc))));
 }
 /** 行からデッキ情報を読み込みます */
 export function deckInfoFromRow(tr: HTMLElement): IDeck {
@@ -31,7 +31,6 @@ export function replaceDeckInfo(idx: number, deck: IDeck) {
 
 /** すべての行のデータを取得します */
 export function allDeckInfo(): IDeck[] {
-  const trs = document.querySelector("#created_decks tbody")!
-    .children as HTMLCollectionOf<HTMLTableRowElement>;
+  const trs = document.querySelectorAll<HTMLElement>("#created_decks tbody tr:not(.nocontent)");
   return [...trs].map(deckInfoFromRow);
 }

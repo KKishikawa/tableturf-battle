@@ -220,7 +220,10 @@
   }
 }
 .deck-tab-item {
-  @apply hidden md:flex flex-col w-full my-3;
+  @apply hidden flex-grow md:flex flex-col w-7/12 my-3;
+  & + & {
+    @apply w-5/12;
+  }
 }
 .deck-tab-item--active {
   @apply flex;
