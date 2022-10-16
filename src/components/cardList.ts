@@ -283,8 +283,8 @@ function createCardRow(cardInfo: ICard, notDeck: boolean) {
     })
   );
   const clientNameWidth = mesureWidth(cardInfo.ja, "text-sm font-bold");
-  if (clientNameWidth > 152) {
-    const scale = 152 / clientNameWidth;
+  if (clientNameWidth > 148) {
+    const scale = 148 / clientNameWidth;
     (
       row.querySelector(".card_name *") as HTMLElement
     ).style.cssText = `--tw-scale-x:${scale};--tw-scale-y:${scale};`;

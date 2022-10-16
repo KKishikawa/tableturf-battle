@@ -132,9 +132,6 @@
     }
     .card_action {
       @apply text-center;
-      .label {
-        @apply hidden md:inline;
-      }
     }
   }
   &[data-layout="grid"] {
@@ -146,10 +143,10 @@
       @apply hidden;
     }
     tbody {
-      @apply flex flex-wrap gap-4 py-2;
+      @apply flex flex-wrap gap-3 py-2;
     }
     tr {
-      @apply inline-grid drop-shadow-md shadow-black dark:shadow-white grid-cols-8 w-44 row-auto gap-1 border-2 rounded-lg p-1 after:content-none;
+      @apply inline-grid drop-shadow-md shadow-black dark:shadow-white grid-cols-8 w-40 row-auto gap-1 border-2 rounded-lg p-1 after:content-none;
     }
     td {
       @apply block border-none px-1 py-0;
@@ -164,7 +161,7 @@
     .card_rarity {
       @apply -order-12 col-span-4 p-0 text-xs place-self-end;
       & > * {
-        @apply px-2;
+        @apply px-1;
       }
     }
     [data-card_rarity="0"] {
@@ -201,10 +198,7 @@
       @apply -order-3 col-span-3 mt-1 flex items-center;
     }
     .card_action {
-      @apply flex col-start-7;
-      .label {
-        @apply hidden;
-      }
+      @apply flex p-0 col-start-7 justify-start items-center;
     }
   }
 }
