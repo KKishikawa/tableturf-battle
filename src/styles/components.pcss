@@ -154,3 +154,20 @@
 .tab.active {
   @apply text-blue-600  border-blue-600 dark:text-blue-500 dark:border-blue-500;
 }
+
+.expandable-wrapper {
+  .expandable {
+    @apply max-h-0 overflow-hidden transition-all duration-300;
+  }
+  .expand-button i {
+    @apply transition-transform duration-300;
+  }
+}
+.expandable-wrapper.expand {
+  .expandable {
+    @apply max-h-32 overflow-y-auto;
+  }
+  .expand-button i {
+    @apply rotate-180;
+  }
+}

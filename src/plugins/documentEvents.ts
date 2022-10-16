@@ -8,6 +8,7 @@ document.body.addEventListener("keydown", function (e) {
   }
 }, true);
 
+const expand = "expand";
 // 共通ボタン
 document.body.addEventListener("click", function (e) {
   if (!e.target || !(e.target instanceof HTMLElement)) return;
@@ -17,6 +18,17 @@ document.body.addEventListener("click", function (e) {
     if (!input) return;
     input.value = "";
     clearableWrapper.dataset["clearable"] = "";
+  }
+  let el: HTMLElement | null;
+  if (el = e.target.closest(".expand-button")) {
+    // 開閉ボタン
+    const ex = el.closest(".expandable-wrapper");
+    if (!ex) return;
+    if (ex.classList.contains(expand)) {
+      ex.classList.remove(expand);
+    } else {
+      ex.classList.add(expand);
+    }
   }
 });
 

@@ -76,14 +76,14 @@
       </div>
     </nav>
     <div class="mx-3">
-      <div class="mt-3 card">
+      <div class="mt-3 overflow-hidden card expandable-wrapper">
         <div class="max-w-4xl mx-auto">
           <div class="card__title">
             <div>デッキ一覧</div>
           </div>
-          <div class="card__body">
+          <div class="card__body expandable">
             <div class="form-label">作成済みデッキ</div>
-            <div id="created_decks" class="mt-2 table__wrapper">
+            <div id="created_decks" class="mt-2 mb-3 table__wrapper">
               <table class="table">
                 <colgroup>
                   <col />
@@ -97,6 +97,11 @@
               </table>
             </div>
           </div>
+        </div>
+        <div class="-mx-4 -mb-4">
+          <button type="button" class="block w-full text-center button-default expand-button">
+            <i class="fa-solid fa-caret-down"></i>
+          </button>
         </div>
       </div>
       <div class="tab-group-wrapper md:hidden">
