@@ -58,6 +58,15 @@ function loadDeck(code: string | null | undefined) {
   deckManager.addRow(...cardInfo);
   showDeckCount();
 }
+
+/** デッキをlocalstrageに保存する */
+function saveToLocalStrage() {
+  window.setTimeout(() => {
+    const decks = allDeckInfo();
+    savetToLS(decks);
+  });
+}
+
 {
   // カードクリック
   allCardManager.body.addEventListener("click", (e) => {
@@ -123,12 +132,6 @@ function loadDeck(code: string | null | undefined) {
 
 {
   // デッキ保存
-  function saveToLocalStrage() {
-    window.setTimeout(() => {
-      const decks = allDeckInfo();
-      savetToLS(decks);
-    });
-  }
   const btnWrapper =
     deckManager.wrapper.getElementsByClassName("action-wrapper")[0];
   const saveButton = htmlToElement(saveDeckButtonHTML);
@@ -276,6 +279,7 @@ function loadDeck(code: string | null | undefined) {
           .then(
             () => {
               tr.remove();
+              saveToLocalStrage();
               Message.success("削除しました。");
             },
             () => {
