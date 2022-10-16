@@ -17,17 +17,6 @@
     @apply bg-amber-600;
   }
 }
-[data-grid_size="md"] .cardgrid-cell {
-  @apply w-5 h-5;
-}
-[data-grid_size="lg"] .cardgrid-cell {
-  @apply w-8 h-8;
-}
-.cardgrid__clickable {
-  [data-idx] {
-    @apply cursor-pointer relative after:absolute after:inset-0 after:transition-opacity after:opacity-0 after:pointer-events-none hover:after:opacity-25 dark:hover:after:opacity-30 after:bg-gray-700 dark:after:bg-gray-200;
-  }
-}
 [data-selected="1"] {
   .icon-check {
     @apply !block mr-2 text-green-600 dark:text-green-500;
