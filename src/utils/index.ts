@@ -16,7 +16,7 @@ export function htmlToElement<T extends HTMLElement>(html: string): T {
   const template = generateDomFragment(html);
   return template.content.firstChild as T;
 }
-export function mesureWidth(str: string, className?: string){
+export function mesureWidth(str: string, className?: string) {
   const div = document.createElement("div");
   div.className = "fixed h-0";
   if (className != null) {
@@ -27,6 +27,15 @@ export function mesureWidth(str: string, className?: string){
   const w = div.clientWidth;
   div.remove();
   return w;
+}
+export function nowYMD() {
+  const _d = new Date();
+  const y = _d.getFullYear();
+  const m = (_d.getMonth() + 1 + "").padStart(2, "0");
+  const d = (_d.getDate() + "").padStart(2, "0");
+  const h = (_d.getHours() + "").padStart(2, "0");
+  const mm = (_d.getMinutes() + "").padStart(2, "0");
+  return `${y}/${m}/${d} ${h}:${mm}`;
 }
 
 /** 指定したキーのデータを取得する */

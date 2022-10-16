@@ -1,0 +1,42 @@
+<form>
+  <div class="mb-5">
+    <label for="input_deck_name" class="form-label form-label-input"
+      >デッキ名</label
+    >
+    <input
+      id="input_deck_name"
+      type="text"
+      class="form-input"
+      placeholder="デッキ名"
+    />
+  </div>
+  <label class="flex items-center ml-2">
+    <input type="radio" name="saveTo" class="form-radio peer" checked />
+    <span
+      class="form-label form-label-radio peer-checked:text-blue-600 dark:peer-checked:text-blue-500"
+      ><i class="mr-1 fa fa-plus"></i>新規保存</span
+    >
+  </label>
+  {{#decks.length}}
+  <div class="mt-3 mb-2 form-label">上書き</div>
+  <div class="ml-1 overflow-y-auto max-h-36">
+    {{#decks}}
+    <label class="flex items-center p-1">
+      <input
+        type="radio"
+        name="saveTo"
+        class="form-radio deck-radio-item peer"
+        value="{{idx}}"
+        data-name="{{t}}"
+      />
+      <div
+        class="form-label form-label-radio peer-checked:text-blue-600 dark:peer-checked:text-blue-500"
+      >
+        <div class="mr-1">{{t}}</div>
+        <div class="text-xs">({{d}})</div>
+      </div>
+    </label>
+    {{/decks}}
+  </div>
+  {{/decks.length}}
+</form>

@@ -1,7 +1,7 @@
 import { render } from "mustache";
 import { isValidString, htmlToElement, mesureWidth } from "@/utils";
 import { toInt } from "@/utils/convert";
-import { ICard, RARITY, inkCount } from "@/models/card";
+import { ICard, RARITY, inkCount, encodeDeckCode } from "@/models/card";
 import { CardGrid } from "@/components/cardGrid";
 import tableHTML from "@/template/cardList/table.html";
 import tableRowHTML from "@/template/cardList/row.html";
@@ -134,14 +134,18 @@ export class DeckInfo extends CardList {
   }
   addRow(...cards: ICard[]): void {
     super.addRow(...cards);
-    this.internalSetTitleAndCount();
+    this.updateCount();
   }
   removeRow(row: HTMLTableRowElement) {
     row.remove();
-    this.internalSetTitleAndCount();
+    this.updateCount();
   }
-  protected internalSetTitleAndCount() {
-    const count = this.body.children.length;
+  /** デッキの枚数をカウントします */
+  getCount() {
+    return this.body.childElementCount;
+  }
+  updateCount() {
+    const count = this.getCount();
     let icon = "";
     if (count > 15) {
       icon = `<i title="カードが多すぎます" class="fa-solid fa-triangle-exclamation text-yellow-700 dark:text-yellow-800 mr-2"></i>`;
@@ -150,6 +154,13 @@ export class DeckInfo extends CardList {
     }
     this.wrapper.querySelector(".table-title-text")!.innerHTML =
       icon + generateDeckInfoTitle(count);
+  }
+  generateDeckCode() {
+    const numbers = [...(this.body.children as HTMLCollectionOf<HTMLElement>)]
+      .map((e) => toInt(e.dataset["card_no"]))
+      .filter((n) => n > 0)
+      .sort((a, b) => a - b);
+    return encodeDeckCode(numbers);
   }
 }
 

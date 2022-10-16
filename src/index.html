@@ -76,18 +76,31 @@
       </div>
     </nav>
     <div class="container mx-auto">
+      <div class="mt-3 card">
+        <div class="card__title">
+          <div>デッキ一覧</div>
+        </div>
+        <div class="card__body">
+          <div class="form-label">作成済みデッキ</div>
+          <div id="created_decks" class="mt-2 table__wrapper">
+            <table class="table">
+              <colgroup>
+                <col />
+                <col class="w-28" />
+              </colgroup>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
       <div class="tab-group-wrapper md:hidden">
         <ul class="tab-group">
-          <li class="tab active">
-            カードリスト
-          </li>
-          <li class="tab">
-            デッキ (0/15)
-          </li>
+          <li class="tab active">カードリスト</li>
+          <li class="tab">デッキ (0/15)</li>
         </ul>
       </div>
-      <div class="deck-tab-items">
-      </div>
+      <div class="deck-tab-items"></div>
     </div>
     <div
       aria-hidden="true"

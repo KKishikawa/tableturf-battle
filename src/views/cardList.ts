@@ -1,6 +1,27 @@
+import { render } from "mustache";
 import { CardList, DeckInfo, getCardRowInfo } from "@/components/cardList";
-import { getCardList } from "@/models/card";
+import {
+  getCardList,
+  decodeDeckCode,
+  IDeck,
+  savetToLS,
+  loadFromLS,
+} from "@/models/card";
+import { htmlToElement, isValidString, nowYMD } from "@/utils";
 import { toInt } from "@/utils/convert";
+import * as dialog from "@/components/dialog";
+import * as Message from "@/components/message";
+import {
+  addDeck,
+  allDeckInfo,
+  deckInfoFromRow,
+  getDeckInfoByRowIdx as getDeckInfoByRowIdx,
+  replaceDeckInfo,
+} from "@/components/deck";
+import saveDeckButtonHTML from "@/template/views/saveDeck.html";
+import saveDeckDialogBodyHTML from "@/template/views/saveDeckDialogBody.html";
+import deleteConfHtml from "@/template/views/deleteConf.html";
+import loadConfHtml from "@/template/views/deckLoadConf.html";
 
 const allCardManager = new CardList({ search: true, title: "カードリスト" });
 allCardManager.addRow(...getCardList().c);
@@ -11,11 +32,30 @@ allCardManager.wrapper.classList.add(
 const deckManager = new DeckInfo();
 deckManager.wrapper.classList.add("deck-container");
 const tabBtns = Array.from(document.querySelectorAll(".tab-group .tab"));
+/** タブに表示するデッキの枚数カウント表示を更新する */
+function showDeckCount() {
+  tabBtns[1].innerHTML =
+    deckManager.wrapper.querySelector(".table-title-text")!.innerHTML;
+}
+function removeAllSelectedInfo() {
+  ([...allCardManager.body.children] as HTMLElement[]).forEach((tr) => {
+    tr.dataset["seleced"] = "";
+  });
+}
+/** デッキを読み込む */
+function loadDeck(code: string | null | undefined) {
+  const cardInfo = decodeDeckCode(code);
+  deckManager.body.innerHTML = "";
+  removeAllSelectedInfo();
+  cardInfo.forEach((info) => {
+    const tr = allCardManager.findRowByNo(info.n);
+    if (!tr) return;
+    tr.dataset["selected"] = "1";
+  });
+  deckManager.addRow(...cardInfo);
+  showDeckCount();
+}
 {
-  function showDeckCount() {
-    tabBtns[1].innerHTML =
-      deckManager.wrapper.querySelector(".table-title-text")!.innerHTML;
-  }
   // カードクリック
   allCardManager.body.addEventListener("click", (e) => {
     if (!e.target) return;
@@ -76,4 +116,163 @@ const tabBtns = Array.from(document.querySelectorAll(".tab-group .tab"));
       });
     })
   );
+}
+
+{
+  // デッキ保存
+  function saveToLocalStrage() {
+    window.setTimeout(() => {
+      const decks = allDeckInfo();
+      savetToLS(decks);
+    });
+  }
+  const btnWrapper =
+    deckManager.wrapper.getElementsByClassName("action-wrapper")[0];
+  const saveButton = htmlToElement(saveDeckButtonHTML);
+  btnWrapper.append(saveButton);
+  saveButton.addEventListener("click", function () {
+    const decks = allDeckInfo().map((d, idx) => ({ ...d, idx }));
+    const saveDialog = new dialog.ModalDialog({
+      title: "デッキの保存先指定",
+      bodyHTML: render(saveDeckDialogBodyHTML, { decks }),
+      onClose: () => {
+        Message.info("保存操作をキャンセルしました。");
+      },
+      buttons: [
+        {
+          label: "保存",
+          primary: true,
+        },
+        {
+          label: "キャンセル",
+          action: "close",
+        },
+      ],
+    });
+    const form = saveDialog.element.getElementsByTagName("form")[0];
+    const saveFunc = () => {
+      (document.activeElement as HTMLElement)?.blur();
+      const selected = toInt(
+        (form.elements.namedItem("saveTo") as RadioNodeList).value,
+        -1
+      );
+      const getSaveInfo = (): IDeck => {
+        return {
+          d: nowYMD(),
+          t: (document.getElementById("input_deck_name") as HTMLInputElement)
+            .value,
+          c: deckManager.generateDeckCode(),
+        };
+      };
+      if (selected > -1) {
+        const info = getDeckInfoByRowIdx(selected);
+        dialog
+          .confirm({
+            title: "上書きの確認",
+            message: `${info.t}　を上書きしますが、よろしいですか？`,
+          })
+          .then(
+            () => {
+              replaceDeckInfo(selected, getSaveInfo());
+              saveToLocalStrage();
+              Message.success("上書き保存しました。");
+              saveDialog.closeModal(true);
+            },
+            () => {
+              Message.info("キャンセルしました。");
+            }
+          );
+      } else {
+        // 新規作成
+        addDeck(getSaveInfo());
+        saveToLocalStrage();
+        Message.success("保存しました。");
+        saveDialog.closeModal(true);
+      }
+    };
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      saveFunc();
+    });
+    saveDialog.element
+      .getElementsByClassName("modal-action")[0]
+      .addEventListener("click", () => {
+        saveFunc();
+      });
+    const radios = saveDialog.element.getElementsByClassName(`deck-radio-item`);
+    [...radios].forEach((radio) => {
+      radio.addEventListener("change", function (this: HTMLInputElement) {
+        const input = document.getElementById(
+          "input_deck_name"
+        ) as HTMLInputElement;
+        if (!isValidString(input.value)) {
+          input.value = this.dataset["name"] ?? "";
+        }
+      });
+    });
+  });
+}
+
+{
+  // デッキ一覧
+  window.setTimeout(() => {
+    const data = loadFromLS();
+    addDeck(...data);
+  });
+  const tbody = document.querySelector(
+    "#created_decks tbody"
+  ) as HTMLTableSectionElement;
+  tbody.addEventListener("click", function (e) {
+    if (!e.target) return;
+    const button = (e.target as HTMLElement).closest<HTMLElement>(".button");
+    if (!button) return;
+    const tr = button.closest("tr") as HTMLTableRowElement;
+    const info = deckInfoFromRow(tr);
+    switch (button.dataset["action"]) {
+      case "edit":
+        (async () => {
+          try {
+            if (deckManager.getCount() > 0) {
+              const ret = await dialog
+                .confirm({
+                  title: "デッキ編集",
+                  html: render(loadConfHtml, info),
+                })
+                .then(
+                  () => true,
+                  () => false
+                );
+              if (!ret) {
+                Message.info("読み込みをキャンセルしました。");
+                return;
+              }
+            }
+            loadDeck(info.c);
+            Message.success("デッキを読み込みました。");
+          } catch {
+            Message.error("デッキの読み込みに失敗しました。");
+          }
+        })();
+        break;
+      case "delete":
+        dialog
+          .confirm({
+            title: "デッキ削除",
+            html: render(deleteConfHtml, info),
+          })
+          .then(
+            () => {
+              tr.remove();
+              Message.success("削除しました。");
+            },
+            () => {
+              Message.info("キャンセルしました。");
+            }
+          )
+          .catch(() => {
+            Message.error("削除処理に失敗しました。");
+          });
+        break;
+    }
+  });
 }
