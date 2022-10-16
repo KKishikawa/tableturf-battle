@@ -17,6 +17,10 @@ type sortJudgeFunc = (
 ) => number;
 interface IListOparationOpt {
   name?: string;
+  maxg: number;
+  ming: number;
+  maxsp: number;
+  minsp: number;
 }
 
 export interface ICardListOption {
@@ -99,7 +103,20 @@ export class CardList {
       const text = (
         this.wrapper.querySelector(".input_cardlist_serch") as HTMLInputElement
       ).value;
-      filerRow(infoR, { name: text });
+      const inputs = ["min-grid", "max-grid", "min-sp", "max-sp"].map(
+        (idName, idx) => {
+          const e = this.wrapper.querySelector(`#${idName}`) as HTMLInputElement;
+          return toInt(e.value, idx & 1 ? Number.MAX_SAFE_INTEGER : 0);
+        }
+      );
+
+      filerRow(infoR, {
+        name: text,
+        ming: inputs[0],
+        maxg: inputs[1],
+        minsp: inputs[2],
+        maxsp: inputs[3],
+      });
     }
     const sortVal = (
       this.wrapper.querySelector(".table-sort") as HTMLSelectElement
@@ -176,13 +193,14 @@ function generateSortRowInfo(
   });
 }
 function filerRow(trs: IinternalSortRowInfo[], opt: IListOparationOpt) {
-  const filterCondition = (info: ICard) => {
-    if (isValidString(opt.name) && !info.ja.includes(opt.name)) return false;
-
+  const filterCondition = (info: IinternalSortRowInfo) => {
+    if (isValidString(opt.name) && !info.info.ja.includes(opt.name)) return false;
+    if (info.gcount > opt.maxg || info.gcount < opt.ming) return false;
+    if (info.info.sp > opt.maxsp || info.info.sp < opt.minsp) return false;
     return true;
   };
   return trs.map<IinternalSortRowInfo>((t) => {
-    if (filterCondition(t.info)) {
+    if (filterCondition(t)) {
       t.row.classList.remove("card--hidden");
     } else {
       t.row.classList.add("card--hidden");
