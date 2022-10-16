@@ -149,7 +149,7 @@ function saveToLocalStrage() {
   saveButton.addEventListener("click", function () {
     const decks = allDeckInfo().map((d, idx) => ({ ...d, idx }));
     const saveDialog = new dialog.ModalDialog({
-      title: "デッキの保存先指定",
+      title: "デッキの保存設定",
       bodyHTML: render(saveDeckDialogBodyHTML, { decks }),
       onClose: () => {
         Message.info("保存操作をキャンセルしました。");
