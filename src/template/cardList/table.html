@@ -1,12 +1,13 @@
 <div class="deck-tab-item table__wrapper">
   <div class="table-caption-title">
-    <div class="flex flex-wrap items-center -mt-3">
-      <span class="mt-3 mr-12 table-title-text">{{title}}</span>
-      <div class="flex flex-wrap action-wrapper">
+    <div class="flex flex-wrap items-center -mt-3 -ml-3">
+      <span class="mt-3 ml-3 table-title-text">{{title}}</span>
+      <div class="flex-auto max-w-[16px]"></div>
+      <div class="flex flex-wrap text-sm font-normal action-wrapper">
         {{#srch}}
         <form class="flex items-center cardlist_serch search-container">
           <div
-            class="relative w-56 mt-3 transition-all duration-300"
+            class="relative mt-3 ml-3 w-44"
             data-clearable
           >
             <input
@@ -24,40 +25,38 @@
           </div>
         </form>
         {{/srch}}
-        <div>
-          <div class="w-48 mx-3 mb-3">
-            <label class="form-label form-label-input">ソート順</label>
-            <select class="form-input table-sort">
-              <option value="0">カードNo(昇順)</option>
-              <option value="1">カードNo(降順)</option>
-              <option value="2">マス数(昇順)</option>
-              <option value="3">マス数(降順)</option>
-              <option value="4">SP数(昇順)</option>
-              <option value="5">SP数(降順)</option>
-              <option value="6">レア度(昇順)</option>
-              <option value="7">レア度(降順)</option>
-            </select>
-          </div>
+        <div class="mt-3 ml-3 w-36">
+          <select class="form-input table-sort">
+            <option value="0">カードNo(昇順)</option>
+            <option value="1">カードNo(降順)</option>
+            <option value="2">マス数(昇順)</option>
+            <option value="3">マス数(降順)</option>
+            <option value="4">SP数(昇順)</option>
+            <option value="5">SP数(降順)</option>
+            <option value="6">レア度(昇順)</option>
+            <option value="7">レア度(降順)</option>
+          </select>
         </div>
       </div>
-      <div class="flex-auto"></div>
-      <div class="mt-3 button-toggle" role="group">
-        <button
-          type="button"
-          data-button_type="grid"
-          class="button button-sm button-default button-active"
-          title="グリッド表示"
-        >
-          <i class="fa-solid fa-table-cells-large"></i>
-        </button>
-        <button
-          type="button"
-          data-button_type="table"
-          class="button button-sm button-default"
-          title="リスト表示"
-        >
-          <i class="fa-solid fa-list"></i>
-        </button>
+      <div class="flex justify-end flex-auto ml-3">
+        <div class="mt-3 button-toggle" role="group">
+          <button
+            type="button"
+            data-button_type="grid"
+            class="button button-sm button-default button-active"
+            title="グリッド表示"
+          >
+            <i class="fa-solid fa-table-cells-large"></i>
+          </button>
+          <button
+            type="button"
+            data-button_type="table"
+            class="button button-sm button-default"
+            title="リスト表示"
+          >
+            <i class="fa-solid fa-list"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>
