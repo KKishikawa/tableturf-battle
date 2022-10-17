@@ -1,0 +1,2 @@
+import "./documentEvents";
+import "./tailwindinitilizer";
