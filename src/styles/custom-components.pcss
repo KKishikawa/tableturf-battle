@@ -156,13 +156,13 @@
       @apply flex flex-wrap gap-3 py-2;
     }
     tr {
-      @apply inline-grid drop-shadow-md shadow-black dark:shadow-white grid-cols-8 w-40 row-auto gap-1 border-2 rounded-lg p-1;
+      @apply inline-grid drop-shadow-md shadow-black dark:shadow-white grid-cols-8 w-40 row-auto border-2 rounded-lg p-1;
     }
     td {
       @apply block border-none px-1 py-0;
     }
     .card_no {
-      @apply order-first col-span-4;
+      @apply order-first col-span-4 pr-0;
       .value::before {
         content: "No.";
         @apply mr-px;
@@ -214,13 +214,13 @@
 }
 
 .gridcount {
-  @apply py-1 relative left-1 z-10 font-normal text-center after:bg-violet-600 after:border-violet-900 text-white text-base after:-z-10 after:-rotate-45 after:absolute after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:w-4 after:h-4 after:border-2 after:rounded-sm;
+  @apply py-1 relative left-1 z-10 font-normal text-center after:bg-violet-600 after:border-violet-900 dark:text-white text-base after:-z-10 after:-rotate-45 after:absolute after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:w-4 after:h-4 after:border-2 after:rounded-sm;
 }
 
 .deck-tab-items {
-  @apply -mx-2 flex;
+  @apply -ml-2 flex;
   & > * {
-    @apply mx-2;
+    @apply ml-2;
   }
 }
 .deck-tab-item {
