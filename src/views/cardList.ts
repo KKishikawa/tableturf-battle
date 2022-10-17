@@ -343,23 +343,27 @@ function saveToLocalStrage() {
 }
 
 {
-  // デッキコードボタン
-  document.getElementById("btn_deckCodeLoad")!.onclick = () => {
-    const input = document.getElementById(
-      "input_deckCodeLoad"
-    ) as HTMLInputElement;
+  // デッキコード読み込み
+  (document.getElementById("form_deckCodeLoad") as HTMLFormElement).addEventListener("submit", function (e) {
+    e.preventDefault();
+    const input = this.getElementsByTagName("input")[0];
     if (!isValidString(input.value)) {
       Message.warn("デッキコードが指定されていません。");
       return;
     }
     try {
       loadDeck(input.value);
-      Message.success("デッキを読み込みました。");
-      input.value = "";
+      this.reset();
       const clearableWrapper = input.closest("[data-clearable]") as HTMLElement;
       clearableWrapper.dataset["clearable"] = "";
+      if (deckManager.getCount() < 1) {
+        Message.warn("デッキコードが正しくありません。");
+      } else {
+        Message.success("デッキを読み込みました。");
+      }
     } catch (error) {
       Message.error("デッキの読み込みに失敗しました。");
     }
-  };
+  }
+  );
 }
