@@ -20,92 +20,92 @@
     <title>非公式 ナワバトラーデッキビルダー</title>
   </head>
   <body class="break-all bg-gray-100 dark:bg-gray-900">
-    <nav
-      class="px-2 pb-3 bg-blue-300 border-gray-200 dark:bg-indigo-900"
-    >
-      <div class="container flex flex-wrap items-center mx-auto">
-        <span class="mt-3 text-xl font-semibold dark:text-white"
-          ><span class="mr-2">非公式</span>
-          <span>ナワバトラーデッキビルダー</span></span
-        >
-        <div class="relative flex justify-end h-10 mt-3 grow basis-11">
-          <div class="absolute top-0 right-0">
-            <button
-              id="themeSettingButton"
-              type="button"
-              class="relative flex items-center button button-sm button-default"
-              title="テーマの変更"
-            >
-              <i class="w-4 h-4 fa-solid fa-circle-half-stroke"></i>
-              <span class="theme-setting-label">テーマ変更</span>
-            </button>
-            <div id="themeButtonGroup">
+    <div class="w-screen h-screen overflow-auto">
+      <nav class="px-2 pb-3 bg-blue-300 border-gray-200 dark:bg-indigo-900">
+        <div class="container flex flex-wrap items-center mx-auto">
+          <span class="mt-3 text-xl font-semibold dark:text-white"
+            ><span class="mr-2">非公式</span>
+            <span>ナワバトラーデッキビルダー</span></span
+          >
+          <div class="relative flex justify-end h-10 mt-3 grow basis-11">
+            <div class="absolute top-0 right-0">
               <button
-                data-theme_mode="light"
-                title="ライトモード"
+                id="themeSettingButton"
                 type="button"
-                class="flex items-center mt-1 pointer-events-auto button button-sm button-default"
+                class="relative flex items-center button button-sm button-default"
+                title="テーマの変更"
               >
-                <i class="w-4 h-4 fa-regular fa-sun"></i>
-                <span class="theme-setting-label">ライト</span>
+                <i class="w-4 h-4 fa-solid fa-circle-half-stroke"></i>
+                <span class="theme-setting-label">テーマ変更</span>
               </button>
-              <button
-                data-theme_mode="dark"
-                title="ダークモード"
-                type="button"
-                class="flex items-center mt-1 pointer-events-auto button button-sm button-default"
-              >
-                <i class="w-4 h-4 fa-solid fa-moon"></i>
-                <span class="theme-setting-label">ダーク</span>
-              </button>
-              <button
-                data-theme_mode="system"
-                title="システム設定を使用"
-                type="button"
-                class="flex items-center mt-1 pointer-events-auto button button-sm button-default"
-              >
-                <i class="w-4 h-4 fa-solid fa-computer"></i>
-                <span class="theme-setting-label">システム</span>
-              </button>
+              <div id="themeButtonGroup">
+                <button
+                  data-theme_mode="light"
+                  title="ライトモード"
+                  type="button"
+                  class="flex items-center mt-1 pointer-events-auto button button-sm button-default"
+                >
+                  <i class="w-4 h-4 fa-regular fa-sun"></i>
+                  <span class="theme-setting-label">ライト</span>
+                </button>
+                <button
+                  data-theme_mode="dark"
+                  title="ダークモード"
+                  type="button"
+                  class="flex items-center mt-1 pointer-events-auto button button-sm button-default"
+                >
+                  <i class="w-4 h-4 fa-solid fa-moon"></i>
+                  <span class="theme-setting-label">ダーク</span>
+                </button>
+                <button
+                  data-theme_mode="system"
+                  title="システム設定を使用"
+                  type="button"
+                  class="flex items-center mt-1 pointer-events-auto button button-sm button-default"
+                >
+                  <i class="w-4 h-4 fa-solid fa-computer"></i>
+                  <span class="theme-setting-label">システム</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </nav>
-    <div class="mx-3">
-      <div class="p-0 mt-3 overflow-hidden card expandable-wrapper">
-        <div class="max-w-4xl mx-auto expandable">
-          <div id="created_decks" class="m-5 table__wrapper">
-            <table class="table">
-              <colgroup>
-                <col />
-                <col class="w-40" />
-              </colgroup>
-              <tbody>
-                <tr class="nocontent">
-                  <td colspan="2">作成済みのものはありません。</td>
-                </tr>
-              </tbody>
-            </table>
+      </nav>
+      <main class="mx-3">
+        <div class="p-0 mt-3 overflow-hidden card expandable-wrapper">
+          <div class="max-w-4xl mx-auto expandable">
+            <div id="created_decks" class="m-5 table__wrapper">
+              <table class="table">
+                <colgroup>
+                  <col />
+                  <col class="w-40" />
+                </colgroup>
+                <tbody>
+                  <tr class="nocontent">
+                    <td colspan="2">作成済みのものはありません。</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <button
+              type="button"
+              class="block w-full text-center button-default expand-button"
+            >
+              <span class="form-label">作成済みデッキ</span>
+              <i class="fa-solid fa-caret-down"></i>
+            </button>
           </div>
         </div>
-        <div>
-          <button
-            type="button"
-            class="block w-full text-center button-default expand-button"
-          >
-            <span class="form-label">作成済みデッキ</span>
-            <i class="fa-solid fa-caret-down"></i>
-          </button>
+        <div class="tab-group-wrapper md:hidden">
+          <ul class="tab-group">
+            <li class="tab active">カードリスト</li>
+            <li class="tab">デッキ (0/15)</li>
+          </ul>
         </div>
-      </div>
-      <div class="tab-group-wrapper md:hidden">
-        <ul class="tab-group">
-          <li class="tab active">カードリスト</li>
-          <li class="tab">デッキ (0/15)</li>
-        </ul>
-      </div>
-      <div class="deck-tab-items"></div>
+        <div class="deck-tab-items"></div>
+      </main>
     </div>
     <div
       aria-hidden="true"
