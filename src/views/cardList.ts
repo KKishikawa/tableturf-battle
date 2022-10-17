@@ -187,17 +187,12 @@ function saveToLocalStrage() {
             title: "上書きの確認",
             message: `${info.t}　を上書きしますが、よろしいですか？`,
           })
-          .then(
-            () => {
-              replaceDeckInfo(selected, getSaveInfo());
-              saveToLocalStrage();
-              Message.success("上書き保存しました。");
-              saveDialog.closeModal(true);
-            },
-            () => {
-              Message.info("キャンセルしました。");
-            }
-          );
+          .then(() => {
+            replaceDeckInfo(selected, getSaveInfo());
+            saveToLocalStrage();
+            Message.success("上書き保存しました。");
+            saveDialog.closeModal(true);
+          });
       } else {
         // 新規作成
         addDeck(getSaveInfo());
