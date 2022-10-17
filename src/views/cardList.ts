@@ -341,3 +341,25 @@ function saveToLocalStrage() {
     } catch (error) {}
   }
 }
+
+{
+  // デッキコードボタン
+  document.getElementById("btn_deckCodeLoad")!.onclick = () => {
+    const input = document.getElementById(
+      "input_deckCodeLoad"
+    ) as HTMLInputElement;
+    if (!isValidString(input.value)) {
+      Message.warn("デッキコードが指定されていません。");
+      return;
+    }
+    try {
+      loadDeck(input.value);
+      Message.success("デッキを読み込みました。");
+      input.value = "";
+      const clearableWrapper = input.closest("[data-clearable]") as HTMLElement;
+      clearableWrapper.dataset["clearable"] = "";
+    } catch (error) {
+      Message.error("デッキの読み込みに失敗しました。");
+    }
+  };
+}

@@ -23,10 +23,27 @@
     <div class="w-screen h-screen overflow-auto">
       <nav class="px-2 pb-3 bg-blue-300 border-gray-200 dark:bg-indigo-900">
         <div class="container flex flex-wrap items-center mx-auto">
-          <span class="mt-3 text-xl font-semibold dark:text-white"
+          <span class="mt-3 mr-5 text-xl font-semibold dark:text-white"
             ><span class="mr-2">非公式</span>
             <span>ナワバトラーデッキビルダー</span></span
           >
+          <div class="relative w-48 mt-3 mr-3" data-clearable>
+            <input
+              id="input_deckCodeLoad"
+              class="pr-16 form-input input_cardlist_serch"
+              type="text"
+              placeholder="デッキコード読込"
+            />
+            <button
+              id="btn_deckCodeLoad"
+              class="absolute top-0 bottom-0 right-0 px-3 rounded-l-none button button-primary"
+              type="button"
+              title="デッキコード読み込み"
+            >
+              <i class="fa-solid fa-right-to-bracket"></i>
+            </button>
+            <i class="input-clear right-12 fa fa-circle-xmark"></i>
+          </div>
           <div class="relative flex justify-end h-10 mt-3 grow basis-11">
             <div class="absolute top-0 right-0">
               <button

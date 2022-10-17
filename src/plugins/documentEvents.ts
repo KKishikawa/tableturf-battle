@@ -1,5 +1,5 @@
-// keydownイベント
-document.body.addEventListener("keydown", function (e) {
+// inputイベント
+document.body.addEventListener("input", function (e) {
   if (!e.target || !(e.target instanceof HTMLElement)) return;
   const hasInput = (e.target as HTMLInputElement).value != "";
   if (e.target.parentElement!.hasAttribute("data-clearable")) {
