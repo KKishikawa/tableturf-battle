@@ -39,9 +39,11 @@
       </div>
     </div>
     {{#srch}}
-    <div class="mt-2 md:mt-3 cardlist_serch search-container expandable-wrapper">
-      <form class="expandable !overflow-hidden">
-        <div class="flex mb-3">
+    <div class="mt-2 md:mt-3 expandable-wrapper">
+      <form
+        class="expandable cardlist_serch !overflow-hidden flex flex-wrap items-end"
+      >
+        <div class="flex mx-3 mb-3">
           <div class="flex items-center flex-nowrap" title="マス数">
             <div class="p-3 mt-2 mr-5 text-xs gridcount">
               <div
@@ -114,19 +116,27 @@
             </div>
           </div>
         </div>
-        <div class="relative mb-3 ml-3" data-clearable>
-          <input
-            class="w-full pr-16 form-input input_cardlist_serch"
-            type="search"
-            placeholder="カード名"
-          />
+        <div class="flex mb-3 ml-3">
+          <div class="relative" data-clearable>
+            <input
+              class="pr-16 form-input input_cardlist_serch"
+              type="search"
+              placeholder="カード名"
+            />
+            <button
+              class="absolute top-0 bottom-0 right-0 px-3 rounded-l-none button button-primary"
+              type="submit"
+            >
+              <i class="fa fa-search"></i>
+            </button>
+            <i class="input-clear right-12 fa fa-circle-xmark"></i>
+          </div>
           <button
-            class="absolute top-0 bottom-0 right-0 px-3 rounded-l-none button button-primary"
-            type="submit"
+            type="button"
+            class="self-end ml-5 mr-1 whitespace-nowrap button_search_clear button button-alt button-xs"
           >
-            <i class="fa fa-search"></i>
+            クリア
           </button>
-          <i class="input-clear right-12 fa fa-circle-xmark"></i>
         </div>
       </form>
       <div class="mt-1 -mx-2 -mb-2 md:-mx-4 md:-mb-4">
@@ -144,6 +154,7 @@
   <div
     class="relative flex-shrink-0 flex-grow h-[calc(100vh-300px)] overflow-y-scroll"
     style="min-height: 400px"
+    tabindex="-1"
   >
     <table class="table cardlist_table" data-layout="grid">
       <thead>

@@ -60,7 +60,9 @@ export class CardList {
       });
     }
     if (option.search) {
-      const form = this.wrapper.querySelector(".cardlist_serch")!;
+      const form = this.wrapper.querySelector(
+        ".cardlist_serch"
+      ) as HTMLFormElement;
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         this.filterSortRow();
@@ -73,6 +75,18 @@ export class CardList {
           });
         })
       );
+      form
+        .querySelector(".button_search_clear")!
+        .addEventListener("click", () => {
+          form.reset();
+          // clearableの状態変更
+          form
+            .querySelectorAll<HTMLElement>("[data-clearable]")
+            .forEach((el) => {
+              el.dataset["clearable"] = "";
+            });
+          this.filterSortRow();
+        });
     }
   }
   findRowByNo(card_no: number) {
@@ -105,7 +119,9 @@ export class CardList {
       ).value;
       const inputs = ["min-grid", "max-grid", "min-sp", "max-sp"].map(
         (idName, idx) => {
-          const e = this.wrapper.querySelector(`#${idName}`) as HTMLInputElement;
+          const e = this.wrapper.querySelector(
+            `#${idName}`
+          ) as HTMLInputElement;
           return toInt(e.value, idx & 1 ? Number.MAX_SAFE_INTEGER : 0);
         }
       );
@@ -194,7 +210,8 @@ function generateSortRowInfo(
 }
 function filerRow(trs: IinternalSortRowInfo[], opt: IListOparationOpt) {
   const filterCondition = (info: IinternalSortRowInfo) => {
-    if (isValidString(opt.name) && !info.info.ja.includes(opt.name)) return false;
+    if (isValidString(opt.name) && !info.info.ja.includes(opt.name))
+      return false;
     if (info.gcount > opt.maxg || info.gcount < opt.ming) return false;
     if (info.info.sp > opt.maxsp || info.info.sp < opt.minsp) return false;
     return true;
