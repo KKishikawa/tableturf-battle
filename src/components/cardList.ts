@@ -2,7 +2,7 @@ import { render } from "mustache";
 import { isValidString, htmlToElement, mesureWidth } from "@/utils";
 import { toInt } from "@/utils/convert";
 import { ICard, RARITY, inkCount, encodeDeckCode } from "@/models/card";
-import { CardGrid } from "@/components/cardGrid";
+import { createCardGrid } from "@/components/cardGrid";
 import tableHTML from "@/template/cardList/table.html";
 import tableRowHTML from "@/template/cardList/row.html";
 
@@ -306,8 +306,7 @@ function createCardRow(cardInfo: ICard, notDeck: boolean) {
       row.querySelector(".card_name *") as HTMLElement
     ).style.cssText = `--tw-scale-x:${scale};--tw-scale-y:${scale};`;
   }
-  const cardGrid = new CardGrid();
-  cardGrid.fill(cardInfo.g, cardInfo.sg);
-  row.querySelector(".grid__wrapper")!.prepend(cardGrid.element);
+  const cardGrid = createCardGrid(cardInfo.g, cardInfo.sg);
+  row.querySelector(".grid__wrapper")!.prepend(cardGrid);
   return row as HTMLTableRowElement;
 }
