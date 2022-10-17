@@ -21,7 +21,7 @@ import {
   replaceDeckInfo,
 } from "@/components/deck";
 import saveDeckButtonHTML from "@/template/views/saveDeck.html";
-import shareButtonHTML from "@/template/views/shareBtn.html";
+import clearButtonHTML from "@/template/views/clearBtn.html";
 import saveDeckDialogBodyHTML from "@/template/views/saveDeckDialogBody.html";
 import deleteConfHtml from "@/template/views/deleteConf.html";
 import loadConfHtml from "@/template/views/deckLoadConf.html";
@@ -139,17 +139,22 @@ function saveToLocalStrage() {
   const btnWrapper =
     deckManager.wrapper.getElementsByClassName("action-wrapper")[0];
   const saveButton = $dom(saveDeckButtonHTML);
-  const shareButton = $dom(shareButtonHTML);
-  shareButton.onclick = function () {
-    const deckCode = deckManager.generateDeckCode();
-    if (isValidString(deckCode)) {
-      showShareMsg(deckCode);
-    } else {
-      Message.error("デッキにカードが含まれていません。");
-    }
+  const clearButton = $dom(clearButtonHTML);
+  clearButton.onclick = function () {
+    dialog
+      .confirm({
+        title: "編集内容のクリア",
+        message: "編集中の内容をクリアしますか？",
+      })
+      .then(() => {
+        // 空情報を読み込ませる
+        loadDeck(null);
+        showDeckCount();
+        Message.success("編集内容をクリアしました。");
+      });
   };
   btnWrapper.append(saveButton);
-  btnWrapper.append(shareButton);
+  btnWrapper.append(clearButton);
   saveButton.addEventListener("click", function () {
     const decks = allDeckInfo().map((d, idx) => ({ ...d, idx }));
     const saveDialog = new dialog.ModalDialog({
@@ -183,7 +188,10 @@ function saveToLocalStrage() {
     ] as HTMLInputElement[];
     radios.forEach((radio) => {
       radio.onchange = function () {
-        if (!isValidString(input.value) || !isValidString(input.dataset["input"])) {
+        if (
+          !isValidString(input.value) ||
+          !isValidString(input.dataset["input"])
+        ) {
           input.value = radio.dataset["name"] ?? "";
         }
       };
