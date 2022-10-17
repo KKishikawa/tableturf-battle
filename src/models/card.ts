@@ -66,6 +66,12 @@ export function getCardList() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   return require("@/../data/v.1.0.0.json") as ICardData;
 }
+export const availableInkCount = [
+  ...new Set(getCardList().c.map((c) => inkCount(c.g, c.sg))),
+].sort((a, b) => a - b);
+export const availableSP = [
+  ...new Set(getCardList().c.map(c => c.sp))
+].sort((a, b) => a - b);
 
 const stragekey = "tableturf_deckV0";
 /** ローカルストレージにデッキを保存します */
