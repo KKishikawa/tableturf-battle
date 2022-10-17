@@ -16,7 +16,7 @@
 }
 [data-selected="1"] {
   .icon-check {
-    @apply !block mr-2 text-green-600 dark:text-green-500;
+    @apply !block mr-1 text-green-600 dark:text-green-500;
   }
 }
 .card-list-container {
@@ -45,14 +45,11 @@
   .card_grid {
     @apply px-0;
   }
-  .card_rarity {
-    @apply text-black;
-    & > * {
-      @apply rounded-sm;
-    }
+  .rarity_label {
+    @apply text-black rounded-sm;
   }
   [data-card_rarity="0"] {
-    .card_rarity > * {
+    .rarity_label {
       @apply bg-yellow-100 dark:bg-yellow-50 text-gray-800;
     }
     .card_name {
@@ -60,7 +57,7 @@
     }
   }
   [data-card_rarity="1"] {
-    .card_rarity > * {
+    .rarity_label {
       @apply bg-amber-400;
     }
     .card_name {
@@ -68,7 +65,7 @@
     }
   }
   [data-card_rarity="2"] {
-    .card_rarity > * {
+    .rarity_label {
       @apply bg-gradient-to-br from-pink-300 via-cyan-300 to-yellow-300;
     }
     .card_name {
@@ -135,7 +132,13 @@
       @apply text-end;
     }
     .card_rarity {
-      @apply text-center px-2 text-xs;
+      @apply text-center px-0 text-xs;
+    }
+    .rarity_label {
+      @apply h-4;
+      & > * {
+        @apply hidden sm:inline md:hidden lg:inline;
+      }
     }
     .card_action {
       @apply text-center;
@@ -167,9 +170,9 @@
     }
     .card_rarity {
       @apply -order-12 col-span-4 p-0 text-xs place-self-end;
-      & > * {
-        @apply px-1;
-      }
+    }
+    .rarity_label {
+      @apply px-1;
     }
     [data-card_rarity="0"] {
       @apply border-gray-600;
@@ -228,4 +231,7 @@
 }
 .deck-tab-item--active {
   @apply flex;
+}
+.table-title-text {
+  @apply mt-2 ml-2 hidden md:inline;
 }

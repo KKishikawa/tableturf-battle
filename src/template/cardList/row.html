@@ -21,15 +21,23 @@
     <div class="inline-block cardgrid-cell sp-fill"></div>
     <i class="mx-1 fa fa-xmark"></i><span>{{sp}}</span>
   </td>
-  <td class="card_rarity" title="レア度"><div>{{rarity}}</div></td>
+  <td class="card_rarity" title="レア度">
+    <div class="rarity_label"><span>{{rarity}}</span></div>
+  </td>
   <td class="card_name" title="カード名"><span>{{ja}}</span></td>
   <td class="card_action">
     {{#notDeck}}
-    <button class="button-add button button-xs button-primary" title="デッキに追加">
+    <button
+      class="button-add button button-xs button-primary"
+      title="デッキに追加"
+    >
       <i class="fa fa-plus"></i>
     </button>
     {{/notDeck}}
-    <button class="button-delete button button-xs button-danger" title="デッキから削除">
+    <button
+      class="button-delete button button-xs button-danger"
+      title="デッキから削除"
+    >
       <i class="fa fa-trash-can"></i>
     </button>
   </td>
