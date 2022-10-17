@@ -16,7 +16,8 @@ import {
   addDeck,
   allDeckInfo,
   deckInfoFromRow,
-  getDeckInfoByRowIdx as getDeckInfoByRowIdx,
+  generateDeckId,
+  getDeckInfoByRowIdx,
   replaceDeckInfo,
 } from "@/components/deck";
 import saveDeckButtonHTML from "@/template/views/saveDeck.html";
@@ -44,12 +45,11 @@ function showDeckCount() {
 }
 function removeAllSelectedInfo() {
   ([...allCardManager.body.children] as HTMLElement[]).forEach((tr) => {
-    console.log(tr);
     tr.dataset[SelTrAttr] = "";
   });
 }
 /** デッキを読み込む */
-function loadDeck(code: string | null | undefined) {
+function loadDeck(code: string | null | undefined, id?: string) {
   const cardInfo = decodeDeckCode(code);
   deckManager.body.innerHTML = "";
   removeAllSelectedInfo();
@@ -60,6 +60,7 @@ function loadDeck(code: string | null | undefined) {
   });
   deckManager.addRow(...cardInfo);
   showDeckCount();
+  deckManager.body.dataset["id"] = id;
 }
 
 /** デッキをlocalstrageに保存する */
@@ -169,18 +170,47 @@ function saveToLocalStrage() {
       ],
     });
     const form = saveDialog.element.getElementsByTagName("form")[0];
+    const input = document.getElementById(
+      "input_deck_name"
+    ) as HTMLInputElement;
+    const inputHandler = function () {
+      input.dataset["input"] = "1";
+      input.removeEventListener("input", inputHandler);
+    };
+    input.addEventListener("input", inputHandler);
+    const radios = [
+      ...saveDialog.element.getElementsByClassName(`deck-radio-item`),
+    ] as HTMLInputElement[];
+    radios.forEach((radio) => {
+      radio.onchange = function () {
+        if (!isValidString(input.value) || !isValidString(input.dataset["input"])) {
+          input.value = radio.dataset["name"] ?? "";
+        }
+      };
+    });
+    const id = deckManager.body.dataset["id"];
+    if (isValidString(id)) {
+      window.setTimeout(() => {
+        const radioBtn = radios.find((el) => el.dataset["id"] == id);
+        if (radioBtn) {
+          radioBtn.checked = true;
+          radioBtn.onchange!(new Event(""));
+        }
+      });
+    }
     const saveFunc = () => {
       (document.activeElement as HTMLElement)?.blur();
       const selected = toInt(
         (form.elements.namedItem("saveTo") as RadioNodeList).value,
         -1
       );
-      const getSaveInfo = (): IDeck => {
+      const getSaveInfo = (id = generateDeckId()): IDeck => {
         return {
           d: nowYMD(),
           t: (document.getElementById("input_deck_name") as HTMLInputElement)
             .value,
           c: deckManager.generateDeckCode(),
+          id,
         };
       };
       if (selected > -1) {
@@ -191,15 +221,19 @@ function saveToLocalStrage() {
             message: `${info.t}　を上書きしますが、よろしいですか？`,
           })
           .then(() => {
-            replaceDeckInfo(selected, getSaveInfo());
+            const newDeckInfo = getSaveInfo(info.id);
+            replaceDeckInfo(selected, newDeckInfo);
             saveToLocalStrage();
+            deckManager.body.dataset["id"] = newDeckInfo.id;
             Message.success("上書き保存しました。");
             saveDialog.closeModal(true);
           });
       } else {
         // 新規作成
-        addDeck(getSaveInfo());
+        const newDeckInfo = getSaveInfo();
+        addDeck(newDeckInfo);
         saveToLocalStrage();
+        deckManager.body.dataset["id"] = newDeckInfo.id;
         Message.success("保存しました。");
         saveDialog.closeModal(true);
       }
@@ -213,17 +247,6 @@ function saveToLocalStrage() {
       .addEventListener("click", () => {
         saveFunc();
       });
-    const radios = saveDialog.element.getElementsByClassName(`deck-radio-item`);
-    [...radios].forEach((radio) => {
-      radio.addEventListener("change", function (this: HTMLInputElement) {
-        const input = document.getElementById(
-          "input_deck_name"
-        ) as HTMLInputElement;
-        if (!isValidString(input.value)) {
-          input.value = this.dataset["name"] ?? "";
-        }
-      });
-    });
   });
 }
 
@@ -262,7 +285,7 @@ function saveToLocalStrage() {
                 return;
               }
             }
-            loadDeck(info.c);
+            loadDeck(info.c, info.id);
             Message.success("デッキを読み込みました。");
           } catch {
             Message.error("デッキの読み込みに失敗しました。");

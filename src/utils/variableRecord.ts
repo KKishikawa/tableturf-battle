@@ -55,7 +55,7 @@ export function writeVariableRecord(
 class VariableRecordWriter {
   data: string[] = [];
   public write(val: number) {
-    const nextVal = val >> dataBitCount;
+    const nextVal = val >>> dataBitCount;
     const tetra = val & dataBit;
     if (nextVal > 0) {
       this._w(tetra | msb);
@@ -70,7 +70,7 @@ class VariableRecordWriter {
 }
 
 /** 数列を読み込む(固定長) */
-export function readeFixRecord(rawstr: string | null | undefined): number[] {
+export function readFixRecord(rawstr: string | null | undefined): number[] {
   if (!rawstr) return [];
   const ret = [];
   for (const char of rawstr) {

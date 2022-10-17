@@ -27,6 +27,8 @@ export interface IDeck {
   t: string;
   /** デッキ保存日時 */
   d: string;
+  /** デッキid */
+  id?: string;
 }
 
 export const RARITY = ["コモン", "レア", "フレッシュ"];
@@ -37,7 +39,7 @@ export function encodeInkInfo(val: number[] | null | undefined) {
 }
 /** 塗り情報文字列を座標配列に復元します */
 export function decodeInkInfo(val: string | null | undefined) {
-  return RecordUtil.readeFixRecord(val);
+  return RecordUtil.readFixRecord(val);
 }
 /** 塗れる数をカウントします */
 export function inkCount(...g: (string | null | undefined)[]) {
