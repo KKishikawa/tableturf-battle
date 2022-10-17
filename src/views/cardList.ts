@@ -313,7 +313,7 @@ function saveToLocalStrage() {
               Message.success("削除しました。");
             },
             () => {
-              Message.info("キャンセルしました。");
+              Message.info("削除をキャンセルしました。");
             }
           )
           .catch(() => {
