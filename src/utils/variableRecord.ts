@@ -48,9 +48,7 @@ export function writeVariableRecord(
 ): string {
   if (!record || record.length < 1) return "";
   const writer = new VariableRecordWriter();
-  for (const num of record) {
-    writer.write(num);
-  }
+  record.forEach(r => writer.write(r));
   return writer.data.join("");
 }
 
@@ -60,13 +58,13 @@ class VariableRecordWriter {
     const nextVal = val >> dataBitCount;
     const tetra = val & dataBit;
     if (nextVal > 0) {
-      this.innerWriteSeq(tetra | msb);
+      this._w(tetra | msb);
       this.write(nextVal);
     } else {
-      this.innerWriteSeq(tetra);
+      this._w(tetra);
     }
   }
-  private innerWriteSeq(val: number) {
+  private _w(val: number) {
     this.data.push(convertDict[val]);
   }
 }

@@ -12,7 +12,7 @@ function generateDomFragment(html: string) {
  * @param html representing a single element
  * @returns
  */
-export function htmlToElement<T extends HTMLElement>(html: string): T {
+export function $dom<T extends HTMLElement>(html: string): T {
   const template = generateDomFragment(html);
   return template.content.firstChild as T;
 }

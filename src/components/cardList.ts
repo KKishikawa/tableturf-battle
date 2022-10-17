@@ -1,5 +1,5 @@
 import { render } from "mustache";
-import { isValidString, htmlToElement, mesureWidth } from "@/utils";
+import { isValidString, $dom, mesureWidth } from "@/utils";
 import { toInt } from "@/utils/convert";
 import { ICard, RARITY, inkCount, encodeDeckCode } from "@/models/card";
 import { createCardGrid } from "@/components/cardGrid";
@@ -32,7 +32,7 @@ export class CardList {
   readonly body: HTMLTableSectionElement;
   protected readonly srch: boolean;
   constructor(option: ICardListOption) {
-    this.wrapper = htmlToElement(
+    this.wrapper = $dom(
       render(tableHTML, { srch: option.search, title: option.title })
     );
     this.body = this.wrapper.querySelector("tbody")!;
@@ -291,7 +291,7 @@ export function getCardRowInfo(tr: HTMLTableRowElement): ICard {
 
 function createCardRow(cardInfo: ICard, notDeck: boolean) {
   const gridCount = inkCount(cardInfo.sg, cardInfo.g);
-  const row = htmlToElement(
+  const row = $dom(
     render(tableRowHTML, {
       ...cardInfo,
       gridCount,

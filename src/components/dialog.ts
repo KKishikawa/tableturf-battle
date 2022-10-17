@@ -1,12 +1,9 @@
-import { htmlToElement } from "@/utils";
-import Mustache from "mustache";
+import { $dom } from "@/utils";
+import { render } from "mustache";
 import dialogHTML from "@/template/dialog/dialog.html";
 
 const closeModalWrapperStyle = ["opacity-0"];
 const closeModalStyle = ["scale-0"];
-window.setTimeout(() => {
-  Mustache.parse(dialogHTML);
-});
 export interface IModalOption {
   title?: string;
   body?: string;
@@ -28,7 +25,7 @@ export class ModalDialog {
   constructor(options: IModalOption) {
     this.onCloseHandler = options.onClose;
     const container = document.getElementById("app-modal_container")!;
-    this.element = htmlToElement(Mustache.render(dialogHTML, {...options, buttonClass(this: IButtonOption) {
+    this.element = $dom(render(dialogHTML, {...options, buttonClass(this: IButtonOption) {
       return this.primary ? "button-primary" : "button-alt";
     }}));
     if (options.buttons) {

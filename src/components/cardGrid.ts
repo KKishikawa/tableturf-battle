@@ -1,8 +1,8 @@
-import { htmlToElement } from "@/utils";
+import { $dom } from "@/utils";
 import { decodeInkInfo } from "@/models/card";
 
 function createCell() {
-  return htmlToElement(`<div class="cardgrid-cell">`);
+  return $dom(`<div class="cardgrid-cell">`);
 }
 const fillTypes = ["n-fill", "sp-fill"] as const;
 /** カードの塗り範囲をグリッド表現 */
@@ -10,7 +10,7 @@ export function createCardGrid(
   g: string | null | undefined,
   sg: string | null | undefined
 ) {
-  const grid = htmlToElement(`<div class="cardgrid">`);
+  const grid = $dom(`<div class="cardgrid">`);
   const cells: HTMLElement[] = [];
   for (let i = 0; i < 64; i++) {
     const cell = createCell();

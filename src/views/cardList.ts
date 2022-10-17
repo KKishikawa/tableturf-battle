@@ -8,7 +8,7 @@ import {
   loadFromLS,
   loadFromQuery,
 } from "@/models/card";
-import { htmlToElement, isValidString, nowYMD } from "@/utils";
+import { $dom, isValidString, nowYMD } from "@/utils";
 import { toInt } from "@/utils/convert";
 import * as dialog from "@/components/dialog";
 import * as Message from "@/components/message";
@@ -26,6 +26,8 @@ import deleteConfHtml from "@/template/views/deleteConf.html";
 import loadConfHtml from "@/template/views/deckLoadConf.html";
 import { showShareMsg } from "@/components/deckShare";
 
+const SelTrAttr = "selected";
+
 const allCardManager = new CardList({ search: true, title: "カードリスト" });
 allCardManager.addRow(...getCardList().c);
 allCardManager.wrapper.classList.add(
@@ -42,7 +44,8 @@ function showDeckCount() {
 }
 function removeAllSelectedInfo() {
   ([...allCardManager.body.children] as HTMLElement[]).forEach((tr) => {
-    tr.dataset["seleced"] = "";
+    console.log(tr);
+    tr.dataset[SelTrAttr] = "";
   });
 }
 /** デッキを読み込む */
@@ -53,7 +56,7 @@ function loadDeck(code: string | null | undefined) {
   cardInfo.forEach((info) => {
     const tr = allCardManager.findRowByNo(info.n);
     if (!tr) return;
-    tr.dataset["selected"] = "1";
+    tr.dataset[SelTrAttr] = "1";
   });
   deckManager.addRow(...cardInfo);
   showDeckCount();
@@ -78,13 +81,13 @@ function saveToLocalStrage() {
         const info = getCardRowInfo(row);
         deckManager.addRow(info);
         showDeckCount();
-        row.dataset["selected"] = "1";
+        row.dataset[SelTrAttr] = "1";
       } else if (el.closest(".button-delete")) {
         const row = el.closest("tr")!;
         const no = toInt(row.dataset["card_no"]);
         deckManager.removeRowByNo(no);
         showDeckCount();
-        row.dataset["selected"] = "";
+        row.dataset[SelTrAttr] = "";
       }
     });
   });
@@ -96,7 +99,7 @@ function saveToLocalStrage() {
         const row = el.closest("tr")!;
         const no = toInt(row.dataset["card_no"]);
         const r = allCardManager.findRowByNo(no);
-        if (r) r.dataset["selected"] = "";
+        if (r) r.dataset[SelTrAttr] = "";
         deckManager.removeRow(row);
         showDeckCount();
       }
@@ -134,8 +137,8 @@ function saveToLocalStrage() {
   // デッキ保存
   const btnWrapper =
     deckManager.wrapper.getElementsByClassName("action-wrapper")[0];
-  const saveButton = htmlToElement(saveDeckButtonHTML);
-  const shareButton = htmlToElement(shareButtonHTML);
+  const saveButton = $dom(saveDeckButtonHTML);
+  const shareButton = $dom(shareButtonHTML);
   shareButton.onclick = function () {
     const deckCode = deckManager.generateDeckCode();
     if (isValidString(deckCode)) {

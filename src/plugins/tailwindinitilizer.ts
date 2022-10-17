@@ -1,31 +1,21 @@
-const darkMode = {
-  /** ダークモードに変更する */
-  toDark(save?: boolean) {
-    document.documentElement.classList.add("dark");
-    if (save) localStorage.theme = "dark";
-  },
-  /** ライトモードに切り替える */
-  toLight(save?: boolean) {
-    document.documentElement.classList.remove("dark");
-    if (save) localStorage.theme = "light";
-  },
-  toSystem() {
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      this.toDark();
-    } else {
-      this.toLight();
-    }
-    localStorage.removeItem("theme");
-  },
-  /** ダークモードとライトモードを切り替える  */
-  toggle(save?: boolean) {
-    if (document.documentElement.classList.contains("dark")) {
-      this.toLight(save);
-    } else {
-      this.toDark(save);
-    }
-  },
-};
+/** ダークモードに変更する */
+function toDark(save?: boolean) {
+  document.documentElement.classList.add("dark");
+  if (save) localStorage.theme = "dark";
+}
+/** ライトモードに切り替える */
+function toLight(save?: boolean) {
+  document.documentElement.classList.remove("dark");
+  if (save) localStorage.theme = "light";
+}
+function toSystem() {
+  if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    toDark();
+  } else {
+    toLight();
+  }
+  localStorage.removeItem("theme");
+}
 
 {
   // On page load or when changing themes, best to add inline in `head` to avoid FOUC
@@ -34,9 +24,9 @@ const darkMode = {
     (!("theme" in localStorage) &&
       window.matchMedia("(prefers-color-scheme: dark)").matches)
   ) {
-    darkMode.toDark();
+    toDark();
   } else {
-    darkMode.toLight();
+    toLight();
   }
 }
 
@@ -58,13 +48,13 @@ const darkMode = {
     if (!button) return;
     switch (button.dataset["theme_mode"]) {
       case "light":
-        darkMode.toLight(true);
+        toLight(true);
         break;
       case "dark":
-        darkMode.toDark(true);
+        toDark(true);
         break;
       default:
-        darkMode.toSystem();
+        toSystem();
         break;
     }
   };

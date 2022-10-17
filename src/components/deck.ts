@@ -1,5 +1,5 @@
 import { render } from "mustache";
-import { htmlToElement } from "@/utils";
+import { $dom } from "@/utils";
 import deckRowHTML from "@/template/deck/deckRow.html";
 import { IDeck } from "@/models/card";
 
@@ -8,7 +8,7 @@ export function addDeck(...deck: IDeck[]) {
   const tbody = document.querySelector(
     "#created_decks tbody"
   ) as HTMLTableSectionElement;
-  tbody.prepend(...deck.map((dc) => htmlToElement(render(deckRowHTML, dc))));
+  tbody.prepend(...deck.map((dc) => $dom(render(deckRowHTML, dc))));
 }
 /** 行からデッキ情報を読み込みます */
 export function deckInfoFromRow(tr: HTMLElement): IDeck {
@@ -24,7 +24,7 @@ export function getDeckInfoByRowIdx(idx: number): IDeck {
   return deckInfoFromRow(tr);
 }
 export function replaceDeckInfo(idx: number, deck: IDeck) {
-  const newRow = htmlToElement(render(deckRowHTML, deck));
+  const newRow = $dom(render(deckRowHTML, deck));
   const row = document.querySelector("#created_decks tbody")!.children[idx] as HTMLTableRowElement;
   row.replaceWith(newRow);
 }
