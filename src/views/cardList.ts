@@ -143,14 +143,14 @@ function saveToLocalStrage() {
   clearButton.onclick = function () {
     dialog
       .confirm({
-        title: "編集内容のクリア",
-        message: "編集中の内容をクリアしますか？",
+        title: "デッキ内容のクリア",
+        message: "編集中のデッキの内容をクリアしますか？",
       })
       .then(() => {
         // 空情報を読み込ませる
         loadDeck(null);
         showDeckCount();
-        Message.success("編集内容をクリアしました。");
+        Message.success("編集中のデッキをクリアしました。");
       });
   };
   btnWrapper.append(saveButton);
@@ -158,7 +158,7 @@ function saveToLocalStrage() {
   saveButton.addEventListener("click", function () {
     const decks = allDeckInfo().map((d, idx) => ({ ...d, idx }));
     const saveDialog = new dialog.ModalDialog({
-      title: "デッキの保存設定",
+      title: "デッキの保存",
       bodyHTML: render(saveDeckDialogBodyHTML, { decks }),
       onClose: () => {
         Message.info("保存操作をキャンセルしました。");
