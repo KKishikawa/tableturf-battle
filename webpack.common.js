@@ -3,6 +3,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 /** @type {import('webpack').Configuration} */
 module.exports = {
   entry: './src/index.ts',
@@ -63,5 +64,9 @@ module.exports = {
       template: './src/index.html'
     }),
     new ForkTsCheckerWebpackPlugin(),
+    new CopyPlugin({
+      // copy asset to dist folder
+      patterns: [{ from: 'src/assets', to: 'assets' }]
+    }),
   ]
 };
