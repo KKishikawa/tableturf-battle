@@ -104,14 +104,8 @@ export class CardList {
     );
   }
   addRow(...cards: ICard[]) {
-    Promise.all(
-      cards.map(
-        (c) =>
-          new Promise<HTMLTableRowElement>((res) =>
-            res(createCardRow(c, this.srch))
-          )
-      )
-    ).then((trs) => this.filterSortRow(...trs));
+    const trs = cards.map((c) => createCardRow(c, this.srch));
+    this.filterSortRow(...trs);
   }
   findCardByNo(card_no: number) {
     const tr = this.findRowByNo(card_no);
