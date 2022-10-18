@@ -15,7 +15,7 @@ export function createCardGrid(
 }
 
 function convertNumGrit(num: number) {
-  return { x: num % 8 * 12, y: ~~(num / 8) * 12 };
+  return { x: num % 8 * 12 + .5, y: ~~(num / 8) * 12 + .5 };
 }
 function svgToDataURI(svgText: string) {
   return "data:image/svg+xml," + encodeURIComponent(svgText);
