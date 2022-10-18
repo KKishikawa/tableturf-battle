@@ -196,16 +196,17 @@ export class DeckInfo extends CardList {
         ]
       );
       // マス数の分布
+      const toStyleHeightLiteral = (n: number) => `style="height:${n}%"`;
       const _gcs = [...gcountr[1]];
       const gMaxCount = Math.max(..._gcs.map((v) => v[1]));
       const gcs = _gcs
-        .map((g) => ({ k: g[0], v: (g[1] * 100) / gMaxCount }))
+        .map((g) => ({ k: g[0], v: toStyleHeightLiteral((g[1] * 100) / gMaxCount) }))
         .sort((a, b) => a.k - b.k);
       // spの分布
       const _sp = [...gcountr[2]];
       const spMax = Math.max(..._sp.map((v) => v[1]));
       const sps = _sp
-        .map((g) => ({ k: g[0], v: (g[1] * 100) / spMax }))
+        .map((g) => ({ k: g[0], v: toStyleHeightLiteral((g[1] * 100) / spMax) }))
         .sort((a, b) => a.k - b.k);
       new ModalDialog({
         title: "デッキ情報",
