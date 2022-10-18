@@ -344,7 +344,9 @@ function saveToLocalStrage() {
 
 {
   // デッキコード読み込み
-  (document.getElementById("form_deckCodeLoad") as HTMLFormElement).addEventListener("submit", function (e) {
+  (
+    document.getElementById("form_deckCodeLoad") as HTMLFormElement
+  ).addEventListener("submit", function (e) {
     e.preventDefault();
     const input = this.getElementsByTagName("input")[0];
     if (!isValidString(input.value)) {
@@ -364,6 +366,5 @@ function saveToLocalStrage() {
     } catch (error) {
       Message.error("デッキの読み込みに失敗しました。");
     }
-  }
-  );
+  });
 }
