@@ -18,23 +18,37 @@ describe("readVariableRecord", function () {
 });
 
 describe("writeVariableRecord", function () {
-  it.each([
-    null,
-    [],
-  ])("empty val (%p)", function (val) {
+  it.each([null, []])("empty val (%p)", function (val) {
     expect(variableRecord.writeVariableRecord(val)).toBe("");
   });
-  it.each(recordInfos.map(v => [v[1], v[0]]))("read %p", function (input, output) {
-    expect(variableRecord.writeVariableRecord(input)).toBe(output);
-  });
+  it.each(recordInfos.map((v) => [v[1], v[0]]))(
+    "read %p",
+    function (input, output) {
+      expect(variableRecord.writeVariableRecord(input)).toBe(output);
+    }
+  );
 });
 
 describe("write => read", function () {
   it.each([
     [[166, 190, 200, 355, 400]],
     [[10, 34, 0, 3, 4, 4, 5, 6, 6]],
-    [[1, 2, 3, 64, 55, 10]]
-  ])("number array %p", function(val) {
-    expect(variableRecord.readVariableRecord(variableRecord.writeVariableRecord(val))).toEqual(val);
-  })
+    [[1, 2, 3, 64, 55, 10]],
+  ])("number array %p", function (val) {
+    expect(
+      variableRecord.readVariableRecord(variableRecord.writeVariableRecord(val))
+    ).toEqual(val);
+  });
+});
+
+describe("write => read (fixed)", function () {
+  it.each([
+    [[8, 10, 21, 3, 50]],
+    [[10, 34, 0, 3, 4, 4, 5, 6, 6]],
+    [[1, 2, 3, 63, 55, 10]],
+  ])("number array %p", function (val) {
+    expect(
+      variableRecord.readFixRecord(variableRecord.writeFixRecord(val))
+    ).toEqual(val);
+  });
 });
