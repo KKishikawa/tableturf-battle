@@ -1,18 +1,6 @@
-.cardgrid {
-  @apply grid grid-cols-8 gap-px p-px w-fit place-items-center place-content-center bg-gray-300 dark:bg-gray-500;
-}
-.cardgrid-cell {
-  @apply z-10 w-3 h-3 bg-gray-400 dark:bg-gray-700;
-  &.n-fill,
-  &.sp-fill {
-    @apply z-0 border -m-px box-content border-gray-800 dark:border-black;
-  }
-  &.n-fill {
-    @apply bg-yellow-300;
-  }
-  &.sp-fill {
-    @apply bg-amber-600;
-  }
+
+.sp-fill {
+  @apply z-0 border w-3 h-3 box-content border-gray-800 dark:border-black bg-amber-600;
 }
 [data-selected="1"] {
   .icon-check {

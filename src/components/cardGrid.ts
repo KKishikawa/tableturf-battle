@@ -1,26 +1,22 @@
+import { render } from "mustache";
 import { $dom } from "@/utils";
 import { decodeInkInfo } from "@/models/card";
+import gridTemplate from "@/template/cardGrid/grid.svg";
 
-function createCell() {
-  return $dom(`<div class="cardgrid-cell">`);
-}
-const fillTypes = ["n-fill", "sp-fill"] as const;
 /** カードの塗り範囲をグリッド表現 */
 export function createCardGrid(
   g: string | null | undefined,
   sg: string | null | undefined
 ) {
-  const grid = $dom(`<div class="cardgrid">`);
-  const cells: HTMLElement[] = [];
-  for (let i = 0; i < 64; i++) {
-    const cell = createCell();
-    cells.push(cell);
-    grid.append(cell);
-  }
-  [g, sg].forEach((g, i) => {
-    decodeInkInfo(g).forEach((x) => {
-      cells[x].classList.add(fillTypes[i]);
-    });
-  });
+  const k = [g, sg].map((v) => decodeInkInfo(v).map(convertNumGrit));
+  const svgText = render(gridTemplate, { g: k[0], sg: k[1] });
+  const grid = $dom(`<img src="${svgToDataURI(svgText)}" class="pointer-events-none" style="height:105px;width:105px;">`);
   return grid;
+}
+
+function convertNumGrit(num: number) {
+  return { x: num % 8 * 14, y: ~~(num / 8) * 14 };
+}
+function svgToDataURI(svgText: string) {
+  return "data:image/svg+xml," + encodeURIComponent(svgText);
 }
