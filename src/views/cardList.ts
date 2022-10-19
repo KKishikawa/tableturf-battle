@@ -20,11 +20,11 @@ import {
   getDeckInfoByRowIdx,
   replaceDeckInfo,
 } from "@/components/deck";
-import saveDeckButtonHTML from "@/template/views/saveDeck.html";
-import clearButtonHTML from "@/template/views/clearBtn.html";
-import saveDeckDialogBodyHTML from "@/template/views/saveDeckDialogBody.html";
-import deleteConfHtml from "@/template/views/deleteConf.html";
-import loadConfHtml from "@/template/views/deckLoadConf.html";
+import saveDeckButtonHTML from "@/template/views/saveDeck.template.html";
+import clearButtonHTML from "@/template/views/clearBtn.template.html";
+import saveDeckDialogBodyHTML from "@/template/views/saveDeckDialogBody.template.html";
+import deleteConfHtml from "@/template/views/deleteConf.template.html";
+import loadConfHtml from "@/template/views/deckLoadConf.template.html";
 import { showShareMsg } from "@/components/deckShare";
 
 const SelTrAttr = "selected";

@@ -1,7 +1,7 @@
 import { render } from "mustache";
 import { $dom } from "@/utils";
 import { decodeInkInfo } from "@/models/card";
-import gridTemplate from "@/template/cardGrid/grid.svg";
+import gridTemplate from "@/template/cardGrid/grid.template.svg";
 
 /** カードの塗り範囲をグリッド表現 */
 export function createCardGrid(

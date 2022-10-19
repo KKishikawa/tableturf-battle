@@ -1,6 +1,6 @@
 import { render } from "mustache";
 import { $dom } from "@/utils";
-import deckRowHTML from "@/template/deck/deckRow.html";
+import deckRowHTML from "@/template/deck/deckRow.template.html";
 import { IDeck } from "@/models/card";
 import { writeVariableRecord } from "@/utils/variableRecord";
 

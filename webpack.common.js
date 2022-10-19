@@ -3,23 +3,28 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const webpackPackPwaManifest = require('webpack-pwa-manifest');
 const CopyPlugin = require('copy-webpack-plugin');
+
+const srcDir = path.resolve(__dirname, "src");
+
 /** @type {import('webpack').Configuration} */
 module.exports = {
-  entry: './src/index.ts',
+  entry: srcDir + '/index.ts',
   mode: 'development',
   devtool: 'source-map',
   optimization: {
     usedExports: true
   },
   output: {
+    publicPath : "",
     filename: '[name].[contenthash].js',
     path: path.resolve(__dirname, 'dist')
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
     alias: {
-      "@": path.resolve(__dirname, "src")
+      "@": srcDir
     }
   },
   module: {
@@ -36,10 +41,10 @@ module.exports = {
         }
       },
       {
-        test: /\.(html|svg)$/,
+        test: /\.template\.(html|svg)$/,
         use: [{
           loader: "html-loader",
-        }]
+        }],
       },
       {
         test: /\.p?css$/,
@@ -50,10 +55,29 @@ module.exports = {
           'css-loader',
           'postcss-loader',
         ]
+      },
+      {
+        test: /\.(?<!template\.)(svg|png|jpe?g)$/,
+        use: [
+          "file-loader",
+        ]
       }
     ]
   },
   plugins: [
+    new webpackPackPwaManifest({
+      short_name: "ナワバトラービルダー",
+      name: "非公式 ナワバトラーデッキビルダー",
+      display: "standalone",
+      start_url: ".",
+      icons: [{
+        src: srcDir + "/assets/img/icon-192.png",
+        sizes: "192x192",
+      }, {
+        src: srcDir + "/assets/img/icon-512.png",
+        sizes: "512x512",
+      }],
+    }),
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
       // both options are optional
@@ -61,12 +85,13 @@ module.exports = {
       chunkFilename: '[id].css'
     }),
     new HtmlWebpackPlugin({
-      template: './src/index.html'
+      template: srcDir + '/index.html',
+      favicon: srcDir + "/assets/favicon.ico"
     }),
     new ForkTsCheckerWebpackPlugin(),
     new CopyPlugin({
-      // copy asset to dist folder
-      patterns: [{ from: 'src/static', to: '.' }]
+      // copy static to dist folder
+      patterns: [{ from: './static', to: '.' }]
     }),
   ]
 };
