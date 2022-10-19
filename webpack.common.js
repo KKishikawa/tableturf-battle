@@ -66,7 +66,7 @@ module.exports = {
     new ForkTsCheckerWebpackPlugin(),
     new CopyPlugin({
       // copy asset to dist folder
-      patterns: [{ from: 'src/assets', to: 'assets' }]
+      patterns: [{ from: 'src/static', to: '.' }]
     }),
   ]
 };
