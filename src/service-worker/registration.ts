@@ -2,6 +2,8 @@ import { Workbox } from "workbox-window";
 import { confirm } from "@/components/dialog";
 
 export default function registerServiceWorker() {
+  // break if not production
+  if (process.env.NODE_ENV !== "production") return;
   // Check if the serviceWorker Object exists in the navigator object ( means if browser supports SW )
   if ("serviceWorker" in navigator) {
     const wb = new Workbox("sw.js");
