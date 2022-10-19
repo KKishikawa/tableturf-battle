@@ -10,7 +10,7 @@ export function createCardGrid(
 ) {
   const k = [g, sg].map((v) => decodeInkInfo(v).map(convertNumGrit));
   const svgText = render(gridTemplate, { g: k[0], sg: k[1] });
-  const grid = $dom<HTMLImageElement>(`<img draggable="false">`);
+  const grid = $dom<HTMLImageElement>(`<img draggable=false width=97 height=97>`);
   grid.src = svgToDataURI(svgText);
   return grid;
 }

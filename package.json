@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest",
     "build": "cross-env NODE_ENV=production webpack --config webpack.prod.js",
+    "build:stage": "cross-env NODE_ENV=production webpack --config webpack.stage.js",
     "analyze": "cross-env NODE_ENV=production webpack --config webpack.prod.js --analyze",
     "serve": "webpack serve --open --config webpack.dev.js",
     "start": "http-server dist"
