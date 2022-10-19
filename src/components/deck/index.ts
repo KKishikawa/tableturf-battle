@@ -1,8 +1,8 @@
 import { render } from "mustache";
 import { $dom } from "@/utils";
-import deckRowHTML from "@/template/deck/deckRow.template.html";
 import { IDeck } from "@/models/card";
 import { writeVariableRecord } from "@/utils/variableRecord";
+import deckRowHTML from "./deckRow.template.html";
 
 /** デッキを追加します  */
 export function addDeck(...deck: IDeck[]) {

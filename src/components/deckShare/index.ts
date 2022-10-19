@@ -2,7 +2,7 @@ import { render } from "mustache";
 import * as dialog from "@/components/dialog";
 import * as Message from "@/components/message";
 import { createShareURL } from "@/models/card";
-import shareBodyHTML from "@/template/deckShare/shareBody.template.html";
+import shareBodyHTML from "./shareBody.template.html";
 
 /** デッキ共有用のメッセージを表示する */
 export function showShareMsg(code: string) {

@@ -1,6 +1,6 @@
 import { $dom } from "@/utils";
 import { render } from "mustache";
-import dialogHTML from "@/template/dialog/dialog.template.html";
+import dialogHTML from "./dialog.template.html";
 
 const closeModalWrapperStyle = ["opacity-0"];
 const closeModalStyle = ["scale-0"];
