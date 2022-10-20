@@ -14,6 +14,7 @@ import { ModalDialog } from "@/components/dialog";
 import tableHTML from "./table.template.html";
 import tableRowHTML from "./row.template.html";
 import deckInfoHTML from "./deckInfoModalBody.template.html";
+import { showShareMsg } from "../deckShare";
 
 interface IinternalSortRowInfo {
   row: HTMLElement;
@@ -208,7 +209,7 @@ export class DeckInfo extends CardList {
       const sps = _sp
         .map((g) => ({ k: g[0], v: toStyleHeightLiteral((g[1] * 100) / spMax) }))
         .sort((a, b) => a.k - b.k);
-      new ModalDialog({
+      const modal = new ModalDialog({
         title: "デッキ情報",
         bodyHTML: render(deckInfoHTML, {
           count: allInfo.length,
@@ -216,6 +217,9 @@ export class DeckInfo extends CardList {
           gcs,
           sps,
         }),
+      });
+      modal.element.querySelector(`[data-action="share"]`)?.addEventListener("click", function () {
+        showShareMsg(encodeDeckCode(allInfo.map(info => info.n)));
       });
     };
   }
