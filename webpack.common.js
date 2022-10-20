@@ -58,9 +58,7 @@ module.exports = {
       },
       {
         test: /\.(?<!template\.)(svg|png|jpe?g)$/,
-        use: [
-          "file-loader",
-        ]
+        type: "asset/resource",
       }
     ]
   },
