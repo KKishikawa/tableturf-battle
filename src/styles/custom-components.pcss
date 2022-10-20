@@ -20,7 +20,9 @@
   }
 }
 .cardlist_table {
-  @apply w-full text-sm text-left text-gray-500 dark:text-gray-400;
+  @apply relative flex-grow flex-shrink-0 overflow-y-scroll w-full text-sm text-left text-gray-500 dark:text-gray-400;
+  min-height: 450px;
+  height: calc(100vh - 250px);
 }
 .cardlist_table_head {
   @apply text-xs text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400;
@@ -165,7 +167,7 @@
     @apply flex flex-wrap gap-2 py-2;
   }
   .cardlist_table_row {
-    @apply inline-grid drop-shadow-md shadow-black border-gray-400 dark:border-gray-700 dark:shadow-white grid-cols-8 w-40 row-auto border-2 rounded-lg p-1;
+    @apply inline-grid transform-cpu drop-shadow-md shadow-black border-gray-400 dark:border-gray-700 dark:shadow-white grid-cols-8 w-40 row-auto border-2 rounded-lg p-1;
   }
   .cardlist_table_item {
     @apply block border-none px-1 py-0;
