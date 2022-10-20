@@ -17,8 +17,9 @@ export function $dom<T extends HTMLElement>(html: string): T {
   return template.content.firstChild as T;
 }
 export function mesureWidth(str: string, className?: string) {
-  const div = document.createElement("div");
+  const div = document.createElement("span");
   div.className = "fixed h-0";
+  div.style.cssText = "nowrap";
   if (className != null) {
     div.className += " " + className;
   }
