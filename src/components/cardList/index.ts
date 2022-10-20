@@ -16,7 +16,7 @@ import tableRowHTML from "./row.template.html";
 import deckInfoHTML from "./deckInfoModalBody.template.html";
 
 interface IinternalSortRowInfo {
-  row: HTMLTableRowElement;
+  row: HTMLElement;
   info: ICard;
   gcount: number;
 }
@@ -44,7 +44,7 @@ export class CardList {
     this.wrapper = $dom(
       render(tableHTML, { srch: option.search, title: option.title })
     );
-    this.body = this.wrapper.querySelector("tbody")!;
+    this.body = this.wrapper.querySelector(".cardlist_table_body")!;
     this.srch = option.search;
     {
       // レイアウト変更ボタン
@@ -52,7 +52,7 @@ export class CardList {
         this.wrapper.querySelectorAll<HTMLElement>("[data-button_type]");
       layoutButtons.forEach((el) => {
         el.addEventListener("click", (e) => {
-          const table = this.wrapper.querySelector("table") as HTMLTableElement;
+          const table = this.wrapper.querySelector("[data-layout]") as HTMLTableElement;
           layoutButtons.forEach((el) => el.classList.remove("button-active"));
           const button = e.currentTarget as HTMLButtonElement;
           button.classList.add("button-active");
@@ -99,8 +99,8 @@ export class CardList {
     }
   }
   findRowByNo(card_no: number) {
-    return this.body.querySelector<HTMLTableRowElement>(
-      `tr[data-card_no="${card_no}"]`
+    return this.body.querySelector<HTMLElement>(
+      `[data-card_no="${card_no}"]`
     );
   }
   addRow(...cards: ICard[]) {
@@ -116,9 +116,9 @@ export class CardList {
     this.findRowByNo(card_no)?.remove();
   }
   /** リストをフィルター/ソートします */
-  filterSortRow(...added: HTMLTableRowElement[]) {
+  filterSortRow(...added: HTMLElement[]) {
     const trs = [
-      ...(this.body.children as HTMLCollectionOf<HTMLTableRowElement>),
+      ...(this.body.children as HTMLCollectionOf<HTMLElement>),
       ...added,
     ];
     const infoR = generateSortRowInfo(trs);
@@ -151,8 +151,8 @@ export class CardList {
       this.body.append(infos.row);
     });
   }
-  checkRow(tr?: HTMLTableRowElement) {
-    const tableRows = [...this.body.childNodes] as HTMLTableRowElement[];
+  checkRow(tr?: HTMLElement) {
+    const tableRows = [...this.body.childNodes] as HTMLElement[];
     tableRows.forEach((row) => {
       if (row == tr) {
         tr.dataset["selected"] = "1";
@@ -174,7 +174,7 @@ export class DeckInfo extends CardList {
     ) as HTMLElement;
     btnDeckInfo.onclick = () => {
       const allInfo = [
-        ...(this.body.children as HTMLCollectionOf<HTMLTableRowElement>),
+        ...(this.body.children as HTMLCollectionOf<HTMLElement>),
       ].map((tr) => {
         const c = getCardRowInfo(tr);
         const gcount = inkCount(c.g, c.sg);
@@ -227,7 +227,7 @@ export class DeckInfo extends CardList {
     super.addRow(...cards);
     this.showCount();
   }
-  removeRow(row: HTMLTableRowElement) {
+  removeRow(row: HTMLElement) {
     row.remove();
     this.showCount();
   }
@@ -256,7 +256,7 @@ export class DeckInfo extends CardList {
 }
 
 function generateSortRowInfo(
-  trs: HTMLTableRowElement[]
+  trs: HTMLElement[]
 ): IinternalSortRowInfo[] {
   return trs.map((row) => {
     const info = getCardRowInfo(row);
@@ -330,7 +330,7 @@ function getSortRow(orderType: string): sortJudgeFunc {
 }
 
 /** 行の内容からカードの情報に変換する */
-export function getCardRowInfo(tr: HTMLTableRowElement): ICard {
+export function getCardRowInfo(tr: HTMLElement): ICard {
   const card_no = toInt(tr.dataset["card_no"]);
   const card_sp = toInt(tr.querySelector(".card_sp")!.textContent?.trim());
   const card_name = tr.querySelector(".card_name")!.textContent!.trim();
@@ -366,5 +366,5 @@ function createCardRow(cardInfo: ICard, notDeck: boolean) {
   }
   const cardGrid = createCardGrid(cardInfo.g, cardInfo.sg);
   row.querySelector(".grid__wrapper")!.prepend(cardGrid);
-  return row as HTMLTableRowElement;
+  return row as HTMLElement;
 }

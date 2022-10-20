@@ -1,13 +1,14 @@
-<tr
+<li
+  class="cardlist_table_row"
   data-card_no="{{n}}"
   data-card_rarity="{{r}}"
   data-card_spx="{{sg}}"
   data-card_px="{{g}}"
 >
-  <td class="card_grid">
+  <div class="cardlist_table_item card_grid">
     <div class="grid__wrapper"></div>
-  </td>
-  <td class="card_no" title="ナンバー">
+  </div>
+  <div class="cardlist_table_item card_no" title="ナンバー">
     <div class="flex items-center">
       {{#notDeck}}
       <i class="hidden icon-check fa-regular fa-circle-check"></i>
@@ -15,17 +16,17 @@
       <span></span>
       <span class="value">{{n}}</span>
     </div>
-  </td>
-  <td class="card_gridcount" title="マス数">{{gridCount}}</td>
-  <td class="card_sp" title="スペシャルポイント">
+  </div>
+  <div class="cardlist_table_item card_gridcount" title="マス数">{{gridCount}}</div>
+  <div class="cardlist_table_item card_sp" title="スペシャルポイント">
     <div class="inline-block sp-fill"></div>
     <i class="mx-1 fa fa-xmark"></i><span>{{sp}}</span>
-  </td>
-  <td class="card_rarity" title="レア度">
+  </div>
+  <div class="cardlist_table_item card_rarity" title="レア度">
     <div class="rarity_label"><span>{{rarity}}</span></div>
-  </td>
-  <td class="card_name" title="カード名"><span>{{ja}}</span></td>
-  <td class="card_action">
+  </div>
+  <div class="cardlist_table_item card_name" title="カード名"><span>{{ja}}</span></div>
+  <div class="cardlist_table_item card_action">
     {{#notDeck}}
     <button
       class="button-add button button-xs button-primary"
@@ -40,5 +41,5 @@
     >
       <i class="fa fa-trash-can"></i>
     </button>
-  </td>
-</tr>
+  </div>
+</li>

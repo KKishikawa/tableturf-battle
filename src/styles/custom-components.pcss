@@ -19,7 +19,15 @@
     }
   }
 }
-
+.cardlist_table {
+  @apply w-full text-sm text-left text-gray-500 dark:text-gray-400;
+}
+.cardlist_table_head {
+  @apply text-xs text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400;
+}
+.cardlist_table_row {
+  @apply bg-white border-b dark:bg-gray-900 dark:border-gray-700;
+}
 .card_grid {
   @apply px-0;
 }
@@ -62,54 +70,70 @@
   @apply !bg-blue-100 dark:!bg-blue-600 dark:!bg-opacity-20;
 }
 [data-layout="table"] {
+  .cardlist_table_head {
+    @apply flex sticky top-0 z-10 py-1 items-center;
+  }
+  .cardlist_table_body {
+    @apply block;
+  }
+  .cardlist_table_row {
+    @apply flex flex-nowrap w-full items-center;
+    &:hover,
+    &:active {
+      .grid__wrapper {
+        @apply block absolute -top-11 left-8 w-max p-1 bg-gray-600 dark:bg-gray-800;
+      }
+    }
+    &:first-child {
+      .grid__wrapper {
+        @apply -top-4 bottom-auto;
+      }
+    }
+    &:last-child {
+      .grid__wrapper {
+        @apply -bottom-4 top-auto;
+      }
+    }
+    &:hover {
+      @apply bg-gray-100 dark:bg-gray-600;
+    }
+    &[data-selected="1"]:hover {
+      @apply bg-blue-200 dark:bg-blue-700 dark:bg-opacity-30;
+    }
+  }
+  .cardlist_table_item {
+    @apply p-2;
+  }
   .grid__wrapper {
     @apply hidden absolute z-10;
   }
   .card_grid {
-    @apply relative;
+    @apply relative p-0;
   }
-  tr {
-    &:hover,
-    &:active {
-      .grid__wrapper {
-        @apply block absolute -bottom-8 left-8 w-max p-1 bg-gray-600 dark:bg-gray-800;
-      }
-    }
-  }
-  tr:first-child {
-    .grid__wrapper {
-      @apply -top-6 bottom-auto;
-    }
-  }
-  tr:last-child {
-    .grid__wrapper {
-      @apply bottom-0 top-auto;
-    }
-  }
-  thead {
-    @apply sticky top-0 z-10;
-  }
-  tr:hover {
-    td {
-      @apply bg-gray-100 dark:bg-gray-600;
-    }
-  }
-  [data-selected="1"]:hover {
-    td {
-      @apply bg-blue-200 dark:bg-blue-700 dark:bg-opacity-30;
-    }
+  .col-no,
+  .card_no {
+    @apply w-16 xl:w-28;
   }
   .card_no > * {
     @apply justify-between;
   }
-  .card_sp {
-    @apply text-center;
-  }
-  .card_name {
-    @apply text-start;
+  .col-gridcount,
+  .card_gridcount {
+    @apply w-14 md:w-16;
   }
   .card_gridcount {
     @apply text-end;
+  }
+  .col-sp,
+  .card_sp {
+    @apply w-16 md:w-24;
+  }
+  .card_sp {
+    @apply text-center;
+  }
+  .col-rarity,
+  .card_rarity {
+    @apply w-2 sm:w-20 md:w-1 lg:w-20;
   }
   .card_rarity {
     @apply text-center px-0 text-xs;
@@ -120,25 +144,30 @@
       @apply hidden sm:inline md:hidden lg:inline;
     }
   }
+  .col-name,
+  .card_name {
+    @apply pl-2 text-start flex-grow;
+  }
+  .col-action,
+  .card_action {
+    @apply w-14;
+  }
   .card_action {
     @apply text-center;
   }
 }
 [data-layout="grid"] {
   @apply block;
-  caption {
-    @apply block;
-  }
-  thead {
+  .cardlist_table_head {
     @apply hidden;
   }
-  tbody {
+  .cardlist_table_body {
     @apply flex flex-wrap gap-2 py-2;
   }
-  tr {
-    @apply inline-grid drop-shadow-md shadow-black dark:shadow-white grid-cols-8 w-40 row-auto border-2 rounded-lg p-1;
+  .cardlist_table_row {
+    @apply inline-grid drop-shadow-md shadow-black border-gray-400 dark:border-gray-700 dark:shadow-white grid-cols-8 w-40 row-auto border-2 rounded-lg p-1;
   }
-  td {
+  .cardlist_table_item {
     @apply block border-none px-1 py-0;
   }
   .card_no {
@@ -155,19 +184,16 @@
     @apply px-1;
   }
   [data-card_rarity="0"] {
-    @apply border-gray-600;
     .card_gridcount {
       @apply after:bg-violet-600 after:border-violet-900;
     }
   }
   [data-card_rarity="1"] {
-    @apply border-amber-500;
     .card_gridcount {
       @apply after:bg-gradient-to-b after:from-yellow-500 after:via-amber-700   after:to-yellow-700 after:border-amber-900;
     }
   }
   [data-card_rarity="2"] {
-    @apply border-purple-600;
     .card_gridcount {
       @apply after:bg-gradient-to-b after:from-pink-400 after:via-blue-600 after:to-cyan-400 after:border-blue-800;
     }
@@ -182,7 +208,7 @@
     @apply -order-9 col-span-full place-self-center;
   }
   .card_gridcount {
-    @apply -order-5 p-0 w-9 h-9 flex items-center justify-center col-span-2 relative z-10 text-center text-white text-base after:-z-10 after:-rotate-45 after:absolute after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:w-6 after:h-6 after:border-2 after:rounded-sm;
+    @apply -order-5 p-0 w-9 h-9 flex items-center justify-center col-span-2 relative z-10 text-center text-white font-medium text-base after:-z-10 after:-rotate-45 after:absolute after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:w-6 after:h-6 after:border-2 after:rounded-sm;
   }
   .card_sp {
     @apply -order-3 col-span-3 mt-1 flex items-center;

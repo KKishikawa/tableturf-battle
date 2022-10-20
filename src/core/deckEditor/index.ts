@@ -62,18 +62,19 @@ function loadDeck(code: string | null | undefined, id?: string) {
 }
 
 {
+  const rowClassName = "cardlist_table_row";
   // カードクリック
   cardListManager.body.addEventListener("click", (e) => {
     if (!e.target) return;
     const el = e.target as HTMLElement;
     window.setTimeout(() => {
       if (el.closest(".button-add")) {
-        const row = el.closest("tr")!;
+        const row = el.closest<HTMLElement>("." + rowClassName)!;
         const info = getCardRowInfo(row);
         deckEditManager.addRow(info);
         row.dataset[SelTrAttr] = "1";
       } else if (el.closest(".button-delete")) {
-        const row = el.closest("tr")!;
+        const row = el.closest<HTMLElement>("." + rowClassName)!;
         const no = toInt(row.dataset["card_no"]);
         deckEditManager.removeRowByNo(no);
         row.dataset[SelTrAttr] = "";
@@ -85,7 +86,7 @@ function loadDeck(code: string | null | undefined, id?: string) {
     const el = e.target as HTMLElement;
     window.setTimeout(() => {
       if (el.closest(".button-delete")) {
-        const row = el.closest("tr")!;
+        const row = el.closest<HTMLElement>("." + rowClassName)!;
         const no = toInt(row.dataset["card_no"]);
         const r = cardListManager.findRowByNo(no);
         if (r) r.dataset[SelTrAttr] = "";
