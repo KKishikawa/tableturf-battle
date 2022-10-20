@@ -1,0 +1,2 @@
+import "./tailwindTheme";
+import "./globalEvents";

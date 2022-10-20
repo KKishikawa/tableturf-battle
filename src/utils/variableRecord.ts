@@ -48,7 +48,7 @@ export function writeVariableRecord(
 ): string {
   if (!record || record.length < 1) return "";
   const writer = new VariableRecordWriter();
-  record.forEach(r => writer.write(r));
+  record.forEach((r) => writer.write(r));
   return writer.data.join("");
 }
 

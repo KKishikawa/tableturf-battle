@@ -1,6 +1,6 @@
 import { render } from "mustache";
 import { $dom } from "@/utils";
-import { IDeck } from "@/models/card";
+import { IDeck, saveToLS } from "@/models/card";
 import { writeVariableRecord } from "@/utils/variableRecord";
 import deckRowHTML from "./deckRow.template.html";
 
@@ -39,6 +39,13 @@ export function allDeckInfo(): IDeck[] {
     "#created_decks tbody tr:not(.nocontent)"
   );
   return [...trs].map(deckInfoFromRow);
+}
+/** デッキをlocalstrageに保存する */
+export function saveDeckToLS() {
+  window.setTimeout(() => {
+    const decks = allDeckInfo();
+    saveToLS(decks);
+  });
 }
 /** デッキIDを作成する */
 export function generateDeckId() {

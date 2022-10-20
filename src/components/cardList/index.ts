@@ -152,7 +152,7 @@ export class CardList {
     });
   }
   checkRow(tr?: HTMLTableRowElement) {
-    const tableRows = Array.from(this.body.childNodes) as HTMLTableRowElement[];
+    const tableRows = [...this.body.childNodes] as HTMLTableRowElement[];
     tableRows.forEach((row) => {
       if (row == tr) {
         tr.dataset["selected"] = "1";
@@ -225,17 +225,17 @@ export class DeckInfo extends CardList {
   }
   addRow(...cards: ICard[]): void {
     super.addRow(...cards);
-    this.updateCount();
+    this.showCount();
   }
   removeRow(row: HTMLTableRowElement) {
     row.remove();
-    this.updateCount();
+    this.showCount();
   }
   /** デッキの枚数をカウントします */
   getCount() {
     return this.body.childElementCount;
   }
-  updateCount() {
+  showCount() {
     const count = this.getCount();
     let icon = "";
     if (count > 15) {

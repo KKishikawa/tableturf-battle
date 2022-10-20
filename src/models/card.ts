@@ -75,7 +75,7 @@ export const availableSP = [
 
 const stragekey = "tableturf_deckV0";
 /** ローカルストレージにデッキを保存します */
-export function savetToLS(data: IDeck[]) {
+export function saveToLS(data: IDeck[]) {
   setToStrage(stragekey, data);
 }
 /** ローカルストレージから保存済みデッキを読み込みます */
