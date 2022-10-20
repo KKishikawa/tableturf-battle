@@ -60,7 +60,7 @@ export default function () {
       const radioBtn = radios.find((el) => el.dataset["id"] == id);
       if (radioBtn) {
         radioBtn.checked = true;
-        radioBtn.onchange!(new Event(""));
+        radioBtn.dispatchEvent(new Event("change"));
       }
     });
   }
