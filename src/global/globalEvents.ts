@@ -20,6 +20,8 @@ document.body.addEventListener("click", function (e) {
       if (!input) return;
       input.value = "";
       clearableWrapper.dataset["clearable"] = "";
+      const form = clearableWrapper.closest("form");
+      if (form) form.dispatchEvent(new Event("submit"));
     }
     let el: HTMLElement | null;
     if (el = c.closest(".expand-button")) {

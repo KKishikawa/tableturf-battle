@@ -10,7 +10,7 @@ import { loadFromQuery } from "@/models/card";
   e.preventDefault();
   const input = this.getElementsByTagName("input")[0];
   if (!isValidString(input.value)) {
-    Message.warn("デッキコードが指定されていません。");
+    console.log("デッキコードが指定されていません。");
     return;
   }
   try {
