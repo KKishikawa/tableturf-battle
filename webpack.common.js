@@ -68,7 +68,8 @@ module.exports = {
       name: "非公式 ナワバトラーデッキビルダー",
       display: "standalone",
       start_url: ".",
-      theme_color: "#6e68d8",
+      background_color: "#f3f4f6",
+      theme_color: "#7adff4",
       icons: [{
         src: srcDir + "/assets/img/icon-192.png",
         sizes: "192x192",
