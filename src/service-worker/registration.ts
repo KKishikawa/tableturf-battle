@@ -16,7 +16,8 @@ export default function registerServiceWorker() {
        */
       if (event.isUpdate) {
         confirm({
-          title: `アプリケーションが更新されました。OKをクリックすると画面を再読み込みします。`,
+          title: "更新通知",
+          html: `アプリケーションが更新されました。<br />OKをクリックすると画面を再読み込みします。`,
         }).then(() => {
           window.location.reload();
         });
