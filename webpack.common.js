@@ -64,10 +64,11 @@ module.exports = {
   },
   plugins: [
     new webpackPackPwaManifest({
-      short_name: "ナワバトラービルダー",
+      short_name: "ナワバトビルド",
       name: "非公式 ナワバトラーデッキビルダー",
       display: "standalone",
       start_url: ".",
+      theme_color: "#6e68d8",
       icons: [{
         src: srcDir + "/assets/img/icon-192.png",
         sizes: "192x192",
