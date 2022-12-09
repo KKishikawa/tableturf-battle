@@ -4,30 +4,30 @@ import * as Message from "@/components/message";
 import { loadFromQuery } from "@/models/card";
 
 // デッキコード読み込み
-(
-  document.getElementById("form_deckCodeLoad") as HTMLFormElement
-).addEventListener("submit", function (e) {
-  e.preventDefault();
-  const input = this.getElementsByTagName("input")[0];
-  if (!isValidString(input.value)) {
-    console.log("デッキコードが指定されていません。");
-    return;
-  }
-  try {
-    loadDeck(input.value);
-    this.reset();
-    const clearableWrapper = input.closest("[data-clearable]") as HTMLElement;
-    clearableWrapper.dataset["clearable"] = "";
-    if (window.DeckEditManager.getCount() < 1) {
-      Message.warn("デッキコードが正しくありません。");
-    } else {
-      Message.success("デッキを読み込みました。");
+{
+  const deckCordForm = document.getElementById("form_deckCodeLoad") as HTMLFormElement;
+  deckCordForm.onsubmit = function (e) {
+    e.preventDefault();
+    const input = deckCordForm.getElementsByTagName("input")[0];
+    if (!isValidString(input.value)) {
+      console.log("デッキコードが指定されていません。");
+      return;
     }
-  } catch (error) {
-    Message.error("デッキの読み込みに失敗しました。");
-  }
-});
-
+    try {
+      loadDeck(input.value);
+      deckCordForm.reset();
+      const clearableWrapper = input.closest("[data-clearable]") as HTMLElement;
+      clearableWrapper.dataset["clearable"] = "";
+      if (window.DeckEditManager.getCount() < 1) {
+        Message.warn("デッキコードが正しくありません。");
+      } else {
+        Message.success("デッキを読み込みました。");
+      }
+    } catch (error) {
+      Message.error("デッキの読み込みに失敗しました。");
+    }
+  };
+}
 
 {
   // urlからデッキを読み込む

@@ -73,10 +73,10 @@ export class CardList {
       const form = this.wrapper.querySelector(
         ".cardlist_serch"
       ) as HTMLFormElement;
-      form.addEventListener("submit", (e) => {
+      form.onsubmit = (e) => {
         e.preventDefault();
         this.filterSortRow();
-      });
+      };
       form.querySelectorAll(".input-clear").forEach((el) =>
         el.addEventListener("click", () => {
           setTimeout(() => {
