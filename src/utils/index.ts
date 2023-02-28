@@ -18,14 +18,16 @@ export function $dom<T extends HTMLElement>(html: string): T {
 }
 export function mesureWidth(str: string, className?: string) {
   const div = document.createElement("div");
-  div.className = "fixed h-0";
-  div.style.cssText = "nowrap";
+  div.className = "fixed invisible"
   if (className != null) {
     div.className += " " + className;
   }
-  div.innerText = str;
+  const p = document.createElement("p");
+  p.innerText = str;
+  div.append(p);
   document.body.append(div);
-  const w = div.clientWidth;
+  const w = p.clientWidth;
+  console.log(w);
   div.remove();
   return w;
 }
