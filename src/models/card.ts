@@ -64,7 +64,7 @@ export function encodeDeckCode(cards: number[]) {
 /** ファイルからカードリスト情報を読み込みます */
 export function getCardList() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  return require("@/../data/v.2.0.0.json") as ICardData;
+  return require("@/../data/v.3.0.0.json") as ICardData;
 }
 export const availableInkCount = [
   ...new Set(getCardList().c.map((c) => inkCount(c.g, c.sg))),
