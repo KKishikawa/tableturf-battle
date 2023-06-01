@@ -27,7 +27,6 @@ export function mesureWidth(str: string, className?: string) {
   div.append(p);
   document.body.append(div);
   const w = p.clientWidth;
-  console.log(w);
   div.remove();
   return w;
 }
