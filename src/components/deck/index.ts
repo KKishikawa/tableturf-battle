@@ -50,6 +50,5 @@ export function saveDeckToLS() {
 /** デッキIDを作成する */
 export function generateDeckId() {
   const c = writeVariableRecord([new Date().valueOf()]);
-  console.log(c);
   return c;
 }
