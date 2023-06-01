@@ -19,7 +19,7 @@ module.exports = {
   output: {
     publicPath : "",
     filename: '[name].[contenthash].js',
-    path: path.resolve(__dirname, 'dist')
+    path: path.resolve(__dirname, 'dist'),
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
@@ -86,7 +86,9 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       template: srcDir + '/index.html',
-      favicon: srcDir + "/assets/favicon.ico"
+      favicon: srcDir + "/assets/favicon.ico",
+      inject: "body",
+      scriptLoading: "blocking",
     }),
     new ForkTsCheckerWebpackPlugin(),
     new CopyPlugin({
