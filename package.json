@@ -12,7 +12,7 @@
     "start": "http-server dist"
   },
   "devDependencies": {
-    "@types/jest": "^29.0.3",
+    "@types/jest": "^29.5.4",
     "@types/mustache": "^4.2.1",
     "@typescript-eslint/eslint-plugin": "^5.39.0",
     "@typescript-eslint/parser": "^5.39.0",
@@ -27,7 +27,7 @@
     "html-loader": "^4.2.0",
     "html-webpack-plugin": "^5.5.0",
     "http-server": "^14.1.1",
-    "jest": "^29.0.3",
+    "jest": "^29.6.4",
     "mini-css-extract-plugin": "^2.6.1",
     "postcss": "^8.4.17",
     "postcss-import": "^15.0.0",
