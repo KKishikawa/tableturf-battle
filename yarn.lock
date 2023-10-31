@@ -1987,10 +1987,10 @@
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-5.1.2.tgz#07508b45797cb81ec3f273011b054cd0755eddca"
   integrity sha512-K0VQKziLUWkVKiRVrx4a40iPaxTUefQmjtkQofBkYRcoaaL/8rhwDWww9qWbrgicNOgnpIsMxyNIUM4+n6dUIA==
 
-"@types/mustache@^4.2.2":
-  version "4.2.2"
-  resolved "https://registry.yarnpkg.com/@types/mustache/-/mustache-4.2.2.tgz#825bf5c214c3ab84d0b23fef2c8eb898f3ff8717"
-  integrity sha512-MUSpfpW0yZbTgjekDbH0shMYBUD+X/uJJJMm9LXN1d5yjl5lCY1vN/eWKD6D1tOtjA6206K0zcIPnUaFMurdNA==
+"@types/mustache@^4.2.4":
+  version "4.2.4"
+  resolved "https://registry.yarnpkg.com/@types/mustache/-/mustache-4.2.4.tgz#74d37210e1467edd705a0959ba46dc5dc22c3815"
+  integrity sha512-5DK8oX+pyEJm8Arm57Ut2R4KCeDuNQhLAuU04IgaKB7nYsFYzhpWqSoFnp7kCtVG7wXKftnaEJIyUFTVvSkkzw==
 
 "@types/node@*":
   version "18.7.18"
