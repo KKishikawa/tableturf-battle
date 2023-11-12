@@ -12,7 +12,7 @@
     "start": "http-server dist"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.7",
+    "@types/jest": "^29.5.8",
     "@types/mustache": "^4.2.5",
     "@typescript-eslint/eslint-plugin": "^6.9.1",
     "@typescript-eslint/parser": "^6.10.0",
