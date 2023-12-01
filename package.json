@@ -42,7 +42,7 @@
     "webpack-bundle-analyzer": "^4.10.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1",
-    "webpack-pwa-manifest": "^4.3.0",
+    "webpack-pwa-manifest": "^4.0.0",
     "workbox-sw": "^7.0.0",
     "workbox-webpack-plugin": "^7.0.0"
   },
