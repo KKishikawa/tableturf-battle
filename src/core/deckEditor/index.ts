@@ -135,11 +135,14 @@ function loadDeck(code: string | null | undefined, id?: string) {
         title: "デッキ内容のクリア",
         message: "編集中のデッキの内容をクリアしますか？",
       })
-      .then(() => {
-        // 空情報を読み込ませる
-        loadDeck(null);
-        Message.success("編集中のデッキをクリアしました。");
-      });
+      .then(
+        () => {
+          // 空情報を読み込ませる
+          loadDeck(null);
+          Message.success("編集中のデッキをクリアしました。");
+        },
+        () => {}
+      );
   };
   btnWrapper.append(saveButton);
   btnWrapper.append(clearButton);
