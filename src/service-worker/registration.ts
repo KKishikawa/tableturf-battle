@@ -18,9 +18,12 @@ export default function registerServiceWorker() {
         confirm({
           title: "更新通知",
           html: `アプリケーションが更新されました。<br />OKをクリックすると画面を再読み込みします。`,
-        }).then(() => {
-          window.location.reload();
-        });
+        }).then(
+          () => {
+            window.location.reload();
+          },
+          () => {}
+        );
       }
     });
     wb.register();

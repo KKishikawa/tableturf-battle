@@ -86,14 +86,17 @@ export default function () {
           title: "上書きの確認",
           message: `${info.t}　を上書きしますが、よろしいですか？`,
         })
-        .then(() => {
-          const newDeckInfo = getSaveInfo(info.id);
-          replaceDeckInfo(selected, newDeckInfo);
-          saveDeckToLS();
-          window.DeckEditManager.body.dataset["id"] = newDeckInfo.id;
-          Message.success("上書き保存しました。");
-          saveDialog.closeModal(true);
-        });
+        .then(
+          () => {
+            const newDeckInfo = getSaveInfo(info.id);
+            replaceDeckInfo(selected, newDeckInfo);
+            saveDeckToLS();
+            window.DeckEditManager.body.dataset["id"] = newDeckInfo.id;
+            Message.success("上書き保存しました。");
+            saveDialog.closeModal(true);
+          },
+          () => {}
+        );
     } else {
       // 新規作成
       const newDeckInfo = getSaveInfo();
