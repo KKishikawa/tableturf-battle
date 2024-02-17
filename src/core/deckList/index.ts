@@ -1,10 +1,10 @@
-import { render } from "mustache";
+import mustache from "mustache";
 import * as dialog from "@/components/dialog";
 import * as Message from "@/components/message";
 import { addDeck, deckInfoFromRow, saveDeckToLS } from "@/components/deck";
 import { loadFromLS } from "@/models/card";
-import deleteConfHtml from "./deleteConf.template.html";
-import loadConfHtml from "./deckLoadConf.template.html";
+import deleteConfHtml from "./deleteConf.html.mustache?raw";
+import loadConfHtml from "./deckLoadConf.html.mustache?raw";
 import { loadDeck } from "@/utils/core";
 import { isValidString } from "@/utils";
 import { showShareMsg } from "@/components/deckShare";
@@ -33,7 +33,7 @@ tbody.addEventListener("click", function (e) {
             const ret = await dialog
               .confirm({
                 title: "デッキ読み込み",
-                html: render(loadConfHtml, info),
+                html: mustache.render(loadConfHtml, info),
               })
               .then(
                 () => true,
@@ -55,7 +55,7 @@ tbody.addEventListener("click", function (e) {
       dialog
         .confirm({
           title: "デッキ削除",
-          html: render(deleteConfHtml, info),
+          html: mustache.render(deleteConfHtml, info),
         })
         .then(
           () => {

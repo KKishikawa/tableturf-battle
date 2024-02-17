@@ -2,7 +2,6 @@ import { isValidString } from "@/utils";
 import { loadDeck } from "@/utils/core";
 import * as Message from "@/components/message";
 import { loadFromQuery } from "@/models/card";
-
 // デッキコード読み込み
 {
   const deckCordForm = document.getElementById("form_deckCodeLoad") as HTMLFormElement;

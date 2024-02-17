@@ -1,6 +1,6 @@
 import { $dom } from "@/utils";
-import { render } from "mustache";
-import dialogHTML from "./dialog.template.html";
+import mustache from "mustache";
+import dialogHTML from "./dialog.html.mustache?raw";
 
 const closeModalWrapperStyle = ["opacity-0"];
 const closeModalStyle = ["scale-0"];
@@ -25,7 +25,7 @@ export class ModalDialog {
   constructor(options: IModalOption) {
     this.onCloseHandler = options.onClose;
     const container = document.getElementById("app-modal_container")!;
-    this.element = $dom(render(dialogHTML, {...options, buttonClass(this: IButtonOption) {
+    this.element = $dom(mustache.render(dialogHTML, {...options, buttonClass(this: IButtonOption) {
       return this.primary ? "button-primary" : "button-alt";
     }}));
     if (options.buttons) {

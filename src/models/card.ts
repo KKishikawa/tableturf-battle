@@ -1,6 +1,7 @@
 // import { getFromStorage, setToStrage, saveJson } from "@/utils";
 import { getFromStorage, setToStrage } from "@/utils";
 import * as RecordUtil from "@/utils/variableRecord";
+import dataJson from "@/../data/v.6.0.0.json"
 export interface ICardData {
   /** バージョン */
   v: 0;
@@ -63,8 +64,7 @@ export function encodeDeckCode(cards: number[]) {
 
 /** ファイルからカードリスト情報を読み込みます */
 export function getCardList() {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  return require("@/../data/v.6.0.0.json") as ICardData;
+  return dataJson;
 }
 export const availableInkCount = [
   ...new Set(getCardList().c.map((c) => inkCount(c.g, c.sg))),

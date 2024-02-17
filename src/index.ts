@@ -4,5 +4,5 @@ import "@/global";
 import "@/core";
 import "@/start";
 
-import registerServiceWorker from "@/service-worker/registration";
-registerServiceWorker();
+// import registerServiceWorker from "@/service-worker/registration";
+// registerServiceWorker();

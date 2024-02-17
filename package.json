@@ -1,15 +1,19 @@
 {
   "name": "tableturf-battle-card-create",
+  "private": true,
   "version": "1.0.0",
-  "main": "index.js",
+  "type": "module",
   "license": "MIT",
   "scripts": {
     "test": "jest",
-    "build": "cross-env NODE_ENV=production webpack --config webpack.prod.js",
-    "build:stage": "cross-env NODE_ENV=production webpack --config webpack.stage.js",
-    "analyze": "cross-env NODE_ENV=production webpack --config webpack.prod.js --analyze",
-    "serve": "webpack serve --open --config webpack.dev.js",
-    "start": "http-server dist"
+    "dev": "vite --host",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "webpack-build": "cross-env NODE_ENV=production webpack --config webpack.prod.js",
+    "webpack-build:stage": "cross-env NODE_ENV=production webpack --config webpack.stage.js",
+    "webpack-analyze": "cross-env NODE_ENV=production webpack --config webpack.prod.js --analyze",
+    "webpack-serve": "webpack serve --open --config webpack.dev.js",
+    "webpack-start": "http-server dist"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",
@@ -39,6 +43,7 @@
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
+    "vite": "^5.1.3",
     "webpack": "^5.89.0",
     "webpack-bundle-analyzer": "^4.10.1",
     "webpack-cli": "^5.1.4",

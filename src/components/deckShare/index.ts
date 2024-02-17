@@ -1,15 +1,15 @@
-import { render } from "mustache";
+import mustache from "mustache";
 import * as dialog from "@/components/dialog";
 import * as Message from "@/components/message";
 import { createShareURL } from "@/models/card";
-import shareBodyHTML from "./shareBody.template.html";
+import shareBodyHTML from "./shareBody.html.mustache?raw";
 
 /** デッキ共有用のメッセージを表示する */
 export function showShareMsg(code: string) {
   const url = createShareURL(code);
   const modal = new dialog.ModalDialog({
     title: "デッキコード",
-    bodyHTML: render(shareBodyHTML, { url, code }),
+    bodyHTML: mustache.render(shareBodyHTML, { url, code }),
   });
   [...modal.element.querySelectorAll<HTMLElement>("[data-copy]")].forEach(
     (el) => {
