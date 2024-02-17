@@ -1,7 +1,7 @@
-import { render } from "mustache";
+import mustache from "mustache";
 import { $dom } from "@/utils";
 import { decodeInkInfo } from "@/models/card";
-import gridTemplate from "./grid.template.svg";
+import gridTemplate from "./grid.svg.mustache?raw";
 
 /** カードの塗り範囲をグリッド表現 */
 export function createCardGrid(
@@ -9,7 +9,7 @@ export function createCardGrid(
   sg: string | null | undefined
 ) {
   const k = [g, sg].map((v) => decodeInkInfo(v).map(convertNumGrit));
-  const svgText = render(gridTemplate, { g: k[0], sg: k[1] });
+  const svgText = mustache.render(gridTemplate, { g: k[0], sg: k[1] });
   const grid = $dom<HTMLImageElement>(`<img draggable=false width=97 height=97>`);
   grid.src = svgToDataURI(svgText);
   return grid;

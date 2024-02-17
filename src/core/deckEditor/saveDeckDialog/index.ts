@@ -1,4 +1,4 @@
-import { render } from "mustache";
+import mustache from "mustache";
 import { toInt } from "@/utils/convert";
 import * as dialog from "@/components/dialog";
 import * as Message from "@/components/message";
@@ -12,14 +12,14 @@ import {
   replaceDeckInfo,
   saveDeckToLS,
 } from "@/components/deck";
-import saveDeckDialogBodyHTML from "./saveDeckDialogBody.template.html";
+import saveDeckDialogBodyHTML from "./saveDeckDialogBody.html.mustache?raw";
 
 /** 保存ダイアログを開く */
 export default function () {
   const decks = allDeckInfo().map((d, idx) => ({ ...d, idx }));
   const saveDialog = new dialog.ModalDialog({
     title: "デッキの保存",
-    bodyHTML: render(saveDeckDialogBodyHTML, { decks }),
+    bodyHTML: mustache.render(saveDeckDialogBodyHTML, { decks }),
     onClose: () => {
       Message.info("保存操作をキャンセルしました。");
     },

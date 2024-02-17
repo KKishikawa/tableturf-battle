@@ -1,4 +1,4 @@
-import { render } from "mustache";
+import mustache from "mustache";
 import { isValidString, $dom, mesureWidth } from "@/utils";
 import { toInt } from "@/utils/convert";
 import {
@@ -11,9 +11,9 @@ import {
 } from "@/models/card";
 import { createCardGrid } from "@/components/cardGrid";
 import { ModalDialog } from "@/components/dialog";
-import tableHTML from "./table.template.html";
-import tableRowHTML from "./row.template.html";
-import deckInfoHTML from "./deckInfoModalBody.template.html";
+import tableHTML from "./table.html.mustache?raw";
+import tableRowHTML from "./row.html.mustache?raw";
+import deckInfoHTML from "./deckInfoModalBody.html.mustache?raw";
 import { showShareMsg } from "../deckShare";
 
 interface IinternalSortRowInfo {
@@ -43,7 +43,7 @@ export class CardList {
   protected readonly srch: boolean;
   constructor(option: ICardListOption) {
     this.wrapper = $dom(
-      render(tableHTML, { srch: option.search, title: option.title })
+      mustache.render(tableHTML, { srch: option.search, title: option.title })
     );
     this.body = this.wrapper.querySelector(".cardlist_table_body")!;
     this.srch = option.search;
@@ -211,7 +211,7 @@ export class DeckInfo extends CardList {
         .sort((a, b) => a.k - b.k);
       const modal = new ModalDialog({
         title: "デッキ情報",
-        bodyHTML: render(deckInfoHTML, {
+        bodyHTML: mustache.render(deckInfoHTML, {
           count: allInfo.length,
           gcount: gcountr[0],
           gcs,
@@ -354,7 +354,7 @@ export function getCardRowInfo(tr: HTMLElement): ICard {
 function createCardRow(cardInfo: ICard, notDeck: boolean) {
   const gridCount = inkCount(cardInfo.g, cardInfo.sg);
   const row = $dom(
-    render(tableRowHTML, {
+    mustache.render(tableRowHTML, {
       ...cardInfo,
       gridCount,
       notDeck,

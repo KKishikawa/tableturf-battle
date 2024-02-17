@@ -1,6 +1,6 @@
-import { render } from "mustache";
+import mustache from "mustache";
 import { $dom } from "@/utils";
-import messageBaseTemplate from "./base.template.html";
+import messageBaseTemplate from "./base.html.mustache?raw";
 interface IMessageCss {
   bodyClass: string;
   icon: string;
@@ -36,7 +36,7 @@ const closeMessageStyle = ["-translate-y-full", "opacity-0", "max-h-0"];
 
 function internalShowMsg(message: string, styleInfo: IMessageCss) {
   // create message element
-  const msgEl = $dom(render(messageBaseTemplate, { ...styleInfo, message }));
+  const msgEl = $dom(mustache.render(messageBaseTemplate, { ...styleInfo, message }));
   let closeProcId = -1;
   const close = function () {
     window.clearTimeout(closeProcId);
