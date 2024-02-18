@@ -20,9 +20,6 @@
     "strict": true,
     "noImplicitAny": true,
     "skipLibCheck": true,
-    "types": [
-      "vitest/globals"
-    ]
   },
   "include": [
     "src",
