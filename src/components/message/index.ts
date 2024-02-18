@@ -1,6 +1,6 @@
 import mustache from "mustache";
 import { $dom } from "@/utils";
-import messageBaseTemplate from "./base.html.mustache?raw";
+import messageBaseTemplate from "./base.html.mustache";
 interface IMessageCss {
   bodyClass: string;
   icon: string;

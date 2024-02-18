@@ -11,9 +11,9 @@ import {
 } from "@/models/card";
 import { createCardGrid } from "@/components/cardGrid";
 import { ModalDialog } from "@/components/dialog";
-import tableHTML from "./table.html.mustache?raw";
-import tableRowHTML from "./row.html.mustache?raw";
-import deckInfoHTML from "./deckInfoModalBody.html.mustache?raw";
+import tableHTML from "./table.html.mustache";
+import tableRowHTML from "./row.html.mustache";
+import deckInfoHTML from "./deckInfoModalBody.html.mustache";
 import { showShareMsg } from "../deckShare";
 
 interface IinternalSortRowInfo {

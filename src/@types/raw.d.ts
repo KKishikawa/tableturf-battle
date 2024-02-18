@@ -1,4 +1,4 @@
-declare module '*.mustache?raw' {
+declare module '*.mustache' {
   const value: string;
   export default value
 }
