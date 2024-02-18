@@ -7,20 +7,23 @@ export default function PWA(): Plugin[] {
     includeAssets: ['favicon.ico', 'img/apple-touch-icon.png'],
     injectRegister: 'auto',
     manifest: {
-      short_name: "ナワバトビルド",
-      name: "非公式 ナワバトラーデッキビルダー",
-      display: "standalone",
-      start_url: ".",
-      background_color: "#f3f4f6",
-      theme_color: "#7adff4",
+      short_name: 'ナワバトビルド',
+      name: '非公式 ナワバトラーデッキビルダー',
+      display: 'standalone',
+      start_url: '.',
+      background_color: '#f3f4f6',
+      theme_color: '#7adff4',
       lang: 'ja',
-      icons: [{
-        src: "img/icon-192.png",
-        sizes: "192x192",
-      }, {
-        src: "img/icon-512.png",
-        sizes: "512x512",
-      }],
-    }
+      icons: [
+        {
+          src: 'img/icon-192.png',
+          sizes: '192x192',
+        },
+        {
+          src: 'img/icon-512.png',
+          sizes: '512x512',
+        },
+      ],
+    },
   });
 }

@@ -16,14 +16,14 @@ export default defineConfig(({ mode }) => {
     base: process.env.VITE_APP_PATH,
     resolve: {
       alias: {
-        '@/': join(__dirname, 'src/')
-      }
+        '@/': join(__dirname, 'src/'),
+      },
     },
     plugins: [
       PWA(),
       rawPlugin({
-        fileRegex: /\.mustache$/
-      })
+        fileRegex: /\.mustache$/,
+      }),
     ],
-  }
+  };
 });

@@ -1,13 +1,10 @@
-const convertDict =
-  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
+const convertDict = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_';
 const dataBitCount = 5;
 const msb = 0b100000;
 const dataBit = 0b11111;
 
 /** 数列を読み込む */
-export function readVariableRecord(
-  rawstr: string | null | undefined
-): number[] {
+export function readVariableRecord(rawstr: string | null | undefined): number[] {
   if (!rawstr) return [];
   const ret = [];
   let continuous = false;
@@ -26,9 +23,7 @@ export function readVariableRecord(
   }
   return ret;
 }
-export function calcVariableRecordLen(
-  rawstr: string | null | undefined
-): number {
+export function calcVariableRecordLen(rawstr: string | null | undefined): number {
   if (!rawstr) return 0;
   let continuous = false;
   let count = 0;
@@ -43,13 +38,11 @@ export function calcVariableRecordLen(
   return count;
 }
 /** 数列を短縮文字列に変換する */
-export function writeVariableRecord(
-  record: number[] | null | undefined
-): string {
-  if (!record || record.length < 1) return "";
+export function writeVariableRecord(record: number[] | null | undefined): string {
+  if (!record || record.length < 1) return '';
   const writer = new VariableRecordWriter();
   record.forEach((r) => writer.write(r));
-  return writer.data.join("");
+  return writer.data.join('');
 }
 
 class VariableRecordWriter {
@@ -94,6 +87,6 @@ export function calcFixRecordLen(rawstr: string | null | undefined): number {
 
 /** 数列を短縮文字列に変換する(固定長) */
 export function writeFixRecord(record: number[] | null | undefined): string {
-  if (!record || record.length < 1) return "";
-  return record.map((r) => convertDict[r]).join("");
+  if (!record || record.length < 1) return '';
+  return record.map((r) => convertDict[r]).join('');
 }

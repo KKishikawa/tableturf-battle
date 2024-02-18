@@ -1,9 +1,9 @@
-import { $dom } from "@/utils";
-import mustache from "mustache";
-import dialogHTML from "./dialog.html.mustache";
+import { $dom } from '@/utils';
+import mustache from 'mustache';
+import dialogHTML from './dialog.html.mustache';
 
-const closeModalWrapperStyle = ["opacity-0"];
-const closeModalStyle = ["scale-0"];
+const closeModalWrapperStyle = ['opacity-0'];
+const closeModalStyle = ['scale-0'];
 export interface IModalOption {
   title?: string;
   body?: string;
@@ -14,8 +14,8 @@ export interface IModalOption {
 export interface IModalButtonOption {
   primary?: boolean;
   label: string;
-  icon?:  string,
-  action?: ((closeFunc: (preventHandler?: boolean) => void) => void) | "close";
+  icon?: string;
+  action?: ((closeFunc: (preventHandler?: boolean) => void) => void) | 'close';
 }
 
 /** カスタムダイアログの管理クラス */
@@ -24,36 +24,38 @@ export class ModalDialog {
   onCloseHandler?: () => void;
   constructor(options: IModalOption) {
     this.onCloseHandler = options.onClose;
-    const container = document.getElementById("app-modal_container")!;
-    this.element = $dom(mustache.render(dialogHTML, {...options, buttonClass(this: IButtonOption) {
-      return this.primary ? "button-primary" : "button-alt";
-    }}));
+    const container = document.getElementById('app-modal_container')!;
+    this.element = $dom(
+      mustache.render(dialogHTML, {
+        ...options,
+        buttonClass(this: IButtonOption) {
+          return this.primary ? 'button-primary' : 'button-alt';
+        },
+      }),
+    );
     if (options.buttons) {
       const opt = options.buttons;
-      this.element.querySelectorAll(".modal-action").forEach((button, idx) => {
+      this.element.querySelectorAll('.modal-action').forEach((button, idx) => {
         const buttonOption = opt[idx];
         if (!buttonOption.action) return;
-        if (buttonOption.action == "close") {
-          button.classList.add("modal-close");
+        if (buttonOption.action == 'close') {
+          button.classList.add('modal-close');
         } else {
           const action = buttonOption.action.bind(buttonOption);
-          button.addEventListener("click", () => {
+          button.addEventListener('click', () => {
             action(this.closeModal.bind(this));
           });
         }
       });
     }
-    this.element.addEventListener("click", (e) => {
+    this.element.addEventListener('click', (e) => {
       if (!e.target || !(e.target instanceof HTMLElement)) return;
-      if (
-        e.target.closest(".modal-close") ||
-        !e.target.closest(".modal-content")
-      ) {
+      if (e.target.closest('.modal-close') || !e.target.closest('.modal-content')) {
         this.closeModal();
         return;
       }
     });
-    const modal_content = this.element.querySelector(".modal-content")!;
+    const modal_content = this.element.querySelector('.modal-content')!;
     modal_content.classList.add(...closeModalStyle);
     this.element.classList.add(...closeModalWrapperStyle);
     container.append(this.element);
@@ -64,9 +66,7 @@ export class ModalDialog {
     });
   }
   closeModal(preventHandler?: boolean) {
-    this.element
-      .querySelector(".modal-content")!
-      .classList.add(...closeModalStyle);
+    this.element.querySelector('.modal-content')!.classList.add(...closeModalStyle);
     this.element.classList.add(...closeModalWrapperStyle);
     window.setTimeout(() => {
       this.element.remove();
@@ -98,7 +98,7 @@ export function confirm(option: IComfirmOption) {
       bodyHTML: option.html,
       buttons: [
         {
-          label: "OK",
+          label: 'OK',
           primary: true,
           action(closeFunc) {
             resolve();
@@ -106,8 +106,8 @@ export function confirm(option: IComfirmOption) {
           },
         },
         {
-          label: "キャンセル",
-          action: "close",
+          label: 'キャンセル',
+          action: 'close',
         },
       ],
       onClose() {
@@ -126,8 +126,8 @@ export function alert(options: IAlertOption) {
       buttons: [
         {
           primary: true,
-          label: "OK",
-          action: "close",
+          label: 'OK',
+          action: 'close',
         },
       ],
       onClose() {

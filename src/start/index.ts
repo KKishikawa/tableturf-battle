@@ -1,2 +1,2 @@
-import "./appInfoDialog";
-import "./deckCode";
+import './appInfoDialog';
+import './deckCode';

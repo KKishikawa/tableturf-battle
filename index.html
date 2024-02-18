@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
@@ -13,7 +13,7 @@
       rel="stylesheet"
     />
     <title>非公式 ナワバトラーデッキビルダー</title>
-    <meta name="description" content="ナワバトラーのデッキ構築ができるサイトです">
+    <meta name="description" content="ナワバトラーのデッキ構築ができるサイトです" />
     <!-- OGPの設定 -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="非公式 ナワバトラーデッキビルダー" />
@@ -28,50 +28,37 @@
     <meta name="twitter:creator" content="@khr32" />
   </head>
   <body class="break-all bg-gray-100 dark:bg-gray-900">
-    <div class="w-screen h-screen overflow-auto">
-      <nav class="px-2 pb-3 bg-blue-300 border-gray-200 dark:bg-indigo-900">
-        <div class="container flex flex-wrap items-center px-3 mx-auto">
+    <div class="h-screen w-screen overflow-auto">
+      <nav class="border-gray-200 bg-blue-300 px-2 pb-3 dark:bg-indigo-900">
+        <div class="container mx-auto flex flex-wrap items-center px-3">
           <span class="mt-3 text-xl font-medium dark:text-white"
-            ><span class="mr-2">非公式</span>
-            <span>ナワバトラーデッキビルダー</span></span
+            ><span class="mr-2">非公式</span> <span>ナワバトラーデッキビルダー</span></span
           >
-          <button
-            id="button-info"
-            class="mt-3 ml-3 button button-sm button-alt"
-            title="このサイトについて"
-          >
+          <button id="button-info" class="button button-sm button-alt ml-3 mt-3" title="このサイトについて">
             <i class="fa-regular fa-circle-question"></i>
           </button>
           <div class="flex-auto"></div>
           <div class="flex items-center">
-            <form
-              class="relative w-48 mt-3 mr-3 shrink-0"
-              id="form_deckCodeLoad"
-              data-clearable
-            >
-              <input
-                class="pr-16 form-input input_cardlist_serch"
-                type="text"
-                placeholder="デッキコード読込"
-              />
+            <form class="relative mr-3 mt-3 w-48 shrink-0" id="form_deckCodeLoad" data-clearable>
+              <input class="form-input input_cardlist_serch pr-16" type="text" placeholder="デッキコード読込" />
               <button
-                class="absolute top-0 bottom-0 right-0 px-3 rounded-l-none button button-primary"
+                class="button button-primary absolute bottom-0 right-0 top-0 rounded-l-none px-3"
                 type="submit"
                 title="デッキコード読み込み"
               >
                 <i class="fa-solid fa-right-to-bracket"></i>
               </button>
-              <i class="input-clear right-12 fa fa-circle-xmark"></i>
+              <i class="input-clear fa fa-circle-xmark right-12"></i>
             </form>
-            <div class="relative flex justify-end h-10 mt-3 shrink-0 w-11">
+            <div class="relative mt-3 flex h-10 w-11 shrink-0 justify-end">
               <div class="absolute right-0 top-px">
                 <button
                   id="themeSettingButton"
                   type="button"
-                  class="relative flex items-center button button-sm button-default"
+                  class="button button-sm button-default relative flex items-center"
                   title="テーマの変更"
                 >
-                  <i class="w-4 h-4 fa-solid fa-circle-half-stroke"></i>
+                  <i class="fa-solid fa-circle-half-stroke h-4 w-4"></i>
                   <span class="theme-setting-label">テーマ変更</span>
                 </button>
                 <div id="themeButtonGroup">
@@ -79,27 +66,27 @@
                     data-theme_mode="light"
                     title="ライトモード"
                     type="button"
-                    class="flex items-center mt-1 pointer-events-auto button button-sm button-default"
+                    class="button button-sm button-default pointer-events-auto mt-1 flex items-center"
                   >
-                    <i class="w-4 h-4 fa-regular fa-sun"></i>
+                    <i class="fa-regular fa-sun h-4 w-4"></i>
                     <span class="theme-setting-label">ライト</span>
                   </button>
                   <button
                     data-theme_mode="dark"
                     title="ダークモード"
                     type="button"
-                    class="flex items-center mt-1 pointer-events-auto button button-sm button-default"
+                    class="button button-sm button-default pointer-events-auto mt-1 flex items-center"
                   >
-                    <i class="w-4 h-4 fa-solid fa-moon"></i>
+                    <i class="fa-solid fa-moon h-4 w-4"></i>
                     <span class="theme-setting-label">ダーク</span>
                   </button>
                   <button
                     data-theme_mode="system"
                     title="システム設定を使用"
                     type="button"
-                    class="flex items-center mt-1 pointer-events-auto button button-sm button-default"
+                    class="button button-sm button-default pointer-events-auto mt-1 flex items-center"
                   >
-                    <i class="w-4 h-4 fa-solid fa-computer"></i>
+                    <i class="fa-solid fa-computer h-4 w-4"></i>
                     <span class="theme-setting-label">システム</span>
                   </button>
                 </div>
@@ -109,9 +96,9 @@
         </div>
       </nav>
       <main class="m-4">
-        <div class="p-0 mt-3 overflow-hidden card expandable-wrapper">
-          <div class="max-w-4xl mx-auto expandable">
-            <div id="created_decks" class="m-5 table__wrapper">
+        <div class="card expandable-wrapper mt-3 overflow-hidden p-0">
+          <div class="expandable mx-auto max-w-4xl">
+            <div id="created_decks" class="table__wrapper m-5">
               <table class="table">
                 <colgroup>
                   <col />
@@ -126,16 +113,13 @@
             </div>
           </div>
           <div>
-            <button
-              type="button"
-              class="block w-full text-center button-default expand-button"
-            >
+            <button type="button" class="button-default expand-button block w-full text-center">
               <span class="form-label">作成済みデッキ</span>
               <i class="fa-solid fa-caret-down"></i>
             </button>
           </div>
         </div>
-        <div class="mt-3 tab-group-wrapper md:hidden">
+        <div class="tab-group-wrapper mt-3 md:hidden">
           <ul class="tab-group">
             <li class="tab active">カードリスト</li>
             <li class="tab">デッキ (0/15)</li>
@@ -144,12 +128,7 @@
         <div class="deck-tab-items"></div>
       </main>
     </div>
-    <div
-      aria-hidden="true"
-      tabindex="-1"
-      id="app-modal_container"
-      class="fixed inset-0 z-50 pointer-events-none"
-    ></div>
+    <div aria-hidden="true" tabindex="-1" id="app-modal_container" class="pointer-events-none fixed inset-0 z-50"></div>
     <script type="module" src="/src/index.ts"></script>
   </body>
 </html>
