@@ -41,13 +41,7 @@ export default defineConfig(({ mode }) => {
         provider: 'istanbul',
         include: ['src'],
         reportsDirectory: './vitest-coverage',
-        reporter: (() => {
-          const reporter = ['json', 'html'];
-          if (process.env.GITHUB_ACTIONS) {
-            reporter.push('github-actions');
-          }
-          return reporter;
-        })(),
+        reporter: ['json', 'html'],
       },
       include: ['tests/vitest/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
     },
