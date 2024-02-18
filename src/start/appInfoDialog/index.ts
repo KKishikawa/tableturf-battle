@@ -1,9 +1,9 @@
-import * as dialog from "@/components/dialog";
-import infoModalHTML from "./modal.html.mustache";
+import * as dialog from '@/components/dialog';
+import infoModalHTML from './modal.html.mustache';
 
-document.getElementById("button-info")!.onclick = function () {
+document.getElementById('button-info')!.onclick = function () {
   new dialog.ModalDialog({
-    title: "このWebアプリケーションについて",
+    title: 'このWebアプリケーションについて',
     bodyHTML: infoModalHTML,
   });
 };

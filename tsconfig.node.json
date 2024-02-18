@@ -6,9 +6,5 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true
   },
-  "include": [
-    "vite.config.ts",
-    "vitest.config.ts",
-    "plugins"
-  ]
+  "include": ["vite.config.ts", "vitest.config.ts", "plugins"]
 }

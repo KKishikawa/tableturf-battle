@@ -1,2 +1,2 @@
-import "./tailwindTheme";
-import "./globalEvents";
+import './tailwindTheme';
+import './globalEvents';

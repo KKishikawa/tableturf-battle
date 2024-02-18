@@ -1,2 +1,2 @@
-import "./deckEditor";
-import "./deckList";
+import './deckEditor';
+import './deckList';
