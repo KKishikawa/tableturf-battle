@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import * as variableRecord from '@/utils/variableRecord';
 {
   const recordInfos: [string, number[]][] = [

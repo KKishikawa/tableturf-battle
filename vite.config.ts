@@ -1,6 +1,8 @@
+/// <reference types="vitest" />
 import { defineConfig, loadEnv } from 'vite';
-
 import { join } from 'node:path';
+import istanbul from 'vite-plugin-istanbul';
+
 import PWA from './plugins/pwa';
 import rawPlugin from './plugins/rawPlugin';
 
@@ -24,6 +26,30 @@ export default defineConfig(({ mode }) => {
       rawPlugin({
         fileRegex: /\.mustache$/,
       }),
+      process.env.coverage
+        ? istanbul({
+            include: ['src/**/*'],
+            exclude: ['node_modules'],
+            requireEnv: false,
+            forceBuildInstrument: true,
+          })
+        : [],
     ],
+    test: {
+      coverage: {
+        enabled: true,
+        provider: 'istanbul',
+        include: ['src'],
+        reportsDirectory: './vitest-coverage',
+        reporter: (() => {
+          const reporter = ['json', 'html'];
+          if (process.env.GITHUB_ACTIONS) {
+            reporter.push('github-actions');
+          }
+          return reporter;
+        })(),
+      },
+      include: ['tests/vitest/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
+    },
   };
 });
