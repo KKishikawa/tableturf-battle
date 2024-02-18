@@ -18,7 +18,7 @@ npm install
 ## Local hosting (HMR)
 
 ```sh
-npm run serve
+npm run dev
 ```
 
 ## Build
