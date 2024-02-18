@@ -2,27 +2,57 @@
 
 This tool is deck build for tableturf battle ([website](https://tableturf-battle.khr32.com/)).
 
-# Development
+## Development
 
-## Requirement
+### Requirement
 
 - node
   see `.nvmrc` for node version
 
-## Install dependencies
+#### Install dependencies
 
 ```sh
 npm install
 ```
 
-## Local hosting (HMR)
+#### Local hosting (HMR)
 
 ```sh
 npm run dev
 ```
 
-## Build
+#### Build
 
 ```sh
 npm run build
+```
+
+## Testing
+
+### Unit Test (Vitest)
+
+#### Run Vitest
+
+```sh
+npm run test:unit
+```
+
+#### Debug Vitest
+
+```sh
+npm run test:unit:debug
+```
+
+### E2E Test (Playwright)
+
+#### Run Playwright
+
+```sh
+npm run test:e2e
+```
+
+#### Debug Playwright
+
+```sh
+npm run test:e2e:debug
 ```
