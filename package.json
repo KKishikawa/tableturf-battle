@@ -5,10 +5,11 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "test": "vitest --watch --ui",
     "dev": "vite --host",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest --watch --ui",
+    "lint": "eslint ."
   },
   "devDependencies": {
     "@types/mustache": "^4.2.5",
