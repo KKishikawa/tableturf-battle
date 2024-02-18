@@ -12,7 +12,7 @@ import {
   replaceDeckInfo,
   saveDeckToLS,
 } from "@/components/deck";
-import saveDeckDialogBodyHTML from "./saveDeckDialogBody.html.mustache?raw";
+import saveDeckDialogBodyHTML from "./saveDeckDialogBody.html.mustache";
 
 /** 保存ダイアログを開く */
 export default function () {

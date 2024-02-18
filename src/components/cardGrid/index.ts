@@ -1,7 +1,7 @@
 import mustache from "mustache";
 import { $dom } from "@/utils";
 import { decodeInkInfo } from "@/models/card";
-import gridTemplate from "./grid.svg.mustache?raw";
+import gridTemplate from "./grid.svg.mustache";
 
 /** カードの塗り範囲をグリッド表現 */
 export function createCardGrid(
