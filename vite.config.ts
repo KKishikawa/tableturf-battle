@@ -1,6 +1,5 @@
 /// <reference types="vitest" />
 import { defineConfig, loadEnv } from 'vite';
-import { join } from 'node:path';
 import istanbul from 'vite-plugin-istanbul';
 
 import PWA from './plugins/pwa';
@@ -18,7 +17,7 @@ export default defineConfig(({ mode }) => {
     base: process.env.VITE_APP_PATH,
     resolve: {
       alias: {
-        '@/': join(__dirname, 'src/'),
+        '@/': `${__dirname}/src/`,
       },
     },
     plugins: [

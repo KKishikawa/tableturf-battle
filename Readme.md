@@ -34,13 +34,13 @@ npm run build
 #### Run Vitest
 
 ```sh
-npm run test:unit
+npm run test
 ```
 
 #### Debug Vitest
 
 ```sh
-npm run test:unit:debug
+npm run test:debug
 ```
 
 ### E2E Test (Playwright)
@@ -48,11 +48,17 @@ npm run test:unit:debug
 #### Run Playwright
 
 ```sh
-npm run test:e2e
+# PC
+npm run e2e:pc
+# mobile
+npm run e2e:mobile
 ```
 
 #### Debug Playwright
 
 ```sh
-npm run test:e2e:debug
+# PC
+npm run e2e:pc:debug
+# mobile
+npm run e2e:mobile:debug
 ```

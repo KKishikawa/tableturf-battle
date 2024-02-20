@@ -22,10 +22,16 @@ jobs:
       run: npm run check:format
     - name: Run vitest tests
       run: npm run test:unit-coverage
+    - name: Check build (and for coverage report)
+      run: npm run build:coverage
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npm run test:e2e-coverage
+    - name: Run Playwright tests (PC)
+      run: npm run e2e:pc:coverage
+    - name: Run Playwright tests (mobile)
+      run: npm run e2e:mobile:coverage
+    - name: Generate report
+      run: npm run e2e:report
     - uses: actions/upload-artifact@v4
       if: always()
       with:
