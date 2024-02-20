@@ -1,9 +1,9 @@
 export function isValidString(str: string | null | undefined): str is string {
-  return str != null && str != "";
+  return str != null && str != '';
 }
 
 function generateDomFragment(html: string) {
-  const template = document.createElement("template");
+  const template = document.createElement('template');
   template.innerHTML = html.trim();
   return template;
 }
@@ -17,12 +17,12 @@ export function $dom<T extends HTMLElement>(html: string): T {
   return template.content.firstChild as T;
 }
 export function mesureWidth(str: string, className?: string) {
-  const div = document.createElement("div");
-  div.className = "fixed invisible"
+  const div = document.createElement('div');
+  div.className = 'fixed invisible';
   if (className != null) {
-    div.className += " " + className;
+    div.className += ' ' + className;
   }
-  const p = document.createElement("p");
+  const p = document.createElement('p');
   p.innerText = str;
   div.append(p);
   document.body.append(div);
@@ -33,10 +33,10 @@ export function mesureWidth(str: string, className?: string) {
 export function nowYMD() {
   const _d = new Date();
   const y = _d.getFullYear();
-  const m = (_d.getMonth() + 1 + "").padStart(2, "0");
-  const d = (_d.getDate() + "").padStart(2, "0");
-  const h = (_d.getHours() + "").padStart(2, "0");
-  const mm = (_d.getMinutes() + "").padStart(2, "0");
+  const m = (_d.getMonth() + 1 + '').padStart(2, '0');
+  const d = (_d.getDate() + '').padStart(2, '0');
+  const h = (_d.getHours() + '').padStart(2, '0');
+  const mm = (_d.getMinutes() + '').padStart(2, '0');
   return `${y}/${m}/${d} ${h}:${mm}`;
 }
 
@@ -61,7 +61,7 @@ export function setToStrage<T>(key: string, obj: T) {
 }
 
 export function saveJson(json: string, filename: string) {
-  const blob = new Blob([json], { type: "application/json" });
+  const blob = new Blob([json], { type: 'application/json' });
   savefile(blob, filename);
 }
 /**
@@ -78,7 +78,7 @@ export function savefile(blob: Blob, filename: string) {
     // BlobからオブジェクトURLを作成する
     const url = window.URL.createObjectURL(blob);
     // ダウンロード用にリンクを作成する
-    const download = document.createElement("a");
+    const download = document.createElement('a');
     // リンク先に上記で生成したURLを指定する
     download.href = url;
     // download属性にファイル名を指定する

@@ -1,0 +1,46 @@
+name: Run Tests
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+jobs:
+  test-runner:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: ./.nvmrc
+        cache: 'npm'
+    - name: Install dependencies
+      run: npm ci
+    - name: Check lint
+      run: npm run check:lint
+    - name: Check format
+      run: npm run check:format
+    - name: Run vitest tests
+      run: npm run test:coverage
+    - name: Check build (and for coverage report)
+      run: npm run build:coverage
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    - name: Run Playwright tests (PC)
+      run: npm run e2e:pc:coverage
+    - name: Run Playwright tests (mobile)
+      run: npm run e2e:mobile:coverage
+    - name: Generate report
+      run: npm run e2e:report
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: vitest-coverage
+        path: vitest-coverage/
+        retention-days: 15
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-coverage
+        path: playwright-coverage/lcov-report/
+        retention-days: 15

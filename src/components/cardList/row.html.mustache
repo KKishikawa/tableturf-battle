@@ -1,0 +1,43 @@
+<li
+  class="cardlist_table_row"
+  data-card_no="{{n}}"
+  data-card_rarity="{{r}}"
+  data-card_spx="{{sg}}"
+  data-card_px="{{g}}"
+>
+  <div class="cardlist_table_item card_grid">
+    <div class="grid__wrapper"></div>
+  </div>
+  <div class="cardlist_table_item card_no" title="ナンバー">
+    <div class="flex items-center">
+      {{#notDeck}}
+      <i class="icon-check fa-regular fa-circle-check hidden"></i>
+      {{/notDeck}}
+      <span></span>
+      <span class="value">{{n}}</span>
+    </div>
+  </div>
+  <div class="cardlist_table_item card_gridcount" title="マス数">
+    <span>{{gridCount}}</span>
+  </div>
+  <div class="cardlist_table_item card_sp" title="スペシャルポイント">
+    <div class="sp-fill h-3 w-3"></div>
+    <i class="fa fa-xmark mx-1 text-[10px]"></i><span class="card_sp_label">{{sp}}</span>
+  </div>
+  <div class="cardlist_table_item card_rarity" title="レア度">
+    <div class="rarity_label"><span>{{rarity}}</span></div>
+  </div>
+  <div class="cardlist_table_item card_name" title="カード名">
+    <span class="card_name_label">{{ja}}</span>
+  </div>
+  <div class="cardlist_table_item card_action">
+    {{#notDeck}}
+    <button class="button-add button button-xs button-primary" title="デッキに追加">
+      <i class="fa fa-plus"></i>
+    </button>
+    {{/notDeck}}
+    <button class="button-delete button button-xs button-danger" title="デッキから削除">
+      <i class="fa fa-trash-can"></i>
+    </button>
+  </div>
+</li>

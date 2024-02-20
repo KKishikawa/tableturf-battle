@@ -1,6 +1,6 @@
 .n-fill,
 .sp-fill {
-  @apply z-0 border box-content border-gray-800 dark:border-black;
+  @apply z-0 box-content border border-gray-800 dark:border-black;
 }
 .n-fill {
   @apply bg-yellow-300;
@@ -8,16 +8,16 @@
 .sp-fill {
   @apply bg-amber-600;
 }
-[data-selected="1"] {
+[data-selected='1'] {
   .icon-check {
-    @apply !block mr-1 text-green-600 dark:text-green-500;
+    @apply mr-1 !block text-green-600 dark:text-green-500;
   }
 }
 .card-list-container {
   .button-delete {
     @apply hidden;
   }
-  [data-selected="1"] {
+  [data-selected='1'] {
     .button-add {
       @apply hidden;
     }
@@ -27,7 +27,7 @@
   }
 }
 .cardlist_table {
-  @apply relative flex-grow flex-shrink-0 overflow-y-scroll w-full text-sm text-left text-gray-500 dark:text-gray-400;
+  @apply relative w-full flex-shrink-0 flex-grow overflow-y-scroll text-left text-sm text-gray-500 dark:text-gray-400;
   min-height: 450px;
   height: calc(100vh - 250px);
 }
@@ -47,17 +47,17 @@
   }
 }
 .rarity_label {
-  @apply text-black rounded-sm;
+  @apply rounded-sm text-black;
 }
-[data-card_rarity="0"] {
+[data-card_rarity='0'] {
   .rarity_label {
-    @apply bg-yellow-100 dark:bg-yellow-50 text-gray-800;
+    @apply bg-yellow-100 text-gray-800 dark:bg-yellow-50;
   }
   .card_name {
     @apply text-gray-800 dark:text-gray-200;
   }
 }
-[data-card_rarity="1"] {
+[data-card_rarity='1'] {
   .rarity_label {
     @apply bg-amber-400;
   }
@@ -65,7 +65,7 @@
     @apply text-amber-800 dark:text-amber-300;
   }
 }
-[data-card_rarity="2"] {
+[data-card_rarity='2'] {
   .rarity_label {
     @apply bg-gradient-to-br from-pink-300 via-cyan-300 to-yellow-300;
   }
@@ -73,29 +73,29 @@
     @apply text-blue-800 dark:text-blue-300;
   }
 }
-[data-selected="1"] {
+[data-selected='1'] {
   @apply !bg-blue-100 dark:!bg-blue-600 dark:!bg-opacity-20;
 }
-[data-layout="table"] {
-  @apply grid content-start grid-cols-[var(--col-no)_var(--col-gridcount)_var(--col-sp)_var(--col-rarity)_var(--col-name)_var(--col-action)];
-  @apply [--col-no:56px] [--col-gridcount:56px] [--col-sp:56px] [--col-rarity:8px] [--col-name:auto] [--col-action:56px];
+[data-layout='table'] {
+  @apply grid grid-cols-[var(--col-no)_var(--col-gridcount)_var(--col-sp)_var(--col-rarity)_var(--col-name)_var(--col-action)] content-start;
+  @apply [--col-action:56px] [--col-gridcount:56px] [--col-name:auto] [--col-no:56px] [--col-rarity:8px] [--col-sp:56px];
   @apply sm:[--col-rarity:80px];
-  @apply md:[--col-gridcount:64px] md:[--col-sp:64px] md:[--col-rarity:4px];
-  @apply lg:[--col-no:64px] lg:[--col-gridcount:72px] lg:[--col-sp:72px] lg:[--col-rarity:80px] lg:[--col-action:64px];
+  @apply md:[--col-gridcount:64px] md:[--col-rarity:4px] md:[--col-sp:64px];
+  @apply lg:[--col-action:64px] lg:[--col-gridcount:72px] lg:[--col-no:64px] lg:[--col-rarity:80px] lg:[--col-sp:72px];
   @apply xl:[--col-no:112px];
   .cardlist_table_head {
-    @apply grid grid-cols-subgrid items-center col-span-6;
+    @apply col-span-6 grid grid-cols-subgrid items-center;
     @apply sticky top-0 z-10 py-1;
   }
   .cardlist_table_body {
     @apply contents;
   }
   .cardlist_table_row {
-    @apply grid grid-cols-subgrid items-center col-span-6 bg-white border-b dark:bg-gray-900 dark:border-gray-700;
+    @apply col-span-6 grid grid-cols-subgrid items-center border-b bg-white dark:border-gray-700 dark:bg-gray-900;
     &:hover,
     &:active {
       .grid__wrapper {
-        @apply block absolute -top-11 left-8 w-max p-1 bg-gray-600 dark:bg-gray-800;
+        @apply absolute -top-11 left-8 block w-max bg-gray-600 p-1 dark:bg-gray-800;
       }
     }
     &:last-child {
@@ -112,7 +112,7 @@
     &:hover {
       @apply bg-gray-100 dark:bg-gray-600;
     }
-    &[data-selected="1"]:hover {
+    &[data-selected='1']:hover {
       @apply bg-blue-200 dark:bg-blue-700 dark:bg-opacity-30;
     }
   }
@@ -120,7 +120,7 @@
     @apply p-2 lg:px-4;
   }
   .grid__wrapper {
-    @apply hidden absolute z-10;
+    @apply absolute z-10 hidden;
   }
   .card_grid {
     @apply relative p-0;
@@ -145,7 +145,7 @@
     }
   }
   .card_rarity {
-    @apply text-center px-0 text-xs;
+    @apply px-0 text-center text-xs;
   }
   .rarity_label {
     @apply h-4;
@@ -164,7 +164,7 @@
     @apply text-center;
   }
 }
-[data-layout="grid"] {
+[data-layout='grid'] {
   @apply block;
   .cardlist_table_head {
     @apply hidden;
@@ -173,7 +173,7 @@
     @apply flex flex-wrap gap-2 py-2;
   }
   .cardlist_table_row {
-    @apply inline-grid bg-white transform-cpu drop-shadow-md shadow-black border-gray-400 dark:bg-gray-900 dark:border-gray-700 dark:shadow-white grid-cols-8 w-40 row-auto border-2 rounded-lg p-1;
+    @apply row-auto inline-grid w-40 transform-cpu grid-cols-8 rounded-lg border-2 border-gray-400 bg-white p-1 shadow-black drop-shadow-md dark:border-gray-700 dark:bg-gray-900 dark:shadow-white;
   }
   .cardlist_table_item {
     @apply block border-none px-1 py-0;
@@ -181,33 +181,33 @@
   .card_no {
     @apply order-first col-span-4 pr-0;
     .value::before {
-      content: "No.";
+      content: 'No.';
       @apply mr-px;
     }
   }
   .card_rarity {
-    @apply -order-12 col-span-4 p-0 text-xs place-self-end;
+    @apply -order-12 col-span-4 place-self-end p-0 text-xs;
   }
   .rarity_label {
     @apply px-1;
   }
-  [data-card_rarity="0"] {
+  [data-card_rarity='0'] {
     .card_gridcount {
-      @apply after:bg-violet-600 after:border-violet-900;
+      @apply after:border-violet-900 after:bg-violet-600;
     }
   }
-  [data-card_rarity="1"] {
+  [data-card_rarity='1'] {
     .card_gridcount {
-      @apply after:bg-gradient-to-b after:from-yellow-500 after:via-amber-700 after:to-yellow-700 after:border-amber-900;
+      @apply after:border-amber-900 after:bg-gradient-to-b after:from-yellow-500 after:via-amber-700 after:to-yellow-700;
     }
   }
-  [data-card_rarity="2"] {
+  [data-card_rarity='2'] {
     .card_gridcount {
-      @apply after:bg-gradient-to-b after:from-pink-400 after:via-blue-600 after:to-cyan-400 after:border-blue-800;
+      @apply after:border-blue-800 after:bg-gradient-to-b after:from-pink-400 after:via-blue-600 after:to-cyan-400;
     }
   }
   .card_name {
-    @apply -order-10 flex justify-center whitespace-nowrap col-span-full font-bold text-sm pb-1 -mx-2;
+    @apply -order-10 col-span-full -mx-2 flex justify-center whitespace-nowrap pb-1 text-sm font-bold;
     > * {
       @apply scale-100;
     }
@@ -216,18 +216,18 @@
     @apply -order-9 col-span-full place-self-center;
   }
   .card_gridcount {
-    @apply -order-5 p-0 w-9 h-9 flex items-center justify-center col-span-2 relative z-10 text-center text-white font-medium text-base after:-z-10 after:-rotate-45 after:absolute after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:w-6 after:h-6 after:border-2 after:rounded-sm;
+    @apply relative z-10 -order-5 col-span-2 flex h-9 w-9 items-center justify-center p-0 text-center text-base font-medium text-white after:absolute after:left-1/2 after:top-1/2 after:-z-10 after:h-6 after:w-6 after:-translate-x-1/2 after:-translate-y-1/2 after:-rotate-45 after:rounded-sm after:border-2;
   }
   .card_sp {
     @apply -order-3 col-span-3 mt-1 flex items-center;
   }
   .card_action {
-    @apply flex p-0 col-start-7 justify-start items-center;
+    @apply col-start-7 flex items-center justify-start p-0;
   }
 }
 
 .gridcount {
-  @apply py-1 relative left-1 z-10 font-normal text-center after:bg-violet-600 after:border-violet-900 dark:text-white text-base after:-z-10 after:-rotate-45 after:absolute after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:w-4 after:h-4 after:border-2 after:rounded-sm;
+  @apply relative left-1 z-10 py-1 text-center text-base font-normal after:absolute after:left-1/2 after:top-1/2 after:-z-10 after:h-4 after:w-4 after:-translate-x-1/2 after:-translate-y-1/2 after:-rotate-45 after:rounded-sm after:border-2 after:border-violet-900 after:bg-violet-600 dark:text-white;
 }
 
 .deck-tab-items {
@@ -237,7 +237,7 @@
   }
 }
 .deck-tab-item {
-  @apply hidden flex-grow md:flex flex-col w-7/12 my-3;
+  @apply my-3 hidden w-7/12 flex-grow flex-col md:flex;
   & + & {
     @apply w-5/12;
   }
@@ -246,5 +246,5 @@
   @apply flex;
 }
 .table-title-text {
-  @apply mt-2 ml-2 hidden md:inline;
+  @apply ml-2 mt-2 hidden md:inline;
 }

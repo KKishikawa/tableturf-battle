@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.svg.mustache": "xml",
+        "*.html.mustache": "html"
+    }
+}
