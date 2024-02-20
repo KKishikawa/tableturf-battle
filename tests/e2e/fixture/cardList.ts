@@ -39,24 +39,24 @@ export class CardList {
   }
   /** click deck tab (for mobile) */
   async showCardList() {
-    await this._page.locator(".tab-group").first().locator('.tab').nth(0).click();
+    await this._page.locator('.tab-group').first().locator('.tab').nth(0).click();
   }
   /** click card list tab (for mobile) */
   async showInDeckCardList() {
-    await this._page.locator(".tab-group").first().locator('.tab').nth(1).click();
+    await this._page.locator('.tab-group').first().locator('.tab').nth(1).click();
   }
 
   async clearAll() {
-      const btnClear = this._deckContainer.getByRole('button', { name: '' });
-      const isDeckHidden = await btnClear.isHidden();
+    const btnClear = this._deckContainer.getByRole('button', { name: '' });
+    const isDeckHidden = await btnClear.isHidden();
     if (isDeckHidden) {
-        await this.showInDeckCardList();
+      await this.showInDeckCardList();
     }
     await this._deckContainer.getByRole('button', { name: '' }).click();
     await this._page.getByText('OK').click();
     if (isDeckHidden) {
-        // restore state
-        this.showCardList();
+      // restore state
+      this.showCardList();
     }
   }
 }
