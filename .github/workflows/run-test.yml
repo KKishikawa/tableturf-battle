@@ -21,7 +21,7 @@ jobs:
     - name: Check format
       run: npm run check:format
     - name: Run vitest tests
-      run: npm run test:unit-coverage
+      run: npm run test:coverage
     - name: Check build (and for coverage report)
       run: npm run build:coverage
     - name: Install Playwright Browsers
