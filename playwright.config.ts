@@ -11,7 +11,8 @@ const appURL = process.env.CI ? 'http://localhost:4173' : 'http://localhost:5173
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  // testDir: 'tests/e2e',
+  testDir: 'tests/e2e/test',
+  testIgnore: ['**/fixture/**'],
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

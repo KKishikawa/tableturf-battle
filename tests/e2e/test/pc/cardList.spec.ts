@@ -1,5 +1,5 @@
 import { test as base, expect } from 'playwright-test-coverage';
-import { CardList } from '../fixture/cardList';
+import { CardList } from '../../fixture/cardList';
 
 const test = CardList.ExtendTest(base);
 

@@ -4,7 +4,7 @@ import baseConfig from './playwright.config';
 export default defineConfig(
   baseConfig,
   defineConfig({
-    testDir: 'tests/e2e/mobile',
+    testIgnore: ['**/pc/**'],
     projects: [
       /* Test against mobile viewports. */
       {
