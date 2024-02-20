@@ -1,0 +1,18 @@
+name: Deploy Production
+on:
+  push:
+    branches:
+      - main
+jobs:
+  Test:
+    uses: ./.github/workflows/run-test.yml
+  Deploy:
+    needs:
+      - Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Endpoint
+        env:
+          CLOUDFLARE_WEBHOOK_URL: ${{ secrets.CLOUDFLARE_PRODUCTION_DEPLOY_WEBHOOK_URL }}
+        run: |
+          curl -X POST "$CLOUDFLARE_WEBHOOK_URL"
