@@ -4,7 +4,7 @@ import { test, expect } from 'playwright-test-coverage';
 test.describe.configure({ mode: 'parallel' });
 
 test('has title', async ({ page }) => {
-  await page.goto('./');
+  await page.goto('/');
   await expect(page).toHaveTitle('非公式 ナワバトラーデッキビルダー');
   await expect(page.getByText('非公式 ナワバトラーデッキビルダー')).toBeVisible();
 });
@@ -126,4 +126,17 @@ test('change style (dark theme os)', async ({ browser }) => {
   await expect(html).toHaveClass('dark');
 
   await darkBrowser.close();
+});
+
+test('load deck', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByPlaceholder('デッキコード読込')).toBeEmpty();
+  await page.getByPlaceholder('デッキコード読込').fill('U1V1Z1');
+  await page.locator('#form_deckCodeLoad i').nth(1).click(); // clear
+  await expect(page.getByPlaceholder('デッキコード読込')).toBeEmpty();
+  await page.getByPlaceholder('デッキコード読込').fill('U1V1Z1');
+  await page.getByRole('button', { name: '' }).click(); // load
+
+  await expect(page.locator(".card-list-container .cardlist_table_row[data-selected='1']")).toHaveCount(3);
+  await expect(page.locator('.deck-container .cardlist_table_row')).toHaveCount(3);
 });
