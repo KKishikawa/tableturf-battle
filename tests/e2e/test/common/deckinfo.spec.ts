@@ -12,8 +12,7 @@ test('check deck info', async ({ page, cardUtil }) => {
   if (await cardUtil.isInDeckCardListHidden()) {
     await cardUtil.showInDeckCardList();
   }
-  const btnInfo = page.getByRole('button', { name: '' });
-  await btnInfo.click();
+  await page.getByRole('button', { name: '' }).click();
   await expect(page.getByText('デッキ情報')).toBeInViewport();
   await expect(page.getByTitle('17', { exact: true })).toBeVisible();
   await expect(page.getByTitle('4', { exact: true }).locator(SELECTOR_SPECIAL_POINT)).not.toHaveCSS(
@@ -45,7 +44,7 @@ test('check deck info', async ({ page, cardUtil }) => {
   await cardUtil.addCard(1);
   await cardUtil.addCard(198);
   await cardUtil.addCard(220);
-  await btnInfo.click();
+  await page.getByRole('button', { name: '' }).click();
   await expect(page.getByTitle('4', { exact: true }).locator(SELECTOR_SPECIAL_POINT)).toHaveCSS(
     'height',
     `${BAR_HEIGHT}px`,
@@ -85,6 +84,9 @@ test('check deck info2', async ({ page, cardUtil }) => {
   await cardUtil.addCard(127);
   await cardUtil.addCard(113);
 
+  if (await cardUtil.isInDeckCardListHidden()) {
+    await cardUtil.showInDeckCardList();
+  }
   await page.getByRole('button', { name: '' }).click();
   await expect(page.getByTitle('1', { exact: true }).locator(SELECTOR_SPECIAL_POINT)).toHaveCSS(
     'height',
