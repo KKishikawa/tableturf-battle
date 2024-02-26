@@ -152,7 +152,7 @@ export class DeckInfo extends CardList {
         },
         [0, new Map(availableInkCount.map((c) => [c, 0])), new Map(availableSP.map((c) => [c, 0]))],
       );
-      const toStyleHeightLiteral = (n: number) => isFinite(n) ? `style="height:${n}%"` : undefined;
+      const toStyleHeightLiteral = (n: number) => (isFinite(n) ? `style="height:${n}%"` : undefined);
       // マス数の分布
       const _gcs = [...gcountr[1]];
       const gMaxCount = Math.max(..._gcs.map((v) => v[1]));
