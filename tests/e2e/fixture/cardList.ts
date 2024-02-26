@@ -45,10 +45,15 @@ export class CardList {
   async showInDeckCardList() {
     await this._page.locator('.tab-group').first().locator('.tab').nth(1).click();
   }
+  async isCardListHidden() {
+    return await this._page.getByRole('button', { name: '詳細検索' }).isHidden();
+  }
+  async isInDeckCardListHidden() {
+    return await this._deckContainer.getByRole('button', { name: '' }).isHidden();
+  }
 
   async clearAll() {
-    const btnClear = this._deckContainer.getByRole('button', { name: '' });
-    const isDeckHidden = await btnClear.isHidden();
+    const isDeckHidden = await this.isInDeckCardListHidden();
     if (isDeckHidden) {
       await this.showInDeckCardList();
     }
@@ -57,6 +62,18 @@ export class CardList {
     if (isDeckHidden) {
       // restore state
       this.showCardList();
+    }
+  }
+  async addCard(id: number) {
+    const isListHidden = await this.isCardListHidden();
+    if (isListHidden) {
+      await this.showCardList();
+    }
+    const card = await this.getCardByIdFromList(id);
+    await card.getByRole('button').click();
+    if (isListHidden) {
+      // restore state
+      this.showInDeckCardList();
     }
   }
 }
