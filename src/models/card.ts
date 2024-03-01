@@ -1,7 +1,7 @@
 // import { getFromStorage, setToStrage, saveJson } from "@/utils";
 import { getFromStorage, setToStrage } from '@/utils';
 import * as RecordUtil from '@/utils/variableRecord';
-import dataJson from '@/../data/v.6.0.0.json';
+import dataJson from '@/../data/v.7.0.0.json';
 export interface ICardData {
   /** バージョン */
   v: 0;
