@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig, loadEnv } from 'vite';
 import istanbul from 'vite-plugin-istanbul';
+import { svelte } from '@sveltejs/vite-plugin-svelte'
 
 import PWA from './plugins/pwa';
 import rawPlugin from './plugins/rawPlugin';
@@ -22,6 +23,7 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       PWA(),
+      svelte(),
       rawPlugin({
         fileRegex: /\.mustache$/,
       }),

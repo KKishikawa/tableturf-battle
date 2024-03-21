@@ -2,7 +2,7 @@ import mustache from 'mustache';
 import { toInt } from '@/utils/convert';
 import * as dialog from '@/components/dialog';
 import * as Message from '@/components/message';
-import { IDeck } from '@/models/card';
+import { type IDeck } from '@/models/card';
 import { isValidString, nowYMD } from '@/utils';
 import {
   addDeck,

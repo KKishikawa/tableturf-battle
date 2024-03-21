@@ -1,6 +1,6 @@
 import mustache from 'mustache';
 import { $dom } from '@/utils';
-import { IDeck, saveToLS } from '@/models/card';
+import { type IDeck, saveToLS } from '@/models/card';
 import { writeVariableRecord } from '@/utils/variableRecord';
 import deckRowHTML from './deckRow.html.mustache';
 

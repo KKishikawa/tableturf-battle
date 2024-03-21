@@ -1,7 +1,7 @@
 import mustache from 'mustache';
 import { isValidString, $dom, mesureWidth } from '@/utils';
 import { toInt } from '@/utils/convert';
-import { ICard, RARITY, inkCount, encodeDeckCode, availableInkCount, availableSP } from '@/models/card';
+import { type ICard, RARITY, inkCount, encodeDeckCode, availableInkCount, availableSP } from '@/models/card';
 import { createCardGrid } from '@/components/cardGrid';
 import { ModalDialog } from '@/components/dialog';
 import tableHTML from './table.html.mustache';
