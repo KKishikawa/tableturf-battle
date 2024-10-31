@@ -13,7 +13,7 @@ import { showShareMsg } from '@/components/deckShare';
 try {
   const data = loadFromLS();
   addDeck(...data);
-} catch (error) {}
+} catch {}
 
 const tbody = document.querySelector('#created_decks tbody') as HTMLTableSectionElement;
 tbody.addEventListener('click', function (e) {

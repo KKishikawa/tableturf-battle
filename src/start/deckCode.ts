@@ -22,7 +22,7 @@ import { loadFromQuery } from '@/models/card';
       } else {
         Message.success('デッキを読み込みました。');
       }
-    } catch (error) {
+    } catch {
       Message.error('デッキの読み込みに失敗しました。');
     }
   };
@@ -35,6 +35,6 @@ import { loadFromQuery } from '@/models/card';
     try {
       loadDeck(code);
       Message.info('URLからデッキを読み込みました。');
-    } catch (error) {}
+    } catch {}
   }
 }
