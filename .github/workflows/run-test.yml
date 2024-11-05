@@ -9,8 +9,8 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+    - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4
       with:
         node-version-file: ./.nvmrc
         cache: 'npm'
@@ -29,7 +29,7 @@ jobs:
       run: echo "PlaywrightVersion=$(npm ll --depth=0 -p @playwright/test | grep -o '@[0-9].*')" >> "$GITHUB_OUTPUT"
     - name: Cache Playwright binaries
       id: playwright-cache
-      uses: actions/cache@v4
+      uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4
       with:
         # see https://playwright.dev/docs/browsers#managing-browser-binaries
         path: ~/.cache/ms-playwright
@@ -50,13 +50,13 @@ jobs:
       run: npm run e2e:mobile:coverage
     - name: Generate report
       run: npm run e2e:report
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
       if: always()
       with:
         name: vitest-coverage
         path: vitest-coverage/
         retention-days: 15
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
       if: always()
       with:
         name: playwright-coverage
