@@ -10,7 +10,7 @@ test('has title', async ({ page }) => {
 });
 test('open about me modal', async ({ page }) => {
   await page.goto('/');
-  const helpBtn = page.getByRole('button', { name: '' });
+  const helpBtn = page.locator('#button-about-me');
   await expect(helpBtn).toBeVisible();
   // open about me modal
   await helpBtn.click();
@@ -135,7 +135,7 @@ test('load deck', async ({ page }) => {
   await page.locator('#form_deckCodeLoad i').nth(1).click(); // clear
   await expect(page.getByPlaceholder('デッキコード読込')).toBeEmpty();
   await page.getByPlaceholder('デッキコード読込').fill('U1V1Z1');
-  await page.getByRole('button', { name: '' }).click(); // load
+  await page.locator('#form_deckCodeLoad button[type=submit]').click(); // load
 
   await expect(page.locator(".card-list-container .cardlist_table_row[data-selected='1']")).toHaveCount(3);
   await expect(page.locator('.deck-container .cardlist_table_row')).toHaveCount(3);
