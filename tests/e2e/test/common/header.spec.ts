@@ -28,7 +28,7 @@ test('change style (light theme os)', async ({ browser }) => {
   await page.goto('/');
   const html = page.locator('html');
   // check default is light
-  await expect(html).not.toHaveClass('dark');
+  await expect(html).not.toHaveAttribute('data-theme', 'dark');
 
   const themeBtn = page.getByRole('button', { name: 'テーマ変更' });
   await expect(themeBtn).toBeVisible();
@@ -53,23 +53,23 @@ test('change style (light theme os)', async ({ browser }) => {
   // check light theme and its setting is saved
   await themeBtn.click();
   await lightBtn.click();
-  await expect(html).not.toHaveClass('dark');
+  await expect(html).not.toHaveAttribute('data-theme', 'dark');
   await page.reload();
-  await expect(html).not.toHaveClass('dark');
+  await expect(html).not.toHaveAttribute('data-theme', 'dark');
 
   // check dark theme and its setting is saved
   await themeBtn.click();
   await darkBtn.click();
-  await expect(html).toHaveClass('dark');
+  await expect(html).toHaveAttribute('data-theme', 'dark');
   await page.reload();
-  await expect(html).toHaveClass('dark');
+  await expect(html).toHaveAttribute('data-theme', 'dark');
 
   // check dark theme and its setting is not saved
   await themeBtn.click();
   await systemBtn.click();
-  await expect(html).not.toHaveClass('dark');
+  await expect(html).not.toHaveAttribute('data-theme', 'dark');
   await page.reload();
-  await expect(html).not.toHaveClass('dark');
+  await expect(html).not.toHaveAttribute('data-theme', 'dark');
 
   await lightBrowser.close();
 });
@@ -82,7 +82,7 @@ test('change style (dark theme os)', async ({ browser }) => {
   await page.goto('/');
   const html = page.locator('html');
   // check default is dark
-  await expect(html).toHaveClass('dark');
+  await expect(html).toHaveAttribute('data-theme', 'dark');
 
   const themeBtn = page.getByRole('button', { name: 'テーマ変更' });
   await expect(themeBtn).toBeVisible();
@@ -107,23 +107,23 @@ test('change style (dark theme os)', async ({ browser }) => {
   // check light theme and its setting is saved
   await themeBtn.click();
   await lightBtn.click();
-  await expect(html).not.toHaveClass('dark');
+  await expect(html).not.toHaveAttribute('data-theme', 'dark');
   await page.reload();
-  await expect(html).not.toHaveClass('dark');
+  await expect(html).not.toHaveAttribute('data-theme', 'dark');
 
   // check dark theme and its setting is saved
   await themeBtn.click();
   await darkBtn.click();
-  await expect(html).toHaveClass('dark');
+  await expect(html).toHaveAttribute('data-theme', 'dark');
   await page.reload();
-  await expect(html).toHaveClass('dark');
+  await expect(html).toHaveAttribute('data-theme', 'dark');
 
   // check dark theme and its setting is not saved
   await themeBtn.click();
   await systemBtn.click();
-  await expect(html).toHaveClass('dark');
+  await expect(html).toHaveAttribute('data-theme', 'dark');
   await page.reload();
-  await expect(html).toHaveClass('dark');
+  await expect(html).toHaveAttribute('data-theme', 'dark');
 
   await darkBrowser.close();
 });
