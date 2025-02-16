@@ -1,10 +1,10 @@
 <div class="deck-tab-item table__wrapper">
   <div class="table-caption-title">
-    <div class="-ml-2 -mt-2 flex flex-wrap items-center">
+    <div class="-mt-2 -ml-2 flex flex-wrap items-center">
       <span class="table-title-text">{{title}}</span>
       {{^srch}}
-      <div class="mx-3 mt-3" title="デッキ情報">
-        <button type="button" id="button-deck-info" class="button button-sm button-default">
+      <div class="mx-3 mt-3">
+        <button type="button" id="button-deck-info" class="button button-sm button-default" title="デッキ情報">
           <i class="fa fa-circle-info w-3"></i>
         </button>
       </div>
@@ -12,7 +12,7 @@
       <div class="flex-auto" style="max-width: 16px"></div>
       {{/srch}}
       <div class="font-normal">
-        <div class="ml-2 mt-2 w-36">
+        <div class="mt-2 ml-2 w-36">
           <select class="form-input table-sort">
             <option value="0">カードNo(昇順)</option>
             <option value="1">カードNo(降順)</option>
@@ -45,10 +45,10 @@
     {{#srch}}
     <div class="expandable-wrapper mt-2 md:mt-3">
       <form class="expandable cardlist_serch flex flex-wrap items-end !overflow-hidden">
-        <div class="-ml-3 mb-3 flex flex-wrap">
-          <div class="ml-6 mt-2 flex items-center" title="マス数">
-            <div class="gridcount mr-5 mt-4 p-3 text-xs">
-              <div class="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-normal">マス数</div>
+        <div class="mb-3 -ml-3 flex flex-wrap">
+          <div class="mt-2 ml-6 flex items-center" title="マス数">
+            <div class="gridcount mt-4 mr-5 p-3 text-xs">
+              <div class="absolute -top-5 left-1/2 -translate-x-1/2 text-xs font-normal whitespace-nowrap">マス数</div>
             </div>
             <div class="w-12">
               <label for="min-grid" class="form-label form-label-input mb-1 text-xs">最小</label>
@@ -60,9 +60,9 @@
               <input id="max-grid" type="number" class="form-input p-1 text-end" />
             </div>
           </div>
-          <div class="ml-6 mt-2 flex items-center" title="スペシャルポイント">
+          <div class="mt-2 ml-6 flex items-center" title="スペシャルポイント">
             <div class="sp-fill relative mx-2 mt-4 h-3 w-3">
-              <div class="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-normal">sp</div>
+              <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-normal whitespace-nowrap">sp</div>
             </div>
             <div class="ml-3 w-12">
               <label for="min-sp" class="form-label form-label-input mb-1 text-xs">最小</label>
@@ -78,20 +78,20 @@
         <div class="mb-3 ml-3 flex">
           <div class="relative" data-clearable>
             <input class="form-input input_cardlist_serch pr-16" type="text" placeholder="カード名" />
-            <button class="button button-primary absolute bottom-0 right-0 top-0 rounded-l-none px-3" type="submit">
+            <button class="button button-primary absolute top-0 right-0 bottom-0 rounded-l-none px-3" type="submit">
               <i class="fa fa-search"></i>
             </button>
             <i class="input-clear fa fa-circle-xmark right-12"></i>
           </div>
           <button
             type="button"
-            class="button_search_clear button button-alt button-xs ml-5 mr-1 self-end whitespace-nowrap"
+            class="button_search_clear button button-alt button-xs mr-1 ml-5 self-end whitespace-nowrap"
           >
             クリア
           </button>
         </div>
       </form>
-      <div class="-mx-2 -mb-2 mt-1 md:-mx-4 md:-mb-4">
+      <div class="-mx-2 mt-1 -mb-2 md:-mx-4 md:-mb-4">
         <button type="button" class="button-default expand-button block w-full text-center">
           <span class="mr-2 text-sm">詳細検索</span><i class="fa-solid fa-caret-down"></i>
         </button>

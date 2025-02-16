@@ -5,7 +5,7 @@ const test = CardList.ExtendTest(base);
 
 test('deck info btn', async ({ page, cardUtil }) => {
   await page.goto('/');
-  const btnInfo = await page.getByRole('button', { name: '' });
+  const btnInfo = await page.locator('#button-deck-info');
   await expect(btnInfo).not.toBeInViewport();
   await cardUtil.showInDeckCardList();
   await expect(btnInfo).toBeInViewport();

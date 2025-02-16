@@ -1,0 +1,10 @@
+@import 'tailwindcss';
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+@layer base {
+  @import '@fortawesome/fontawesome-free/css/all.css';
+  @import './override.css';
+}
+@layer components {
+  @import './components.css';
+  @import './custom-components.css';
+}

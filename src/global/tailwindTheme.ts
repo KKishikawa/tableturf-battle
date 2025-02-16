@@ -1,11 +1,11 @@
 /** ダークモードに変更する */
 function toDark(save?: boolean) {
-  document.documentElement.classList.add('dark');
+  document.documentElement.dataset.theme = 'dark';
   if (save) localStorage.theme = 'dark';
 }
 /** ライトモードに切り替える */
 function toLight(save?: boolean) {
-  document.documentElement.classList.remove('dark');
+  document.documentElement.dataset.theme = 'light';
   if (save) localStorage.theme = 'light';
 }
 function toSystem() {
