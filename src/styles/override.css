@@ -1,3 +1,11 @@
+
+* {
+  border: 0 solid #e5e7eb;
+}
+html {
+  touch-action: manipulation;
+}
+
 [type='checkbox'],
 [type='radio'] {
   print-color-adjust: exact;

@@ -128,3 +128,18 @@
     @apply rotate-180;
   }
 }
+
+#themeButtonGroup {
+  @apply pointer-events-none absolute -left-1 top-full z-40 max-h-0 w-fit overflow-hidden p-1 transition-all duration-300;
+}
+.theme-setting-label {
+  @apply w-0 overflow-hidden whitespace-nowrap transition-all duration-300;
+}
+.theme-settig--is-setting {
+  #themeButtonGroup {
+    @apply max-h-36;
+  }
+  .theme-setting-label {
+    @apply ml-1 w-20;
+  }
+}

@@ -248,3 +248,7 @@
 .table-title-text {
   @apply ml-2 mt-2 hidden md:inline;
 }
+
+* + .nocontent {
+  @apply hidden;
+}
