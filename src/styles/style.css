@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+@theme {
+  --font-sans: 'Inter', "'Noto Sans JP'", "'Noto Color Emoji'", 'sans';
+}
 @layer base {
   @import '@fortawesome/fontawesome-free/css/all.css';
   @import './override.css';
