@@ -21,9 +21,9 @@
     "e2e:pc:coverage": "cross-env CI=true coverage=1 playwright test -c playwright.pc.config.ts",
     "e2e:mobile:coverage": "cross-env CI=true coverage=1 playwright test -c playwright.mobile.config.ts",
     "e2e:report": "nyc report --reporter=lcov --temp-dir=playwright-coverage --report-dir=playwright-coverage",
-    "format": "prettier --write '**/*.{pcss,html.mustache,ts,js,cjs,html}'",
+    "format": "prettier --write '**/*.{css,html.mustache,ts,js,cjs,html}'",
     "check:lint": "eslint .",
-    "check:format": "prettier --check '**/*.{pcss,html.mustache,ts,js,cjs,html}'"
+    "check:format": "prettier --check '**/*.{css,html.mustache,ts,js,cjs,html}'"
   },
   "devDependencies": {
     "@lcov-viewer/istanbul-report": "^1.4.0",

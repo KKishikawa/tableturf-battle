@@ -100,7 +100,7 @@
     }
     &:last-child {
       .grid__wrapper {
-        @apply -bottom-4 top-auto;
+        @apply top-auto -bottom-4;
       }
     }
     &:first-child {
@@ -207,7 +207,7 @@
     }
   }
   .card_name {
-    @apply -order-10 col-span-full -mx-2 flex justify-center whitespace-nowrap pb-1 text-sm font-bold;
+    @apply -order-10 col-span-full -mx-2 flex justify-center pb-1 text-sm font-bold whitespace-nowrap;
     > * {
       @apply scale-100;
     }
@@ -216,7 +216,7 @@
     @apply -order-9 col-span-full place-self-center;
   }
   .card_gridcount {
-    @apply relative z-10 -order-5 col-span-2 flex h-9 w-9 items-center justify-center p-0 text-center text-base font-medium text-white after:absolute after:left-1/2 after:top-1/2 after:-z-10 after:h-6 after:w-6 after:-translate-x-1/2 after:-translate-y-1/2 after:-rotate-45 after:rounded-sm after:border-2;
+    @apply relative z-10 -order-5 col-span-2 flex h-9 w-9 items-center justify-center p-0 text-center text-base font-medium text-white after:absolute after:top-1/2 after:left-1/2 after:-z-10 after:h-6 after:w-6 after:-translate-x-1/2 after:-translate-y-1/2 after:-rotate-45 after:rounded-sm after:border-2;
   }
   .card_sp {
     @apply -order-3 col-span-3 mt-1 flex items-center;
@@ -227,7 +227,7 @@
 }
 
 .gridcount {
-  @apply relative left-1 z-10 py-1 text-center text-base font-normal after:absolute after:left-1/2 after:top-1/2 after:-z-10 after:h-4 after:w-4 after:-translate-x-1/2 after:-translate-y-1/2 after:-rotate-45 after:rounded-sm after:border-2 after:border-violet-900 after:bg-violet-600 dark:text-white;
+  @apply relative left-1 z-10 py-1 text-center text-base font-normal after:absolute after:top-1/2 after:left-1/2 after:-z-10 after:h-4 after:w-4 after:-translate-x-1/2 after:-translate-y-1/2 after:-rotate-45 after:rounded-sm after:border-2 after:border-violet-900 after:bg-violet-600 dark:text-white;
 }
 
 .deck-tab-items {
@@ -246,7 +246,7 @@
   @apply flex;
 }
 .table-title-text {
-  @apply ml-2 mt-2 hidden md:inline;
+  @apply mt-2 ml-2 hidden md:inline;
 }
 
 * + .nocontent {
