@@ -1,9 +1,12 @@
-@import './override.pcss';
-@import 'tailwindcss/base';
-@import './components.pcss';
-@import './custom-components.pcss';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import 'tailwindcss';
+@import './override.css';
+@import './components.css';
+@import './custom-components.css';
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@layer base {
+  @import '@fortawesome/fontawesome-free/css/all.css';
+}
 
 * {
   border: 0 solid #e5e7eb;
