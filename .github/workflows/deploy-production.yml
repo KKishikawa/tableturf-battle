@@ -9,6 +9,7 @@ jobs:
   Deploy:
     needs:
       - Test
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
       - name: Call Endpoint

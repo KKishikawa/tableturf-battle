@@ -6,8 +6,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite --host",
-    "build": "tsc --noEmit && vite build",
-    "build:coverage": "tsc --noEmit && cross-env CI=true coverage=1 vite build",
+    "build": "vite build",
+    "build:coverage": "cross-env CI=true coverage=1 vite build",
     "clean": "rimraf dist",
     "clean:e2e-coverage": "rimraf playwright-coverage",
     "preview": "vite preview",
@@ -23,7 +23,8 @@
     "e2e:report": "nyc report --reporter=lcov --temp-dir=playwright-coverage --report-dir=playwright-coverage",
     "format": "prettier --write '**/*.{css,html.mustache,ts,js,cjs,html}'",
     "check:lint": "eslint .",
-    "check:format": "prettier --check '**/*.{css,html.mustache,ts,js,cjs,html}'"
+    "check:format": "prettier --check '**/*.{css,html.mustache,ts,js,cjs,html}'",
+    "check:types": "tsc --noEmit"
   },
   "devDependencies": {
     "@lcov-viewer/istanbul-report": "^1.4.0",
