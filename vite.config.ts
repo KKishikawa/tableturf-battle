@@ -8,7 +8,6 @@ import rawPlugin from './plugins/rawPlugin';
 
 /**@see {@link https://vitejs.dev/config} */
 export default defineConfig(({ mode }) => {
-  process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
   return {
     define: {
       'import.meta.vitest': 'undefined',
