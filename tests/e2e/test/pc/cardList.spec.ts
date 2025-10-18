@@ -14,7 +14,7 @@ test('select card and clear', async ({ page, cardUtil }) => {
   await expect(page.locator('.table-title-text').nth(1)).toHaveText('デッキ (4/15)');
 
   // clear deck
-  const btnDeckClear = page.getByRole('button', { name: '' });
+  const btnDeckClear = page.getByRole('button', { name: 'デッキを空にする' });
   await btnDeckClear.click();
   await expect(page.getByText('デッキ内容のクリア Close modal')).toBeInViewport();
   await page.locator('button').filter({ hasText: 'Close modal' }).click();

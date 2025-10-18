@@ -40,7 +40,7 @@ export class CardList {
     return await this._page.getByRole('button', { name: '詳細検索' }).isHidden();
   }
   async isInDeckCardListHidden() {
-    return await this._page.locator(CardList.DECK_SELECTOR).getByRole('button', { name: '' }).isHidden();
+    return await this._page.locator(CardList.DECK_SELECTOR).getByRole('button', { name: 'デッキを空にする' }).isHidden();
   }
 
   async clearAll() {
@@ -48,7 +48,7 @@ export class CardList {
     if (isDeckHidden) {
       await this.showInDeckCardList();
     }
-    await this._page.locator(CardList.DECK_SELECTOR).getByRole('button', { name: '' }).click();
+    await this._page.locator(CardList.DECK_SELECTOR).getByRole('button', { name: 'デッキを空にする' }).click();
     await this._page.getByText('OK').click();
     if (isDeckHidden) {
       // restore state
