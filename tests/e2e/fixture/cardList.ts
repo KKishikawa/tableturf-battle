@@ -40,7 +40,10 @@ export class CardList {
     return await this._page.getByRole('button', { name: '詳細検索' }).isHidden();
   }
   async isInDeckCardListHidden() {
-    return await this._page.locator(CardList.DECK_SELECTOR).getByRole('button', { name: 'デッキを空にする' }).isHidden();
+    return await this._page
+      .locator(CardList.DECK_SELECTOR)
+      .getByRole('button', { name: 'デッキを空にする' })
+      .isHidden();
   }
 
   async clearAll() {
