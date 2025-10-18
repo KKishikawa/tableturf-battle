@@ -14,7 +14,7 @@ test('select card and clear', async ({ page, cardUtil }) => {
 
   // clear deck
   await page.locator('li').filter({ hasText: 'デッキ (4/15)' }).click();
-  const btnDeckClear = page.getByRole('button', { name: '' });
+  const btnDeckClear = page.getByRole('button', { name: 'デッキを空にする' });
   await btnDeckClear.click();
   await expect(page.getByText('デッキ内容のクリア Close modal')).toBeVisible();
   await page.locator('button').filter({ hasText: 'Close modal' }).click();
@@ -34,7 +34,7 @@ test('select card and clear', async ({ page, cardUtil }) => {
 
   await cardUtil.showCardList();
   await expect(page.getByText('カードリスト デッキ (0/15)')).toBeInViewport();
-  await cardUtil.getCardByIdFromList(20).getByRole('button').click();
-  await cardUtil.getCardByIdFromList(20).getByRole('button').click();
+  await cardUtil.getCardByIdFromList(20).getByRole('button', { name: 'デッキに追加' }).click();
+  await cardUtil.getCardByIdFromList(20).getByRole('button', { name: 'デッキから削除' }).click();
   await expect(page.getByText('カードリスト デッキ (0/15)')).toBeInViewport();
 });

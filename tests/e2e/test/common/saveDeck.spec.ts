@@ -12,23 +12,23 @@ test('save deck', async ({ page, cardUtil }) => {
   if (await cardUtil.isInDeckCardListHidden()) {
     await cardUtil.showInDeckCardList();
   }
-  await page.getByRole('button', { name: ' ' }).click();
+  await page.getByRole('button', { name: 'デッキを保存 ' }).click();
   await expect(page.locator('#app-modal_container')).toContainText('デッキの保存');
   await expect(page.getByPlaceholder('デッキ名')).toBeEmpty();
   await page.getByPlaceholder('デッキ名').fill('test123');
   await page.locator('#app-modal_container').getByText('キャンセル').click();
   await expect(page.locator('#app-modal_container').getByText('デッキの保存')).toBeHidden();
 
-  await page.getByRole('button', { name: ' ' }).click();
+  await page.getByRole('button', { name: 'デッキを保存 ' }).click();
   await page.getByPlaceholder('デッキ名').fill('test123');
   await page.locator('#app-modal_container').getByText('保存', { exact: true }).click();
   await expect(page.locator('#app-modal_container')).toContainText('保存しました。');
 
-  await page.getByRole('button', { name: '作成済みデッキ ' }).click();
+  await page.getByRole('button', { name: '作成済みデッキを表示' }).click();
   await expect(page.getByRole('row')).toContainText('test123 編集: ');
 
   // check deck code
-  await page.getByRole('button', { name: '' }).click();
+  await page.getByRole('button', { name: 'デッキ共有リンクを作成' }).click();
   await expect(page.locator('#app-modal_container')).toContainText('デッキコード');
   await expect(page.locator('label').filter({ hasText: 'デッキコード' }).locator('..').locator('input')).toHaveValue(
     'U1V1Z1',
@@ -43,12 +43,12 @@ test('save deck', async ({ page, cardUtil }) => {
   await expect(page.getByRole('cell')).toContainText('作成済みのものはありません。');
 
   // save and load check
-  await page.getByRole('button', { name: ' ' }).click();
+  await page.getByRole('button', { name: 'デッキを保存 ' }).click();
   await page.getByPlaceholder('デッキ名').fill('test123');
   await page.locator('#app-modal_container').getByText('保存', { exact: true }).click();
   await expect(page.locator('#app-modal_container')).toContainText('保存しました。');
   await cardUtil.clearAll();
-  await page.getByRole('button', { name: '' }).click();
+  await page.getByRole('button', { name: 'デッキを編集する' }).click();
   await expect(page.locator('#app-modal_container')).toContainText('デッキを読み込みました。');
   await expect(cardUtil.getCardByIdFromInDeckList(56)).toBeVisible();
   await expect(cardUtil.getCardByIdFromInDeckList(57)).toBeVisible();
@@ -56,7 +56,7 @@ test('save deck', async ({ page, cardUtil }) => {
 
   // overwrite
   await cardUtil.addCard(1);
-  await page.getByRole('button', { name: ' ' }).click();
+  await page.getByRole('button', { name: 'デッキを保存 ' }).click();
   await page.locator('label').filter({ hasText: 'test123 ' }).click();
   await page.locator('#app-modal_container').getByText('保存', { exact: true }).click();
   await page.getByText('上書きの確認').click();
@@ -64,11 +64,11 @@ test('save deck', async ({ page, cardUtil }) => {
   await page.getByText('OK').click();
   await expect(page.locator('#app-modal_container')).toContainText('上書き保存しました。');
   await cardUtil.clearAll();
-  await page.getByRole('button', { name: '' }).click();
+  await page.getByRole('button', { name: 'デッキを編集する' }).click();
   await expect(cardUtil.getCardByIdFromInDeckList(1)).toBeVisible();
 
   // reload
   await page.reload();
-  await page.getByRole('button', { name: '作成済みデッキ ' }).click();
+  await page.getByRole('button', { name: '作成済みデッキを表示' }).click();
   await expect(page.getByRole('row')).toContainText('test123 編集: ');
 });
