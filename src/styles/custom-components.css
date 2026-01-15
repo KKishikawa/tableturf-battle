@@ -1,3 +1,4 @@
+@reference "tailwindcss"
 .n-fill,
 .sp-fill {
   @apply z-0 box-content border border-gray-800 dark:border-black;

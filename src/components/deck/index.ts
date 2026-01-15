@@ -2,7 +2,7 @@ import mustache from 'mustache';
 import { $dom } from '@/utils';
 import { IDeck, saveToLS } from '@/models/card';
 import { writeVariableRecord } from '@/utils/variableRecord';
-import deckRowHTML from './deckRow.html.mustache';
+import deckRowHTML from './deckRow.html.mustache?raw';
 
 /** デッキを追加します  */
 export function addDeck(...deck: IDeck[]) {

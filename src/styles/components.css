@@ -1,3 +1,4 @@
+@reference "tailwindcss"
 .table__wrapper {
   @apply relative overflow-x-auto rounded-md border border-gray-200 shadow-md sm:rounded-lg dark:border-gray-700;
 }
