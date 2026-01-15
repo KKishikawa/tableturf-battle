@@ -26,11 +26,6 @@ const config = [
         ...globals.browser,
         ...globals.node,
       },
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
     },
 
     rules: {

@@ -4,9 +4,9 @@ import { toInt } from '@/utils/convert';
 import { ICard, RARITY, inkCount, encodeDeckCode, availableInkCount, availableSP } from '@/models/card';
 import { createCardGrid } from '@/components/cardGrid';
 import { ModalDialog } from '@/components/dialog';
-import tableHTML from './table.html.mustache';
-import tableRowHTML from './row.html.mustache';
-import deckInfoHTML from './deckInfoModalBody.html.mustache';
+import tableHTML from './table.html.mustache?raw';
+import tableRowHTML from './row.html.mustache?raw';
+import deckInfoHTML from './deckInfoModalBody.html.mustache?raw';
 import { showShareMsg } from '../deckShare';
 
 interface IinternalSortRowInfo {

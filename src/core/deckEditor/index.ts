@@ -4,8 +4,8 @@ import { $dom } from '@/utils';
 import { toInt } from '@/utils/convert';
 import * as dialog from '@/components/dialog';
 import * as Message from '@/components/message';
-import saveDeckButtonHTML from './saveDeckBtn.html.mustache';
-import clearButtonHTML from './clearBtn.html.mustache';
+import saveDeckButtonHTML from './saveDeckBtn.html.mustache?raw';
+import clearButtonHTML from './clearBtn.html.mustache?raw';
 
 import openSaveDeckDialog from './saveDeckDialog';
 
