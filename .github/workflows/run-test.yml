@@ -31,7 +31,7 @@ jobs:
       run: echo "PlaywrightVersion=$(npm ll --depth=0 -p @playwright/test | grep -o '@[0-9].*')" >> "$GITHUB_OUTPUT"
     - name: Cache Playwright binaries
       id: playwright-cache
-      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5
+      uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
       with:
         # see https://playwright.dev/docs/browsers#managing-browser-binaries
         path: ~/.cache/ms-playwright
