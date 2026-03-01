@@ -25,6 +25,7 @@
     "check:types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@lcov-viewer/istanbul-report": "^1.4.0",
     "@playwright/test": "^1.50.1",
     "@tailwindcss/vite": "^4.0.6",
@@ -34,7 +35,8 @@
     "@typescript-eslint/parser": "^8.0.0",
     "@vitest/coverage-istanbul": "^4.0.0",
     "@vitest/ui": "^4.0.0",
-    "eslint": "^9.0.0",
+    "eslint": "^10.0.0",
+    "globals": "^17.4.0",
     "nyc": "^18.0.0",
     "playwright-test-coverage": "^1.2.12",
     "prettier": "^3.2.5",
