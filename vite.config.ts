@@ -3,8 +3,6 @@ import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 import istanbul from 'vite-plugin-istanbul';
 
-import PWA from './plugins/pwa';
-
 /**@see {@link https://vitejs.dev/config} */
 export default defineConfig(({ mode }) => {
   return {
@@ -22,7 +20,6 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       tailwindcss(),
-      PWA(),
       process.env.coverage
         ? istanbul({
             include: ['src/**/*'],
