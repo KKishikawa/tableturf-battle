@@ -295,4 +295,38 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(view.querySelector<HTMLElement>('[data-render-error="true"]')?.dataset.itemId).toBe('bad');
     expect(errors[errors.length - 1]?.detail.code).toBe('renderer-error');
   });
+
+  it('registers view mode plugins and exposes a read-only snapshot', () => {
+    const view = new SearchCollectionViewElement();
+    const visualMode = { id: 'visual', label: 'Visual' };
+    const listMode = { id: 'list', label: 'List' };
+
+    view.registerViewMode(visualMode);
+    view.registerViewMode(listMode);
+
+    expect(view.viewModes).toEqual([visualMode, listMode]);
+    expect(Object.isFrozen(view.viewModes)).toBe(true);
+
+    const snapshot = view.viewModes;
+    view.registerViewMode({ id: 'compact', label: 'Compact' });
+
+    expect(snapshot).toEqual([visualMode, listMode]);
+    expect(view.viewModes.map((mode) => mode.id)).toEqual(['visual', 'list', 'compact']);
+  });
+
+  it('rejects duplicate view mode ids without replacing the existing plugin', () => {
+    const view = new SearchCollectionViewElement();
+    const errors: CustomEvent[] = [];
+    const visualMode = { id: 'visual', label: 'Visual' };
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+
+    view.registerViewMode(visualMode);
+    view.registerViewMode({ id: 'visual', label: 'Duplicate Visual' });
+
+    expect(view.viewModes).toEqual([visualMode]);
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'duplicate-mode',
+      mode: 'visual',
+    });
+  });
 });
