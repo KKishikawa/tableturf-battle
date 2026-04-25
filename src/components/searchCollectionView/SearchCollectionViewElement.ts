@@ -120,6 +120,20 @@ export class SearchCollectionViewElement<
     if (!(structure.itemsRoot instanceof HTMLElement)) return false;
     if (structure.modeRoot && !(structure.modeRoot instanceof HTMLElement)) return false;
     if (structure.toolbarRoot && !(structure.toolbarRoot instanceof HTMLElement)) return false;
+    if (structure.itemsRoot === structure.root) return false;
+    if (structure.modeRoot && structure.modeRoot === structure.itemsRoot) return false;
+    if (
+      structure.toolbarRoot &&
+      (structure.toolbarRoot === structure.root ||
+        structure.toolbarRoot === structure.itemsRoot ||
+        structure.toolbarRoot === structure.modeRoot)
+    ) {
+      return false;
+    }
+    if (structure.root.isConnected || structure.itemsRoot.isConnected) return false;
+    if (structure.modeRoot?.isConnected || structure.toolbarRoot?.isConnected) return false;
+    if (structure.root.parentElement) return false;
+    if (structure.toolbarRoot?.parentElement) return false;
 
     const modeTarget = structure.modeRoot ?? structure.root;
     if (structure.modeRoot && structure.modeRoot !== structure.root && !structure.root.contains(structure.modeRoot)) {

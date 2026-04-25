@@ -156,6 +156,60 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(view.querySelector('article')).toBeNull();
   });
 
+  it('rejects custom structures that reuse connected nodes', () => {
+    const connectedRoot = document.createElement('section');
+    const connectedItemsRoot = document.createElement('ol');
+    connectedRoot.append(connectedItemsRoot);
+    document.body.append(connectedRoot);
+
+    const view = new SearchCollectionViewElement();
+    const errors: CustomEvent[] = [];
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.structure = () => ({ root: connectedRoot, itemsRoot: connectedItemsRoot });
+    view.renderer = () => document.createElement('li');
+
+    view.items = [{ id: 'connected' }];
+
+    expect(errors[errors.length - 1]?.detail.code).toBe('invalid-structure');
+    expect(view.querySelector('li')).toBeNull();
+    expect(document.body.firstElementChild).toBe(connectedRoot);
+  });
+
+  it('rejects custom structure roots already parented outside the returned structure', () => {
+    const externalParent = document.createElement('div');
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    root.append(itemsRoot);
+    externalParent.append(root);
+
+    const view = new SearchCollectionViewElement();
+    const errors: CustomEvent[] = [];
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.structure = () => ({ root, itemsRoot });
+    view.renderer = () => document.createElement('li');
+
+    view.items = [{ id: 'parented' }];
+
+    expect(errors[errors.length - 1]?.detail.code).toBe('invalid-structure');
+    expect(view.querySelector('li')).toBeNull();
+    expect(root.parentElement).toBe(externalParent);
+  });
+
+  it('rejects custom structures that reuse the same node for multiple roots', () => {
+    const root = document.createElement('section');
+
+    const view = new SearchCollectionViewElement();
+    const errors: CustomEvent[] = [];
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.structure = () => ({ root, itemsRoot: root });
+    view.renderer = () => document.createElement('li');
+
+    view.items = [{ id: 'same-node' }];
+
+    expect(errors[errors.length - 1]?.detail.code).toBe('invalid-structure');
+    expect(view.querySelector('li')).toBeNull();
+  });
+
   it('wraps DocumentFragment renderer output in a default item wrapper', () => {
     const view = new SearchCollectionViewElement();
     view.renderer = () => {
