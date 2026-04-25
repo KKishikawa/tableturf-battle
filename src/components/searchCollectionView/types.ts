@@ -29,8 +29,29 @@ export interface SearchCollectionStructure {
 
 export type SearchCollectionStructureRenderer = () => SearchCollectionStructure;
 
+export interface ViewModePlugin {
+  id: string;
+  label: string;
+  containerClass?: string;
+  itemClass?: string;
+  styles?: string | CSSStyleSheet;
+  activate?(modeTarget: HTMLElement): void;
+  deactivate?(modeTarget: HTMLElement): void;
+}
+
+export interface SearchCollectionModeChangeDetail {
+  mode: string;
+  previousMode: string | null;
+}
+
 export interface SearchCollectionErrorDetail {
-  code: 'missing-item-id' | 'duplicate-item-id' | 'invalid-structure' | 'renderer-error';
+  code:
+    | 'missing-item-id'
+    | 'duplicate-item-id'
+    | 'unknown-mode'
+    | 'duplicate-mode'
+    | 'invalid-structure'
+    | 'renderer-error';
   message: string;
   cause?: unknown;
   itemId?: string;

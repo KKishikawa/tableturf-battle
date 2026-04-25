@@ -6,6 +6,7 @@ import type {
   SearchCollectionRenderer,
   SearchCollectionStructure,
   SearchCollectionStructureRenderer,
+  ViewModePlugin,
 } from './types';
 
 export class SearchCollectionViewElement<
@@ -16,6 +17,7 @@ export class SearchCollectionViewElement<
   private _getItemId: SearchCollectionItemIdResolver<TItem> | null = null;
   private _structure: SearchCollectionStructureRenderer | null = null;
   private mountedStructure: SearchCollectionStructure | null = null;
+  private registeredViewModes: ViewModePlugin[] = [];
   private hasReceivedItems = false;
 
   get items() {
@@ -57,6 +59,23 @@ export class SearchCollectionViewElement<
       return;
     }
     this._structure = structure;
+  }
+
+  get viewModes(): readonly ViewModePlugin[] {
+    return Object.freeze([...this.registeredViewModes]);
+  }
+
+  registerViewMode(plugin: ViewModePlugin) {
+    if (this.registeredViewModes.some((viewMode) => viewMode.id === plugin.id)) {
+      this.dispatchComponentError({
+        code: 'duplicate-mode',
+        message: `Duplicate view mode "${plugin.id}".`,
+        mode: plugin.id,
+      });
+      return;
+    }
+
+    this.registeredViewModes.push(plugin);
   }
 
   setItems(items: TItem[]) {
