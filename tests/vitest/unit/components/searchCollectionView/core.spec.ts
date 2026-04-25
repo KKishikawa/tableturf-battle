@@ -156,6 +156,39 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(view.querySelector('article')).toBeNull();
   });
 
+  it('rejects custom structure callbacks that return nullish values', () => {
+    const view = new SearchCollectionViewElement();
+    const errors: CustomEvent[] = [];
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.structure = (() => null) as never;
+    view.renderer = () => document.createElement('article');
+
+    expect(() => {
+      view.items = [{ id: 1 }];
+    }).not.toThrow();
+
+    expect(errors[errors.length - 1]?.detail.code).toBe('invalid-structure');
+    expect(view.querySelector('article')).toBeNull();
+  });
+
+  it('reports invalid-structure when a custom structure callback throws', () => {
+    const view = new SearchCollectionViewElement();
+    const errors: CustomEvent[] = [];
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.structure = (() => {
+      throw new Error('bad structure');
+    }) as never;
+    view.renderer = () => document.createElement('article');
+
+    expect(() => {
+      view.items = [{ id: 1 }];
+    }).not.toThrow();
+
+    expect(errors[errors.length - 1]?.detail.code).toBe('invalid-structure');
+    expect(errors[errors.length - 1]?.detail.cause).toBeInstanceOf(Error);
+    expect(view.querySelector('article')).toBeNull();
+  });
+
   it('rejects custom structures that reuse connected nodes', () => {
     const connectedRoot = document.createElement('section');
     const connectedItemsRoot = document.createElement('ol');

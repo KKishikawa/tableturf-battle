@@ -71,7 +71,18 @@ export class SearchCollectionViewElement<
     if (this.mountedStructure) return this.mountedStructure;
 
     if (this._structure) {
-      const customStructure = this._structure();
+      let customStructure: unknown;
+      try {
+        customStructure = this._structure();
+      } catch (cause) {
+        this.dispatchComponentError({
+          code: 'invalid-structure',
+          message: 'Custom structure renderer failed.',
+          cause,
+        });
+        return null;
+      }
+
       if (!this.isValidStructure(customStructure)) {
         this.dispatchComponentError({
           code: 'invalid-structure',
@@ -115,32 +126,38 @@ export class SearchCollectionViewElement<
     return toolbarRoot;
   }
 
-  private isValidStructure(structure: SearchCollectionStructure) {
-    if (!(structure.root instanceof HTMLElement)) return false;
-    if (!(structure.itemsRoot instanceof HTMLElement)) return false;
-    if (structure.modeRoot && !(structure.modeRoot instanceof HTMLElement)) return false;
-    if (structure.toolbarRoot && !(structure.toolbarRoot instanceof HTMLElement)) return false;
-    if (structure.itemsRoot === structure.root) return false;
-    if (structure.modeRoot && structure.modeRoot === structure.itemsRoot) return false;
+  private isValidStructure(structure: unknown): structure is SearchCollectionStructure {
+    if (!structure || typeof structure !== 'object') return false;
+    const maybeStructure = structure as Partial<SearchCollectionStructure>;
+    if (!(maybeStructure.root instanceof HTMLElement)) return false;
+    if (!(maybeStructure.itemsRoot instanceof HTMLElement)) return false;
+    if (maybeStructure.modeRoot && !(maybeStructure.modeRoot instanceof HTMLElement)) return false;
+    if (maybeStructure.toolbarRoot && !(maybeStructure.toolbarRoot instanceof HTMLElement)) return false;
+    if (maybeStructure.itemsRoot === maybeStructure.root) return false;
+    if (maybeStructure.modeRoot && maybeStructure.modeRoot === maybeStructure.itemsRoot) return false;
     if (
-      structure.toolbarRoot &&
-      (structure.toolbarRoot === structure.root ||
-        structure.toolbarRoot === structure.itemsRoot ||
-        structure.toolbarRoot === structure.modeRoot)
+      maybeStructure.toolbarRoot &&
+      (maybeStructure.toolbarRoot === maybeStructure.root ||
+        maybeStructure.toolbarRoot === maybeStructure.itemsRoot ||
+        maybeStructure.toolbarRoot === maybeStructure.modeRoot)
     ) {
       return false;
     }
-    if (structure.root.isConnected || structure.itemsRoot.isConnected) return false;
-    if (structure.modeRoot?.isConnected || structure.toolbarRoot?.isConnected) return false;
-    if (structure.root.parentElement) return false;
-    if (structure.toolbarRoot?.parentElement) return false;
+    if (maybeStructure.root.isConnected || maybeStructure.itemsRoot.isConnected) return false;
+    if (maybeStructure.modeRoot?.isConnected || maybeStructure.toolbarRoot?.isConnected) return false;
+    if (maybeStructure.root.parentElement) return false;
+    if (maybeStructure.toolbarRoot?.parentElement) return false;
 
-    const modeTarget = structure.modeRoot ?? structure.root;
-    if (structure.modeRoot && structure.modeRoot !== structure.root && !structure.root.contains(structure.modeRoot)) {
+    const modeTarget = maybeStructure.modeRoot ?? maybeStructure.root;
+    if (
+      maybeStructure.modeRoot &&
+      maybeStructure.modeRoot !== maybeStructure.root &&
+      !maybeStructure.root.contains(maybeStructure.modeRoot)
+    ) {
       return false;
     }
 
-    return modeTarget.contains(structure.itemsRoot);
+    return modeTarget.contains(maybeStructure.itemsRoot);
   }
 
   private render(validatedItemIds?: string[]) {
