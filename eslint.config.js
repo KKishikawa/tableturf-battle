@@ -9,6 +9,8 @@ const config = [
     ignores: [
       '**/.DS_Store',
       '**/node_modules/*',
+      '**/*-coverage/**',
+      '**/coverage/**',
       '**/dist',
       '**/package',
       '.env',
