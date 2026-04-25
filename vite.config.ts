@@ -30,6 +30,7 @@ export default defineConfig(({ mode }) => {
         : [],
     ],
     test: {
+      environment: 'happy-dom',
       coverage: {
         enabled: true,
         provider: 'istanbul',
