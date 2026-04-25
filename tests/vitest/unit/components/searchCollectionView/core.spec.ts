@@ -329,4 +329,47 @@ describe('SearchCollectionViewElement core rendering', () => {
       mode: 'visual',
     });
   });
+
+  it('synchronizes the active mode to the host attribute and mode target dataset', () => {
+    const view = new SearchCollectionViewElement();
+    const modeRoot = document.createElement('section');
+    const root = document.createElement('div');
+    const itemsRoot = document.createElement('ol');
+    root.append(modeRoot);
+    modeRoot.append(itemsRoot);
+    view.structure = () => ({ root, modeRoot, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.registerViewMode({ id: 'visual', label: 'Visual' });
+    view.registerViewMode({ id: 'list', label: 'List' });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    view.mode = 'visual';
+
+    expect(view.mode).toBe('visual');
+    expect(view.getAttribute('mode')).toBe('visual');
+    expect(modeRoot.dataset.mode).toBe('visual');
+
+    view.setAttribute('mode', 'list');
+
+    expect(view.mode).toBe('list');
+    expect(modeRoot.dataset.mode).toBe('list');
+  });
+
+  it('rejects an unknown mode and keeps the previous active mode', () => {
+    const view = new SearchCollectionViewElement();
+    const errors: CustomEvent[] = [];
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.registerViewMode({ id: 'visual', label: 'Visual' });
+    view.mode = 'visual';
+
+    view.mode = 'missing';
+
+    expect(view.mode).toBe('visual');
+    expect(view.getAttribute('mode')).toBe('visual');
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'unknown-mode',
+      mode: 'missing',
+    });
+  });
 });
