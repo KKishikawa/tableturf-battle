@@ -134,7 +134,6 @@ export class SearchCollectionViewElement<
     if (maybeStructure.modeRoot && !(maybeStructure.modeRoot instanceof HTMLElement)) return false;
     if (maybeStructure.toolbarRoot && !(maybeStructure.toolbarRoot instanceof HTMLElement)) return false;
     if (maybeStructure.itemsRoot === maybeStructure.root) return false;
-    if (maybeStructure.modeRoot && maybeStructure.modeRoot === maybeStructure.itemsRoot) return false;
     if (
       maybeStructure.toolbarRoot &&
       (maybeStructure.toolbarRoot === maybeStructure.root ||

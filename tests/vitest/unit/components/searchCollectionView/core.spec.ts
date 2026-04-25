@@ -243,6 +243,24 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(view.querySelector('li')).toBeNull();
   });
 
+  it('allows modeRoot to be the same node as itemsRoot', () => {
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    root.append(itemsRoot);
+
+    const view = new SearchCollectionViewElement();
+    const errors: CustomEvent[] = [];
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.structure = () => ({ root, modeRoot: itemsRoot, itemsRoot });
+    view.renderer = () => document.createElement('li');
+
+    view.items = [{ id: 'mode-items-root' }];
+    document.body.append(view);
+
+    expect(errors).toHaveLength(0);
+    expect(view.querySelector('ol > li')?.getAttribute('data-item-id')).toBe('mode-items-root');
+  });
+
   it('wraps DocumentFragment renderer output in a default item wrapper', () => {
     const view = new SearchCollectionViewElement();
     view.renderer = () => {
