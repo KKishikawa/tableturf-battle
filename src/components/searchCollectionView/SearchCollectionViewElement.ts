@@ -3,7 +3,6 @@ import type {
   SearchCollectionItemIdResolver,
   SearchCollectionErrorDetail,
   SearchCollectionModeChangeDetail,
-  SearchCollectionSearchStateChangeDetail,
   SearchCollectionRenderContext,
   SearchCollectionRenderer,
   SearchModelPlugin,
