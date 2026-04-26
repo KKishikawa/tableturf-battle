@@ -565,20 +565,38 @@ describe('SearchCollectionViewElement core rendering', () => {
       row.className = 'row';
       return row;
     };
-    view.registerViewMode({ id: 'visual', label: 'Visual' });
-    view.registerViewMode({ id: 'list', label: 'List' });
+    view.registerViewMode({
+      id: 'visual',
+      label: 'Visual',
+      containerClass: 'is-visual',
+      itemClass: 'item-visual',
+    });
+    view.registerViewMode({
+      id: 'list',
+      label: 'List',
+      containerClass: 'is-list',
+      itemClass: 'item-list',
+    });
     view.items = [{ id: 'a' }];
     document.body.append(view);
     const rowBefore = view.querySelector<HTMLElement>('.row');
     expect(rowBefore).not.toBeNull();
 
     view.mode = 'visual';
+    const visualRow = view.querySelector<HTMLElement>('.row');
     view.mode = 'list';
+    const listRow = view.querySelector<HTMLElement>('.row');
     view.mode = 'visual';
 
     const rowAfter = view.querySelector<HTMLElement>('.row');
     expect(renderCount).toBe(1);
+    expect(visualRow).toBe(rowBefore);
+    expect(listRow).toBe(rowBefore);
     expect(rowAfter).toBe(rowBefore);
+    expect(modeRoot.classList.contains('is-visual')).toBe(true);
+    expect(modeRoot.classList.contains('is-list')).toBe(false);
+    expect(rowAfter?.classList.contains('item-visual')).toBe(true);
+    expect(rowAfter?.classList.contains('item-list')).toBe(false);
   });
 
   it('dispatches mode-change with mode and previousMode only when the mode changes', () => {
