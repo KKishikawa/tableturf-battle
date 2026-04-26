@@ -471,6 +471,11 @@ describe('SearchCollectionViewElement core rendering', () => {
 
     view.mode = 'visual';
     view.mode = 'list';
+    expect(modeRoot.classList.contains('is-list')).toBe(true);
+    expect(modeRoot.classList.contains('is-visual')).toBe(false);
+    expect(rowBefore?.classList.contains('item-list')).toBe(true);
+    expect(rowBefore?.classList.contains('item-visual')).toBe(false);
+
     view.mode = 'visual';
 
     const rowAfter = view.querySelector<HTMLElement>('.row');
