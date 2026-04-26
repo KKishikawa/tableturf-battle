@@ -314,6 +314,42 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(view.viewModes.map((mode) => mode.id)).toEqual(['visual', 'list', 'compact']);
   });
 
+  it('keeps registered view mode definitions immutable from caller mutations', () => {
+    const view = new SearchCollectionViewElement();
+    const visualMode = {
+      id: 'visual',
+      label: 'Visual',
+      containerClass: 'is-visual',
+      itemClass: 'item-visual',
+    };
+
+    view.registerViewMode(visualMode);
+    visualMode.id = 'list';
+    visualMode.containerClass = 'is-mutated';
+    visualMode.itemClass = 'item-mutated';
+    view.registerViewMode({ id: 'list', label: 'List' });
+
+    expect(view.viewModes.map((mode) => mode.id)).toEqual(['visual', 'list']);
+    expect(view.viewModes[0]).not.toBe(visualMode);
+    expect(Object.isFrozen(view.viewModes[0])).toBe(true);
+
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    root.append(itemsRoot);
+    view.structure = () => ({ root, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    view.mode = 'visual';
+
+    expect(view.mode).toBe('visual');
+    expect(root.classList.contains('is-visual')).toBe(true);
+    expect(root.classList.contains('is-mutated')).toBe(false);
+    expect(view.querySelector('li')?.classList.contains('item-visual')).toBe(true);
+    expect(view.querySelector('li')?.classList.contains('item-mutated')).toBe(false);
+  });
+
   it('rejects duplicate view mode ids without replacing the existing plugin', () => {
     const view = new SearchCollectionViewElement();
     const errors: CustomEvent[] = [];

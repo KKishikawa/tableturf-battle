@@ -106,9 +106,12 @@ export class SearchCollectionViewElement<
       return;
     }
 
-    this.registeredViewModes.push(plugin);
-    this.installModeStyles(plugin);
-    if (this.pendingMode === plugin.id && this.getAttribute('mode') === plugin.id) this.setMode(plugin.id);
+    const registeredPlugin = Object.freeze({ ...plugin });
+    this.registeredViewModes.push(registeredPlugin);
+    this.installModeStyles(registeredPlugin);
+    if (this.pendingMode === registeredPlugin.id && this.getAttribute('mode') === registeredPlugin.id) {
+      this.setMode(registeredPlugin.id);
+    }
   }
 
   get selectedItemIds(): ReadonlySet<string> {
