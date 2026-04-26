@@ -262,14 +262,34 @@ export class SearchCollectionViewElement<
     const pluginChanged = previousPlugin?.id !== plugin.id;
     if (pluginChanged && previousPlugin) {
       this.removePluginClasses(previousPlugin, modeTarget);
-      previousPlugin.deactivate?.(modeTarget);
+      try {
+        previousPlugin.deactivate?.(modeTarget);
+      } catch (cause) {
+        this.dispatchComponentError({
+          code: 'view-mode-error',
+          message: `View mode "${previousPlugin.id}" deactivate hook failed.`,
+          cause,
+          mode: previousPlugin.id,
+        });
+      }
     }
 
     modeTarget.dataset.mode = plugin.id;
     this.addClassTokens(modeTarget, plugin.containerClass);
     [...structure.itemsRoot.children].forEach((child) => this.applyItemModeClass(child, plugin));
 
-    if (pluginChanged) plugin.activate?.(modeTarget);
+    if (pluginChanged) {
+      try {
+        plugin.activate?.(modeTarget);
+      } catch (cause) {
+        this.dispatchComponentError({
+          code: 'view-mode-error',
+          message: `View mode "${plugin.id}" activate hook failed.`,
+          cause,
+          mode: plugin.id,
+        });
+      }
+    }
   }
 
   private removePluginClasses(plugin: ViewModePlugin, modeTarget: HTMLElement) {

@@ -550,6 +550,91 @@ describe('SearchCollectionViewElement core rendering', () => {
     ]);
   });
 
+  it('reports activate hook errors without rejecting the active visual mode', () => {
+    const view = new SearchCollectionViewElement();
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    const errors: CustomEvent[] = [];
+    const cause = new Error('activate failed');
+    root.append(itemsRoot);
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.structure = () => ({ root, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.registerViewMode({
+      id: 'visual',
+      label: 'Visual',
+      containerClass: 'is-visual',
+      itemClass: 'item-visual',
+      activate: () => {
+        throw cause;
+      },
+    });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    expect(() => {
+      view.mode = 'visual';
+    }).not.toThrow();
+
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'view-mode-error',
+      mode: 'visual',
+      cause,
+    });
+    expect(view.mode).toBe('visual');
+    expect(view.getAttribute('mode')).toBe('visual');
+    expect(root.dataset.mode).toBe('visual');
+    expect(root.classList.contains('is-visual')).toBe(true);
+    expect(view.querySelector('li')?.classList.contains('item-visual')).toBe(true);
+  });
+
+  it('reports deactivate hook errors while switching to the new active mode', () => {
+    const view = new SearchCollectionViewElement();
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    const errors: CustomEvent[] = [];
+    const cause = new Error('deactivate failed');
+    root.append(itemsRoot);
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.structure = () => ({ root, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.registerViewMode({
+      id: 'visual',
+      label: 'Visual',
+      containerClass: 'is-visual',
+      itemClass: 'item-visual',
+      deactivate: () => {
+        throw cause;
+      },
+    });
+    view.registerViewMode({
+      id: 'list',
+      label: 'List',
+      containerClass: 'is-list',
+      itemClass: 'item-list',
+    });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+    view.mode = 'visual';
+
+    expect(() => {
+      view.mode = 'list';
+    }).not.toThrow();
+
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'view-mode-error',
+      mode: 'visual',
+      cause,
+    });
+    expect(view.mode).toBe('list');
+    expect(view.getAttribute('mode')).toBe('list');
+    expect(root.dataset.mode).toBe('list');
+    expect(root.classList.contains('is-list')).toBe(true);
+    expect(root.classList.contains('is-visual')).toBe(false);
+    expect(view.querySelector('li')?.classList.contains('item-list')).toBe(true);
+    expect(view.querySelector('li')?.classList.contains('item-visual')).toBe(false);
+  });
+
   it('preserves item DOM and does not rerun renderer during mode switches', () => {
     const view = new SearchCollectionViewElement();
     const modeRoot = document.createElement('section');

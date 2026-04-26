@@ -50,6 +50,7 @@ export interface SearchCollectionErrorDetail {
     | 'duplicate-item-id'
     | 'unknown-mode'
     | 'duplicate-mode'
+    | 'view-mode-error'
     | 'invalid-structure'
     | 'renderer-error';
   message: string;
