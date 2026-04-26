@@ -296,6 +296,447 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(errors[errors.length - 1]?.detail.code).toBe('renderer-error');
   });
 
+  it('registers view mode plugins and exposes a read-only snapshot', () => {
+    const view = new SearchCollectionViewElement();
+    const visualMode = { id: 'visual', label: 'Visual' };
+    const listMode = { id: 'list', label: 'List' };
+
+    view.registerViewMode(visualMode);
+    view.registerViewMode(listMode);
+
+    expect(view.viewModes).toEqual([visualMode, listMode]);
+    expect(Object.isFrozen(view.viewModes)).toBe(true);
+
+    const snapshot = view.viewModes;
+    view.registerViewMode({ id: 'compact', label: 'Compact' });
+
+    expect(snapshot).toEqual([visualMode, listMode]);
+    expect(view.viewModes.map((mode) => mode.id)).toEqual(['visual', 'list', 'compact']);
+  });
+
+  it('keeps registered view mode definitions immutable from caller mutations', () => {
+    const view = new SearchCollectionViewElement();
+    const visualMode = {
+      id: 'visual',
+      label: 'Visual',
+      containerClass: 'is-visual',
+      itemClass: 'item-visual',
+    };
+
+    view.registerViewMode(visualMode);
+    visualMode.id = 'list';
+    visualMode.containerClass = 'is-mutated';
+    visualMode.itemClass = 'item-mutated';
+    view.registerViewMode({ id: 'list', label: 'List' });
+
+    expect(view.viewModes.map((mode) => mode.id)).toEqual(['visual', 'list']);
+    expect(view.viewModes[0]).not.toBe(visualMode);
+    expect(Object.isFrozen(view.viewModes[0])).toBe(true);
+
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    root.append(itemsRoot);
+    view.structure = () => ({ root, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    view.mode = 'visual';
+
+    expect(view.mode).toBe('visual');
+    expect(root.classList.contains('is-visual')).toBe(true);
+    expect(root.classList.contains('is-mutated')).toBe(false);
+    expect(view.querySelector('li')?.classList.contains('item-visual')).toBe(true);
+    expect(view.querySelector('li')?.classList.contains('item-mutated')).toBe(false);
+  });
+
+  it('rejects duplicate view mode ids without replacing the existing plugin', () => {
+    const view = new SearchCollectionViewElement();
+    const errors: CustomEvent[] = [];
+    const visualMode = { id: 'visual', label: 'Visual' };
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+
+    view.registerViewMode(visualMode);
+    view.registerViewMode({ id: 'visual', label: 'Duplicate Visual' });
+
+    expect(view.viewModes).toEqual([visualMode]);
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'duplicate-mode',
+      mode: 'visual',
+    });
+  });
+
+  it('synchronizes the active mode to the host attribute and mode target dataset', () => {
+    const view = new SearchCollectionViewElement();
+    const modeRoot = document.createElement('section');
+    const root = document.createElement('div');
+    const itemsRoot = document.createElement('ol');
+    root.append(modeRoot);
+    modeRoot.append(itemsRoot);
+    view.structure = () => ({ root, modeRoot, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.registerViewMode({ id: 'visual', label: 'Visual' });
+    view.registerViewMode({ id: 'list', label: 'List' });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    view.mode = 'visual';
+
+    expect(view.mode).toBe('visual');
+    expect(view.getAttribute('mode')).toBe('visual');
+    expect(modeRoot.dataset.mode).toBe('visual');
+
+    view.setAttribute('mode', 'list');
+
+    expect(view.mode).toBe('list');
+    expect(modeRoot.dataset.mode).toBe('list');
+  });
+
+  it('synchronizes the active mode to the root dataset when modeRoot is omitted', () => {
+    const view = new SearchCollectionViewElement();
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    root.append(itemsRoot);
+    view.structure = () => ({ root, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.registerViewMode({ id: 'visual', label: 'Visual' });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    view.mode = 'visual';
+
+    expect(view.mode).toBe('visual');
+    expect(view.getAttribute('mode')).toBe('visual');
+    expect(root.dataset.mode).toBe('visual');
+  });
+
+  it('preserves a pre-existing mode attribute until the matching mode is registered', () => {
+    const view = new SearchCollectionViewElement();
+    const modeRoot = document.createElement('section');
+    const root = document.createElement('div');
+    const itemsRoot = document.createElement('ol');
+    root.append(modeRoot);
+    modeRoot.append(itemsRoot);
+    view.structure = () => ({ root, modeRoot, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.setAttribute('mode', 'visual');
+
+    view.registerViewMode({ id: 'visual', label: 'Visual' });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    expect(view.mode).toBe('visual');
+    expect(view.getAttribute('mode')).toBe('visual');
+    expect(modeRoot.dataset.mode).toBe('visual');
+  });
+
+  it('does not activate a stale pending mode after the host mode attribute is removed', () => {
+    const view = new SearchCollectionViewElement();
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    root.append(itemsRoot);
+    view.structure = () => ({ root, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.setAttribute('mode', 'visual');
+    view.registerViewMode({ id: 'list', label: 'List' });
+
+    view.removeAttribute('mode');
+    view.registerViewMode({ id: 'visual', label: 'Visual' });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    expect(view.mode).toBe('');
+    expect(view.getAttribute('mode')).toBeNull();
+    expect(root.dataset.mode).toBeUndefined();
+  });
+
+  it('rejects an unknown mode and keeps the previous active mode', () => {
+    const view = new SearchCollectionViewElement();
+    const errors: CustomEvent[] = [];
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.registerViewMode({ id: 'visual', label: 'Visual' });
+    view.mode = 'visual';
+
+    view.mode = 'missing';
+
+    expect(view.mode).toBe('visual');
+    expect(view.getAttribute('mode')).toBe('visual');
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'unknown-mode',
+      mode: 'missing',
+    });
+  });
+
+  it('switches container and item classes across visual list visual modes', () => {
+    const view = new SearchCollectionViewElement();
+    const modeRoot = document.createElement('section');
+    const root = document.createElement('div');
+    const itemsRoot = document.createElement('ol');
+    root.append(modeRoot);
+    modeRoot.append(itemsRoot);
+    view.structure = () => ({ root, modeRoot, itemsRoot });
+    view.renderer = () => {
+      const row = document.createElement('li');
+      row.className = 'row';
+      return row;
+    };
+    view.registerViewMode({
+      id: 'visual',
+      label: 'Visual',
+      containerClass: 'is-visual',
+      itemClass: 'item-visual',
+    });
+    view.registerViewMode({
+      id: 'list',
+      label: 'List',
+      containerClass: 'is-list',
+      itemClass: 'item-list',
+    });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+    const rowBefore = view.querySelector<HTMLElement>('.row');
+    expect(rowBefore).not.toBeNull();
+
+    view.mode = 'visual';
+    const visualRow = view.querySelector<HTMLElement>('.row');
+    expect(modeRoot.classList.contains('is-visual')).toBe(true);
+    expect(modeRoot.classList.contains('is-list')).toBe(false);
+    expect(visualRow?.classList.contains('item-visual')).toBe(true);
+    expect(visualRow?.classList.contains('item-list')).toBe(false);
+
+    view.mode = 'list';
+    const listRow = view.querySelector<HTMLElement>('.row');
+    expect(modeRoot.classList.contains('is-list')).toBe(true);
+    expect(modeRoot.classList.contains('is-visual')).toBe(false);
+    expect(listRow?.classList.contains('item-list')).toBe(true);
+    expect(listRow?.classList.contains('item-visual')).toBe(false);
+
+    view.mode = 'visual';
+
+    const finalVisualRow = view.querySelector<HTMLElement>('.row');
+    expect(modeRoot.classList.contains('is-visual')).toBe(true);
+    expect(modeRoot.classList.contains('is-list')).toBe(false);
+    expect(finalVisualRow?.classList.contains('item-visual')).toBe(true);
+    expect(finalVisualRow?.classList.contains('item-list')).toBe(false);
+  });
+
+  it('installs view mode styles once in registration order', () => {
+    const view = new SearchCollectionViewElement();
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    root.append(itemsRoot);
+    view.structure = () => ({ root, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.registerViewMode({
+      id: 'visual',
+      label: 'Visual',
+      styles: '.is-visual { display: grid; }',
+    });
+    view.registerViewMode({
+      id: 'list',
+      label: 'List',
+      styles: '.is-list { display: block; }',
+    });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    view.mode = 'list';
+    view.mode = 'visual';
+    view.mode = 'list';
+
+    expect([...view.querySelectorAll('style')].map((style) => style.textContent)).toEqual([
+      '.is-visual { display: grid; }',
+      '.is-list { display: block; }',
+    ]);
+  });
+
+  it('runs view mode lifecycle hooks in activation order', () => {
+    const view = new SearchCollectionViewElement();
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    root.append(itemsRoot);
+    const calls: string[] = [];
+    view.structure = () => ({ root, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.registerViewMode({
+      id: 'visual',
+      label: 'Visual',
+      activate: () => calls.push('activate:visual'),
+      deactivate: () => calls.push('deactivate:visual'),
+    });
+    view.registerViewMode({
+      id: 'list',
+      label: 'List',
+      activate: () => calls.push('activate:list'),
+      deactivate: () => calls.push('deactivate:list'),
+    });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    view.mode = 'visual';
+    view.mode = 'list';
+    view.mode = 'visual';
+
+    expect(calls).toEqual([
+      'activate:visual',
+      'deactivate:visual',
+      'activate:list',
+      'deactivate:list',
+      'activate:visual',
+    ]);
+  });
+
+  it('reports activate hook errors without rejecting the active visual mode', () => {
+    const view = new SearchCollectionViewElement();
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    const errors: CustomEvent[] = [];
+    const cause = new Error('activate failed');
+    root.append(itemsRoot);
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.structure = () => ({ root, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.registerViewMode({
+      id: 'visual',
+      label: 'Visual',
+      containerClass: 'is-visual',
+      itemClass: 'item-visual',
+      activate: () => {
+        throw cause;
+      },
+    });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    expect(() => {
+      view.mode = 'visual';
+    }).not.toThrow();
+
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'view-mode-error',
+      mode: 'visual',
+      cause,
+    });
+    expect(view.mode).toBe('visual');
+    expect(view.getAttribute('mode')).toBe('visual');
+    expect(root.dataset.mode).toBe('visual');
+    expect(root.classList.contains('is-visual')).toBe(true);
+    expect(view.querySelector('li')?.classList.contains('item-visual')).toBe(true);
+  });
+
+  it('reports deactivate hook errors while switching to the new active mode', () => {
+    const view = new SearchCollectionViewElement();
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    const errors: CustomEvent[] = [];
+    const cause = new Error('deactivate failed');
+    root.append(itemsRoot);
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.structure = () => ({ root, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.registerViewMode({
+      id: 'visual',
+      label: 'Visual',
+      containerClass: 'is-visual',
+      itemClass: 'item-visual',
+      deactivate: () => {
+        throw cause;
+      },
+    });
+    view.registerViewMode({
+      id: 'list',
+      label: 'List',
+      containerClass: 'is-list',
+      itemClass: 'item-list',
+    });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+    view.mode = 'visual';
+
+    expect(() => {
+      view.mode = 'list';
+    }).not.toThrow();
+
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'view-mode-error',
+      mode: 'visual',
+      cause,
+    });
+    expect(view.mode).toBe('list');
+    expect(view.getAttribute('mode')).toBe('list');
+    expect(root.dataset.mode).toBe('list');
+    expect(root.classList.contains('is-list')).toBe(true);
+    expect(root.classList.contains('is-visual')).toBe(false);
+    expect(view.querySelector('li')?.classList.contains('item-list')).toBe(true);
+    expect(view.querySelector('li')?.classList.contains('item-visual')).toBe(false);
+  });
+
+  it('preserves item DOM and does not rerun renderer during mode switches', () => {
+    const view = new SearchCollectionViewElement();
+    const modeRoot = document.createElement('section');
+    const root = document.createElement('div');
+    const itemsRoot = document.createElement('ol');
+    root.append(modeRoot);
+    modeRoot.append(itemsRoot);
+    let renderCount = 0;
+    view.structure = () => ({ root, modeRoot, itemsRoot });
+    view.renderer = () => {
+      renderCount += 1;
+      const row = document.createElement('li');
+      row.className = 'row';
+      return row;
+    };
+    view.registerViewMode({
+      id: 'visual',
+      label: 'Visual',
+      containerClass: 'is-visual',
+      itemClass: 'item-visual',
+    });
+    view.registerViewMode({
+      id: 'list',
+      label: 'List',
+      containerClass: 'is-list',
+      itemClass: 'item-list',
+    });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+    const rowBefore = view.querySelector<HTMLElement>('.row');
+    expect(rowBefore).not.toBeNull();
+
+    view.mode = 'visual';
+    const visualRow = view.querySelector<HTMLElement>('.row');
+    view.mode = 'list';
+    const listRow = view.querySelector<HTMLElement>('.row');
+    view.mode = 'visual';
+
+    const rowAfter = view.querySelector<HTMLElement>('.row');
+    expect(renderCount).toBe(1);
+    expect(visualRow).toBe(rowBefore);
+    expect(listRow).toBe(rowBefore);
+    expect(rowAfter).toBe(rowBefore);
+    expect(modeRoot.classList.contains('is-visual')).toBe(true);
+    expect(modeRoot.classList.contains('is-list')).toBe(false);
+    expect(rowAfter?.classList.contains('item-visual')).toBe(true);
+    expect(rowAfter?.classList.contains('item-list')).toBe(false);
+  });
+
+  it('dispatches mode-change with mode and previousMode only when the mode changes', () => {
+    const view = new SearchCollectionViewElement();
+    const events: CustomEvent[] = [];
+    view.addEventListener('mode-change', (event) => events.push(event as CustomEvent));
+    view.registerViewMode({ id: 'visual', label: 'Visual' });
+    view.registerViewMode({ id: 'list', label: 'List' });
+
+    view.mode = 'visual';
+    view.mode = 'visual';
+    view.mode = 'list';
+
+    expect(events.map((event) => event.detail)).toEqual([
+      { mode: 'visual', previousMode: null },
+      { mode: 'list', previousMode: 'visual' },
+    ]);
+  });
+
   it('updates selected item wrapper attributes without rerendering items', () => {
     const view = new SearchCollectionViewElement();
     let renderCount = 0;

@@ -2,16 +2,22 @@ import type {
   SearchCollectionItem,
   SearchCollectionItemIdResolver,
   SearchCollectionErrorDetail,
+  SearchCollectionModeChangeDetail,
   SearchCollectionRenderContext,
   SearchCollectionRenderer,
   SearchCollectionSelectionAttributeAdapter,
   SearchCollectionStructure,
   SearchCollectionStructureRenderer,
+  ViewModePlugin,
 } from './types';
 
 export class SearchCollectionViewElement<
   TItem extends SearchCollectionItem = SearchCollectionItem,
 > extends HTMLElement {
+  static get observedAttributes() {
+    return ['mode'];
+  }
+
   private _items: TItem[] = [];
   private _renderer: SearchCollectionRenderer<TItem> | null = null;
   private _getItemId: SearchCollectionItemIdResolver<TItem> | null = null;
@@ -23,6 +29,13 @@ export class SearchCollectionViewElement<
   };
   private renderedItems = new Map<string, { item: TItem; wrapper: Element }>();
   private mountedStructure: SearchCollectionStructure | null = null;
+  private registeredViewModes: ViewModePlugin[] = [];
+  private activeViewModePlugin: ViewModePlugin | null = null;
+  private installedStyleModes = new Set<string>();
+  private installedModeStyles = new Map<string, HTMLStyleElement>();
+  private activeMode: string | null = null;
+  private pendingMode: string | null = null;
+  private syncingModeAttribute = false;
   private hasReceivedItems = false;
 
   get items() {
@@ -64,6 +77,41 @@ export class SearchCollectionViewElement<
       return;
     }
     this._structure = structure;
+  }
+
+  get viewModes(): readonly ViewModePlugin[] {
+    return Object.freeze([...this.registeredViewModes]);
+  }
+
+  get mode() {
+    return this.activeMode ?? '';
+  }
+
+  set mode(mode: string) {
+    this.setMode(mode);
+  }
+
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
+    if (name !== 'mode' || oldValue === newValue || this.syncingModeAttribute) return;
+    this.setMode(newValue ?? '');
+  }
+
+  registerViewMode(plugin: ViewModePlugin) {
+    if (this.registeredViewModes.some((viewMode) => viewMode.id === plugin.id)) {
+      this.dispatchComponentError({
+        code: 'duplicate-mode',
+        message: `Duplicate view mode "${plugin.id}".`,
+        mode: plugin.id,
+      });
+      return;
+    }
+
+    const registeredPlugin = Object.freeze({ ...plugin });
+    this.registeredViewModes.push(registeredPlugin);
+    this.installModeStyles(registeredPlugin);
+    if (this.pendingMode === registeredPlugin.id && this.getAttribute('mode') === registeredPlugin.id) {
+      this.setMode(registeredPlugin.id);
+    }
   }
 
   get selectedItemIds(): ReadonlySet<string> {
@@ -128,6 +176,7 @@ export class SearchCollectionViewElement<
         toolbarRoot,
       };
       this.attachItemActionDelegation(this.mountedStructure.itemsRoot);
+      if (this.activeViewModePlugin) this.applyViewModePlugin(this.activeViewModePlugin, null);
       return this.mountedStructure;
     }
 
@@ -135,6 +184,7 @@ export class SearchCollectionViewElement<
     this.append(mountedStructure.toolbarRoot!, mountedStructure.root);
     this.mountedStructure = mountedStructure;
     this.attachItemActionDelegation(this.mountedStructure.itemsRoot);
+    if (this.activeViewModePlugin) this.applyViewModePlugin(this.activeViewModePlugin, null);
     return this.mountedStructure;
   }
 
@@ -191,6 +241,137 @@ export class SearchCollectionViewElement<
     return modeTarget.contains(maybeStructure.itemsRoot);
   }
 
+  private setMode(mode: string) {
+    const plugin = this.registeredViewModes.find((viewMode) => viewMode.id === mode);
+    if (!plugin) {
+      if (this.registeredViewModes.length === 0) {
+        this.pendingMode = mode;
+        this.syncHostModeAttribute(mode);
+        return;
+      }
+
+      this.pendingMode = null;
+      this.dispatchComponentError({
+        code: 'unknown-mode',
+        message: `Unknown view mode "${mode}".`,
+        mode,
+      });
+      this.syncHostModeAttribute(this.activeMode);
+      return;
+    }
+
+    if (this.activeMode === mode) {
+      this.syncHostModeAttribute(mode);
+      this.applyViewModePlugin(plugin, plugin);
+      return;
+    }
+
+    const previousMode = this.activeMode;
+    const previousPlugin = this.activeViewModePlugin;
+    this.activeMode = mode;
+    this.activeViewModePlugin = plugin;
+    this.pendingMode = null;
+    this.syncHostModeAttribute(mode);
+    this.applyViewModePlugin(plugin, previousPlugin);
+    this.dispatchModeChange(mode, previousMode);
+  }
+
+  private syncHostModeAttribute(mode: string | null) {
+    this.syncingModeAttribute = true;
+    try {
+      if (mode === null || mode === '') {
+        this.removeAttribute('mode');
+      } else if (this.getAttribute('mode') !== mode) {
+        this.setAttribute('mode', mode);
+      }
+    } finally {
+      this.syncingModeAttribute = false;
+    }
+  }
+
+  private applyViewModePlugin(plugin: ViewModePlugin, previousPlugin: ViewModePlugin | null) {
+    const modeTarget = this.getModeTarget();
+    const structure = this.mountedStructure;
+    if (!modeTarget || !structure) return;
+
+    const pluginChanged = previousPlugin?.id !== plugin.id;
+    if (pluginChanged && previousPlugin) {
+      this.removePluginClasses(previousPlugin, modeTarget);
+      try {
+        previousPlugin.deactivate?.(modeTarget);
+      } catch (cause) {
+        this.dispatchComponentError({
+          code: 'view-mode-error',
+          message: `View mode "${previousPlugin.id}" deactivate hook failed.`,
+          cause,
+          mode: previousPlugin.id,
+        });
+      }
+    }
+
+    modeTarget.dataset.mode = plugin.id;
+    this.addClassTokens(modeTarget, plugin.containerClass);
+    [...structure.itemsRoot.children].forEach((child) => this.applyItemModeClass(child, plugin));
+
+    if (pluginChanged) {
+      try {
+        plugin.activate?.(modeTarget);
+      } catch (cause) {
+        this.dispatchComponentError({
+          code: 'view-mode-error',
+          message: `View mode "${plugin.id}" activate hook failed.`,
+          cause,
+          mode: plugin.id,
+        });
+      }
+    }
+  }
+
+  private removePluginClasses(plugin: ViewModePlugin, modeTarget: HTMLElement) {
+    this.removeClassTokens(modeTarget, plugin.containerClass);
+    const structure = this.mountedStructure;
+    if (!structure) return;
+    [...structure.itemsRoot.children].forEach((child) => this.removeClassTokens(child, plugin.itemClass));
+  }
+
+  private applyItemModeClass(wrapper: Element, plugin = this.activeViewModePlugin) {
+    if (!plugin) return;
+    this.addClassTokens(wrapper, plugin.itemClass);
+  }
+
+  private addClassTokens(element: Element, className: string | undefined) {
+    const tokens = this.getClassTokens(className);
+    if (tokens.length > 0) element.classList.add(...tokens);
+  }
+
+  private removeClassTokens(element: Element, className: string | undefined) {
+    const tokens = this.getClassTokens(className);
+    if (tokens.length > 0) element.classList.remove(...tokens);
+  }
+
+  private getClassTokens(className: string | undefined) {
+    return className?.split(/\s+/).filter(Boolean) ?? [];
+  }
+
+  private installModeStyles(plugin: ViewModePlugin) {
+    if (!plugin.styles || this.installedStyleModes.has(plugin.id)) return;
+    const style = document.createElement('style');
+    style.dataset.viewMode = plugin.id;
+    style.textContent =
+      typeof plugin.styles === 'string'
+        ? plugin.styles
+        : [...plugin.styles.cssRules].map((rule) => rule.cssText).join('\n');
+    this.append(style);
+    this.installedStyleModes.add(plugin.id);
+    this.installedModeStyles.set(plugin.id, style);
+  }
+
+  private getModeTarget() {
+    const structure = this.mountedStructure;
+    if (!structure) return null;
+    return structure.modeRoot ?? structure.root;
+  }
+
   private render(validatedItemIds?: string[]) {
     const structure = this.ensureStructure();
     if (!structure) return;
@@ -214,7 +395,7 @@ export class SearchCollectionViewElement<
           itemId,
           index,
           selected: this._selectedItemIds.has(itemId),
-          mode: this.getAttribute('mode') ?? '',
+          mode: this.mode,
           emitAction: (action, detail) => {
             this.dispatchItemAction(itemId, action, detail);
           },
@@ -260,6 +441,7 @@ export class SearchCollectionViewElement<
     wrapper.setAttribute('data-item-id', itemId);
     wrapper.setAttribute('role', 'listitem');
     this.applySelectionState(wrapper, this._selectedItemIds.has(itemId));
+    this.applyItemModeClass(wrapper);
   }
 
   private applySelectionState(wrapper: Element, selected: boolean) {
@@ -307,6 +489,19 @@ export class SearchCollectionViewElement<
     }
 
     return itemIds;
+  }
+
+  private dispatchModeChange(mode: string, previousMode: string | null) {
+    const detail: SearchCollectionModeChangeDetail = {
+      mode,
+      previousMode,
+    };
+
+    this.dispatchEvent(
+      new CustomEvent('mode-change', {
+        detail,
+      }),
+    );
   }
 
   private areSetsEqual(left: Set<string>, right: Set<string>) {
