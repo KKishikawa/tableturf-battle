@@ -29,6 +29,7 @@ export class SearchCollectionViewElement<
     selected: 'true',
     unselected: 'false',
   };
+  private _hiddenItemClass: string | null = null;
   private renderedItems = new Map<string, { item: TItem; wrapper: Element }>();
   private mountedStructure: SearchCollectionStructure | null = null;
   private registeredViewModes: ViewModePlugin[] = [];
@@ -138,6 +139,16 @@ export class SearchCollectionViewElement<
   set searchModel(searchModel: SearchModelPlugin<TItem> | null) {
     this._searchModel = searchModel;
     this._searchState = this.cloneSearchState(searchModel?.initialState ?? {});
+    this.applyCurrentSearchStateToRenderedItems();
+  }
+
+  get hiddenItemClass() {
+    return this._hiddenItemClass;
+  }
+
+  set hiddenItemClass(hiddenItemClass: string | null) {
+    this._hiddenItemClass = hiddenItemClass;
+    this.applyCurrentSearchStateToRenderedItems();
   }
 
   setSelectedItemIds(ids: Iterable<string | number>) {
@@ -444,6 +455,7 @@ export class SearchCollectionViewElement<
         }
       });
 
+      this.applyCurrentSearchStateToRenderedItems();
       this.dispatchRenderComplete(itemIds);
     } finally {
       this.setAttribute('aria-busy', 'false');
@@ -476,6 +488,74 @@ export class SearchCollectionViewElement<
   private applySelectionStateToRenderedItems() {
     for (const [itemId, renderedItem] of this.renderedItems) {
       this.applySelectionState(renderedItem.wrapper, this._selectedItemIds.has(itemId));
+    }
+  }
+
+  private applyCurrentSearchStateToRenderedItems() {
+    const result = this.computeSearchResult(this._searchState);
+    if (!result) return;
+    this.applySearchResult(result);
+  }
+
+  private computeSearchResult(state: SearchState) {
+    const entries = [...this.renderedItems.entries()].map(([itemId, renderedItem], renderedIndex) => ({
+      itemId,
+      item: renderedItem.item,
+      wrapper: renderedItem.wrapper,
+      renderedIndex,
+      matched: true,
+    }));
+
+    try {
+      for (const entry of entries) {
+        entry.matched = this._searchModel?.match?.(entry.item, state) ?? true;
+      }
+
+      if (this._searchModel?.compare) {
+        entries.sort((left, right) => {
+          const compared = this._searchModel?.compare?.(left.item, right.item, state) ?? 0;
+          return compared === 0 ? left.renderedIndex - right.renderedIndex : compared;
+        });
+      }
+
+      return entries;
+    } catch (cause) {
+      this.dispatchComponentError({
+        code: 'search-error',
+        message: 'Search model callback failed.',
+        cause,
+      });
+      return null;
+    }
+  }
+
+  private applySearchResult(
+    entries: { itemId: string; item: TItem; wrapper: Element; renderedIndex: number; matched: boolean }[],
+  ) {
+    const structure = this.mountedStructure;
+    if (!structure) return;
+
+    for (const entry of entries) {
+      this.applyHiddenState(entry.wrapper, !entry.matched);
+      structure.itemsRoot.append(entry.wrapper);
+    }
+
+    this.renderedItems = new Map(entries.map((entry) => [entry.itemId, { item: entry.item, wrapper: entry.wrapper }]));
+  }
+
+  private applyHiddenState(wrapper: Element, hidden: boolean) {
+    if (wrapper instanceof HTMLElement) {
+      wrapper.hidden = hidden;
+    } else if (hidden) {
+      wrapper.setAttribute('hidden', '');
+    } else {
+      wrapper.removeAttribute('hidden');
+    }
+
+    wrapper.setAttribute('data-hidden', String(hidden));
+
+    if (this._hiddenItemClass) {
+      wrapper.classList.toggle(this._hiddenItemClass, hidden);
     }
   }
 

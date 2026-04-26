@@ -279,6 +279,41 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(wrapper?.textContent).toBe('Fragment child');
   });
 
+  it('filters and sorts rendered item wrappers from item data without rerunning the renderer', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string; rank: number }>();
+    let renderCount = 0;
+    view.hiddenItemClass = 'is-hidden';
+    view.renderer = (item) => {
+      renderCount += 1;
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.searchModel = {
+      initialState: { query: 'a', sort: 'rank' },
+      match: (item, state) => item.name.toLowerCase().includes(state.query ?? ''),
+      compare: (a, b, state) => (state.sort === 'rank' ? a.rank - b.rank : 0),
+    };
+
+    view.items = [
+      { id: 'beta', name: 'Beta', rank: 2 },
+      { id: 'alpha', name: 'Alpha', rank: 1 },
+      { id: 'echo', name: 'Echo', rank: 3 },
+    ];
+    document.body.append(view);
+
+    const rows = [...view.querySelectorAll<HTMLElement>('.row')];
+    expect(renderCount).toBe(3);
+    expect(rows.map((row) => row.dataset.itemId)).toEqual(['alpha', 'beta', 'echo']);
+    expect(rows.map((row) => row.hidden)).toEqual([false, false, true]);
+    expect(rows.map((row) => row.dataset.hidden)).toEqual(['false', 'false', 'true']);
+    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false, true]);
+
+    const rowsAfterSearch = [...view.querySelectorAll<HTMLElement>('.row')];
+    expect(rowsAfterSearch).toEqual(rows);
+  });
+
   it('continues rendering other items when a renderer throws', () => {
     const view = new SearchCollectionViewElement();
     const errors: CustomEvent[] = [];
