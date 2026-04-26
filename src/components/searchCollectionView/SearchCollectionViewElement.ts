@@ -556,8 +556,12 @@ export class SearchCollectionViewElement<
 
     wrapper.setAttribute('data-hidden', String(hidden));
 
-    if (this._hiddenItemClass) {
-      wrapper.classList.toggle(this._hiddenItemClass, hidden);
+    const hiddenItemClassTokens = this.getClassTokens(this._hiddenItemClass ?? undefined);
+    if (hiddenItemClassTokens.length > 0) {
+      wrapper.classList.toggle(hiddenItemClassTokens[0], hidden);
+      for (let index = 1; index < hiddenItemClassTokens.length; index += 1) {
+        wrapper.classList.toggle(hiddenItemClassTokens[index], hidden);
+      }
     }
   }
 
