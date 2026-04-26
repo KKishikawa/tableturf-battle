@@ -310,8 +310,19 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(rows.map((row) => row.dataset.hidden)).toEqual(['false', 'false', 'true']);
     expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false, true]);
 
-    const rowsAfterSearch = [...view.querySelectorAll<HTMLElement>('.row')];
-    expect(rowsAfterSearch).toEqual(rows);
+    view.hiddenItemClass = 'visually-hidden';
+
+    expect(renderCount).toBe(3);
+    expect([...view.querySelectorAll<HTMLElement>('.row')]).toEqual(rows);
+    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false, false]);
+    expect(rows.map((row) => row.classList.contains('visually-hidden'))).toEqual([false, false, true]);
+
+    view.hiddenItemClass = null;
+
+    expect(renderCount).toBe(3);
+    expect([...view.querySelectorAll<HTMLElement>('.row')]).toEqual(rows);
+    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false, false]);
+    expect(rows.map((row) => row.classList.contains('visually-hidden'))).toEqual([false, false, false]);
   });
 
   it('continues rendering other items when a renderer throws', () => {

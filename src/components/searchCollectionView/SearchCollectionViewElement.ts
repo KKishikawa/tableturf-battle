@@ -147,7 +147,9 @@ export class SearchCollectionViewElement<
   }
 
   set hiddenItemClass(hiddenItemClass: string | null) {
+    const previousHiddenItemClass = this._hiddenItemClass;
     this._hiddenItemClass = hiddenItemClass;
+    this.removeHiddenStateClassTokens(previousHiddenItemClass);
     this.applyCurrentSearchStateToRenderedItems();
   }
 
@@ -556,6 +558,15 @@ export class SearchCollectionViewElement<
 
     if (this._hiddenItemClass) {
       wrapper.classList.toggle(this._hiddenItemClass, hidden);
+    }
+  }
+
+  private removeHiddenStateClassTokens(hiddenItemClass: string | null) {
+    const classTokens = this.getClassTokens(hiddenItemClass ?? undefined);
+    if (classTokens.length === 0) return;
+
+    for (const renderedItem of this.renderedItems.values()) {
+      renderedItem.wrapper.classList.remove(...classTokens);
     }
   }
 
