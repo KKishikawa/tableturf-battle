@@ -137,14 +137,8 @@ export class SearchCollectionViewElement<
   }
 
   set searchModel(searchModel: SearchModelPlugin<TItem> | null) {
-    const previousState = this.cloneSearchState(this._searchState);
     this._searchModel = searchModel;
     this._searchState = this.cloneSearchState(searchModel?.initialState ?? {});
-    const detail: SearchCollectionSearchStateChangeDetail = {
-      state: this.cloneSearchState(this._searchState),
-      previousState,
-    };
-    void detail;
   }
 
   setSelectedItemIds(ids: Iterable<string | number>) {
