@@ -4,6 +4,7 @@ import type {
   SearchCollectionErrorDetail,
   SearchCollectionRenderContext,
   SearchCollectionRenderer,
+  SearchCollectionSelectionAttributeAdapter,
   SearchCollectionStructure,
   SearchCollectionStructureRenderer,
 } from './types';
@@ -15,6 +16,12 @@ export class SearchCollectionViewElement<
   private _renderer: SearchCollectionRenderer<TItem> | null = null;
   private _getItemId: SearchCollectionItemIdResolver<TItem> | null = null;
   private _structure: SearchCollectionStructureRenderer | null = null;
+  private _selectedItemIds = new Set<string>();
+  private _selectionAttribute: SearchCollectionSelectionAttributeAdapter = {
+    selected: 'true',
+    unselected: 'false',
+  };
+  private renderedItems = new Map<string, { item: TItem; wrapper: Element }>();
   private mountedStructure: SearchCollectionStructure | null = null;
   private hasReceivedItems = false;
 
@@ -59,6 +66,29 @@ export class SearchCollectionViewElement<
     this._structure = structure;
   }
 
+  get selectedItemIds(): ReadonlySet<string> {
+    return new Set(this._selectedItemIds);
+  }
+
+  get selectionAttribute() {
+    return { ...this._selectionAttribute };
+  }
+
+  set selectionAttribute(selectionAttribute: SearchCollectionSelectionAttributeAdapter) {
+    this._selectionAttribute = { ...selectionAttribute };
+    this.applySelectionStateToRenderedItems();
+  }
+
+  setSelectedItemIds(ids: Iterable<string | number>) {
+    const nextSelectedItemIds = new Set([...ids].map((id) => String(id)));
+    const previousSelectedItemIds = [...this._selectedItemIds];
+    if (this.areSetsEqual(this._selectedItemIds, nextSelectedItemIds)) return;
+
+    this._selectedItemIds = nextSelectedItemIds;
+    this.applySelectionStateToRenderedItems();
+    this.dispatchSelectionChange([...nextSelectedItemIds], previousSelectedItemIds);
+  }
+
   setItems(items: TItem[]) {
     const itemIds = this.resolveItemIds(items);
     if (!itemIds) return;
@@ -97,12 +127,14 @@ export class SearchCollectionViewElement<
         ...customStructure,
         toolbarRoot,
       };
+      this.attachItemActionDelegation(this.mountedStructure.itemsRoot);
       return this.mountedStructure;
     }
 
     const mountedStructure = this.createDefaultStructure();
     this.append(mountedStructure.toolbarRoot!, mountedStructure.root);
     this.mountedStructure = mountedStructure;
+    this.attachItemActionDelegation(this.mountedStructure.itemsRoot);
     return this.mountedStructure;
   }
 
@@ -167,6 +199,7 @@ export class SearchCollectionViewElement<
 
     this.setAttribute('aria-busy', 'true');
     structure.itemsRoot.replaceChildren();
+    this.renderedItems.clear();
 
     try {
       if (!this._renderer) {
@@ -180,9 +213,11 @@ export class SearchCollectionViewElement<
         const context: SearchCollectionRenderContext<TItem> = {
           itemId,
           index,
-          selected: false,
+          selected: this._selectedItemIds.has(itemId),
           mode: this.getAttribute('mode') ?? '',
-          emitAction: () => {},
+          emitAction: (action, detail) => {
+            this.dispatchItemAction(itemId, action, detail);
+          },
         };
 
         try {
@@ -190,12 +225,14 @@ export class SearchCollectionViewElement<
           if (!rendered) return;
           const wrapper = rendered instanceof Element ? rendered : this.wrapFragment(rendered);
           this.applyItemWrapperState(wrapper, itemId);
+          this.renderedItems.set(itemId, { item, wrapper });
           structure.itemsRoot.append(wrapper);
         } catch (cause) {
           const fallback = document.createElement('div');
           fallback.className = 'scv__item';
           fallback.dataset.renderError = 'true';
           this.applyItemWrapperState(fallback, itemId);
+          this.renderedItems.set(itemId, { item, wrapper: fallback });
           structure.itemsRoot.append(fallback);
           this.dispatchComponentError({
             code: 'renderer-error',
@@ -222,6 +259,22 @@ export class SearchCollectionViewElement<
   private applyItemWrapperState(wrapper: Element, itemId: string) {
     wrapper.setAttribute('data-item-id', itemId);
     wrapper.setAttribute('role', 'listitem');
+    this.applySelectionState(wrapper, this._selectedItemIds.has(itemId));
+  }
+
+  private applySelectionState(wrapper: Element, selected: boolean) {
+    const value = selected ? this._selectionAttribute.selected : this._selectionAttribute.unselected;
+    if (value === null) {
+      wrapper.removeAttribute('data-selected');
+    } else {
+      wrapper.setAttribute('data-selected', value);
+    }
+  }
+
+  private applySelectionStateToRenderedItems() {
+    for (const [itemId, renderedItem] of this.renderedItems) {
+      this.applySelectionState(renderedItem.wrapper, this._selectedItemIds.has(itemId));
+    }
   }
 
   private resolveItemIds(items: TItem[]) {
@@ -254,6 +307,71 @@ export class SearchCollectionViewElement<
     }
 
     return itemIds;
+  }
+
+  private areSetsEqual(left: Set<string>, right: Set<string>) {
+    if (left.size !== right.size) return false;
+    for (const value of left) {
+      if (!right.has(value)) return false;
+    }
+    return true;
+  }
+
+  private dispatchSelectionChange(selectedItemIds: string[], previousSelectedItemIds: string[]) {
+    this.dispatchEvent(
+      new CustomEvent('selection-change', {
+        detail: {
+          selectedItemIds,
+          previousSelectedItemIds,
+        },
+      }),
+    );
+  }
+
+  private attachItemActionDelegation(itemsRoot: HTMLElement) {
+    itemsRoot.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+
+      const actionElement = target.closest<HTMLElement>('[data-action]');
+      if (!actionElement || !itemsRoot.contains(actionElement)) return;
+
+      const itemId = this.findOwningRenderedItemId(actionElement, itemsRoot);
+      if (!itemId) return;
+
+      const action = actionElement.dataset.action;
+      if (!action) return;
+
+      this.dispatchItemAction(itemId, action);
+    });
+  }
+
+  private findOwningRenderedItemId(actionElement: Element, itemsRoot: HTMLElement) {
+    let current: Element | null = actionElement;
+    while (current && current !== itemsRoot) {
+      const itemId = current.getAttribute('data-item-id');
+      if (itemId && this.renderedItems.get(itemId)?.wrapper === current) {
+        return itemId;
+      }
+      current = current.parentElement;
+    }
+    return null;
+  }
+
+  private dispatchItemAction(itemId: string, action: string, detail?: Record<string, unknown>) {
+    const renderedItem = this.renderedItems.get(itemId);
+    if (!renderedItem) return;
+
+    this.dispatchEvent(
+      new CustomEvent('item-action', {
+        detail: {
+          itemId,
+          item: renderedItem.item,
+          action,
+          ...(detail === undefined ? {} : { detail }),
+        },
+      }),
+    );
   }
 
   private dispatchRenderComplete(itemIds: string[]) {

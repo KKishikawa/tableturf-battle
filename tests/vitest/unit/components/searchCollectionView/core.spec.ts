@@ -295,4 +295,209 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(view.querySelector<HTMLElement>('[data-render-error="true"]')?.dataset.itemId).toBe('bad');
     expect(errors[errors.length - 1]?.detail.code).toBe('renderer-error');
   });
+
+  it('updates selected item wrapper attributes without rerendering items', () => {
+    const view = new SearchCollectionViewElement();
+    let renderCount = 0;
+    const selectionChanges: CustomEvent[] = [];
+    view.addEventListener('selection-change', (event) => selectionChanges.push(event as CustomEvent));
+    view.renderer = (item, context) => {
+      renderCount += 1;
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = `${context.itemId}:${context.selected ? 'selected' : 'unselected'}`;
+      return row;
+    };
+    view.items = [
+      { id: 'a', name: 'Alpha' },
+      { id: 'b', name: 'Beta' },
+    ];
+    document.body.append(view);
+
+    const rowsBefore = [...view.querySelectorAll<HTMLElement>('.row')];
+
+    view.setSelectedItemIds(['b']);
+
+    const rowsAfter = [...view.querySelectorAll<HTMLElement>('.row')];
+    expect(renderCount).toBe(2);
+    expect(rowsAfter).toEqual(rowsBefore);
+    expect(rowsAfter.map((row) => row.getAttribute('data-selected'))).toEqual(['false', 'true']);
+    expect([...view.selectedItemIds]).toEqual(['b']);
+    expect(selectionChanges).toHaveLength(1);
+    expect(selectionChanges[0]?.detail).toEqual({
+      selectedItemIds: ['b'],
+      previousSelectedItemIds: [],
+    });
+  });
+
+  it('passes selected snapshot to the renderer during item rendering', () => {
+    const view = new SearchCollectionViewElement();
+    const renderedSelectionStates: boolean[] = [];
+    view.setSelectedItemIds(['b']);
+    view.renderer = (_item, context) => {
+      renderedSelectionStates.push(context.selected);
+      const row = document.createElement('article');
+      row.className = 'row';
+      return row;
+    };
+
+    view.items = [{ id: 'a' }, { id: 'b' }];
+
+    expect(renderedSelectionStates).toEqual([false, true]);
+  });
+
+  it('dispatches item-action for data-action clicks inside the owning item wrapper', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const actions: CustomEvent[] = [];
+    view.addEventListener('item-action', (event) => actions.push(event as CustomEvent));
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.action = 'add';
+      button.textContent = item.name;
+      row.append(button);
+      return row;
+    };
+    view.items = [
+      { id: 'a', name: 'Alpha' },
+      { id: 'b', name: 'Beta' },
+    ];
+    document.body.append(view);
+
+    view.querySelector<HTMLButtonElement>('[data-item-id="b"] [data-action="add"]')?.click();
+
+    expect(actions).toHaveLength(1);
+    expect(actions[0]?.detail).toEqual({
+      itemId: 'b',
+      item: { id: 'b', name: 'Beta' },
+      action: 'add',
+    });
+  });
+
+  it('dispatches item-action with the same detail shape from renderer context emitAction', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const actions: CustomEvent[] = [];
+    let emitFromItemB: () => void = () => {
+      throw new Error('emitAction was not captured');
+    };
+    view.addEventListener('item-action', (event) => actions.push(event as CustomEvent));
+    view.renderer = (item, context) => {
+      if (item.id === 'b') {
+        emitFromItemB = () => context.emitAction('delete', { source: 'keyboard' });
+      }
+      return document.createElement('article');
+    };
+    view.items = [
+      { id: 'a', name: 'Alpha' },
+      { id: 'b', name: 'Beta' },
+    ];
+    document.body.append(view);
+
+    emitFromItemB();
+
+    expect(actions).toHaveLength(1);
+    expect(actions[0]?.detail).toEqual({
+      itemId: 'b',
+      item: { id: 'b', name: 'Beta' },
+      action: 'delete',
+      detail: { source: 'keyboard' },
+    });
+  });
+
+  it('ignores nested renderer-owned data-item-id when resolving delegated item actions', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const actions: CustomEvent[] = [];
+    view.addEventListener('item-action', (event) => actions.push(event as CustomEvent));
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+
+      if (item.id === 'b') {
+        const nested = document.createElement('span');
+        nested.dataset.itemId = 'a';
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.action = 'inspect';
+        button.textContent = item.name;
+        nested.append(button);
+        row.append(nested);
+      }
+
+      return row;
+    };
+    view.items = [
+      { id: 'a', name: 'Alpha' },
+      { id: 'b', name: 'Beta' },
+    ];
+    document.body.append(view);
+
+    view.querySelector<HTMLButtonElement>('[data-item-id="b"] [data-action="inspect"]')?.click();
+
+    expect(actions).toHaveLength(1);
+    expect(actions[0]?.detail).toEqual({
+      itemId: 'b',
+      item: { id: 'b', name: 'Beta' },
+      action: 'inspect',
+    });
+  });
+
+  it('reapplies selected state to existing wrappers when selectionAttribute changes', () => {
+    const view = new SearchCollectionViewElement();
+    let renderCount = 0;
+    view.renderer = () => {
+      renderCount += 1;
+      const row = document.createElement('article');
+      row.className = 'row';
+      return row;
+    };
+    view.items = [{ id: 'a' }, { id: 'b' }];
+    document.body.append(view);
+    const rowsBefore = [...view.querySelectorAll<HTMLElement>('.row')];
+
+    view.setSelectedItemIds(['a']);
+    view.selectionAttribute = { selected: '1', unselected: null };
+
+    const rowsAfter = [...view.querySelectorAll<HTMLElement>('.row')];
+    expect(renderCount).toBe(2);
+    expect(rowsAfter).toEqual(rowsBefore);
+    expect(rowsAfter[0]?.getAttribute('data-selected')).toBe('1');
+    expect(rowsAfter[1]?.hasAttribute('data-selected')).toBe(false);
+  });
+
+  it('returns a selectionAttribute snapshot so external mutation cannot bypass the setter', () => {
+    const view = new SearchCollectionViewElement();
+    view.renderer = () => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      return row;
+    };
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    const attributeSnapshot = view.selectionAttribute;
+    attributeSnapshot.selected = '1';
+    view.setSelectedItemIds(['a']);
+
+    expect(view.querySelector<HTMLElement>('.row')?.getAttribute('data-selected')).toBe('true');
+  });
+
+  it('copies assigned selectionAttribute so external mutation cannot bypass the setter', () => {
+    const view = new SearchCollectionViewElement();
+    view.renderer = () => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      return row;
+    };
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    const adapter = { selected: '1', unselected: null };
+    view.selectionAttribute = adapter;
+    adapter.selected = '2';
+    view.setSelectedItemIds(['a']);
+
+    expect(view.querySelector<HTMLElement>('.row')?.getAttribute('data-selected')).toBe('1');
+  });
 });
