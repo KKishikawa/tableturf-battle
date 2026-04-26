@@ -431,18 +431,15 @@ describe('SearchCollectionViewElement core rendering', () => {
     });
   });
 
-  it('switches mode classes, installs styles once, runs lifecycle hooks, and preserves item DOM', () => {
+  it('switches container and item classes across visual list visual modes', () => {
     const view = new SearchCollectionViewElement();
     const modeRoot = document.createElement('section');
     const root = document.createElement('div');
     const itemsRoot = document.createElement('ol');
     root.append(modeRoot);
     modeRoot.append(itemsRoot);
-    const calls: string[] = [];
-    let renderCount = 0;
     view.structure = () => ({ root, modeRoot, itemsRoot });
     view.renderer = () => {
-      renderCount += 1;
       const row = document.createElement('li');
       row.className = 'row';
       return row;
@@ -452,24 +449,24 @@ describe('SearchCollectionViewElement core rendering', () => {
       label: 'Visual',
       containerClass: 'is-visual',
       itemClass: 'item-visual',
-      styles: '.is-visual { display: grid; }',
-      activate: () => calls.push('activate:visual'),
-      deactivate: () => calls.push('deactivate:visual'),
     });
     view.registerViewMode({
       id: 'list',
       label: 'List',
       containerClass: 'is-list',
       itemClass: 'item-list',
-      styles: '.is-list { display: block; }',
-      activate: () => calls.push('activate:list'),
-      deactivate: () => calls.push('deactivate:list'),
     });
     view.items = [{ id: 'a' }];
     document.body.append(view);
     const rowBefore = view.querySelector<HTMLElement>('.row');
+    expect(rowBefore).not.toBeNull();
 
     view.mode = 'visual';
+    expect(modeRoot.classList.contains('is-visual')).toBe(true);
+    expect(modeRoot.classList.contains('is-list')).toBe(false);
+    expect(rowBefore?.classList.contains('item-visual')).toBe(true);
+    expect(rowBefore?.classList.contains('item-list')).toBe(false);
+
     view.mode = 'list';
     expect(modeRoot.classList.contains('is-list')).toBe(true);
     expect(modeRoot.classList.contains('is-visual')).toBe(false);
@@ -479,12 +476,70 @@ describe('SearchCollectionViewElement core rendering', () => {
     view.mode = 'visual';
 
     const rowAfter = view.querySelector<HTMLElement>('.row');
-    expect(renderCount).toBe(1);
     expect(rowAfter).toBe(rowBefore);
     expect(modeRoot.classList.contains('is-visual')).toBe(true);
     expect(modeRoot.classList.contains('is-list')).toBe(false);
     expect(rowAfter?.classList.contains('item-visual')).toBe(true);
     expect(rowAfter?.classList.contains('item-list')).toBe(false);
+  });
+
+  it('installs view mode styles once in registration order', () => {
+    const view = new SearchCollectionViewElement();
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    root.append(itemsRoot);
+    view.structure = () => ({ root, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.registerViewMode({
+      id: 'visual',
+      label: 'Visual',
+      styles: '.is-visual { display: grid; }',
+    });
+    view.registerViewMode({
+      id: 'list',
+      label: 'List',
+      styles: '.is-list { display: block; }',
+    });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    view.mode = 'visual';
+    view.mode = 'list';
+    view.mode = 'visual';
+
+    expect([...view.querySelectorAll('style')].map((style) => style.textContent)).toEqual([
+      '.is-visual { display: grid; }',
+      '.is-list { display: block; }',
+    ]);
+  });
+
+  it('runs view mode lifecycle hooks in activation order', () => {
+    const view = new SearchCollectionViewElement();
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    root.append(itemsRoot);
+    const calls: string[] = [];
+    view.structure = () => ({ root, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.registerViewMode({
+      id: 'visual',
+      label: 'Visual',
+      activate: () => calls.push('activate:visual'),
+      deactivate: () => calls.push('deactivate:visual'),
+    });
+    view.registerViewMode({
+      id: 'list',
+      label: 'List',
+      activate: () => calls.push('activate:list'),
+      deactivate: () => calls.push('deactivate:list'),
+    });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    view.mode = 'visual';
+    view.mode = 'list';
+    view.mode = 'visual';
+
     expect(calls).toEqual([
       'activate:visual',
       'deactivate:visual',
@@ -492,10 +547,37 @@ describe('SearchCollectionViewElement core rendering', () => {
       'deactivate:list',
       'activate:visual',
     ]);
-    expect([...view.querySelectorAll('style')].map((style) => style.textContent)).toEqual([
-      '.is-visual { display: grid; }',
-      '.is-list { display: block; }',
-    ]);
+  });
+
+  it('preserves item DOM and does not rerun renderer during mode switches', () => {
+    const view = new SearchCollectionViewElement();
+    const modeRoot = document.createElement('section');
+    const root = document.createElement('div');
+    const itemsRoot = document.createElement('ol');
+    root.append(modeRoot);
+    modeRoot.append(itemsRoot);
+    let renderCount = 0;
+    view.structure = () => ({ root, modeRoot, itemsRoot });
+    view.renderer = () => {
+      renderCount += 1;
+      const row = document.createElement('li');
+      row.className = 'row';
+      return row;
+    };
+    view.registerViewMode({ id: 'visual', label: 'Visual' });
+    view.registerViewMode({ id: 'list', label: 'List' });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+    const rowBefore = view.querySelector<HTMLElement>('.row');
+    expect(rowBefore).not.toBeNull();
+
+    view.mode = 'visual';
+    view.mode = 'list';
+    view.mode = 'visual';
+
+    const rowAfter = view.querySelector<HTMLElement>('.row');
+    expect(renderCount).toBe(1);
+    expect(rowAfter).toBe(rowBefore);
   });
 
   it('dispatches mode-change with mode and previousMode only when the mode changes', () => {
