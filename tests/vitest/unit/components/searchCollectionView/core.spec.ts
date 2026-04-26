@@ -394,6 +394,26 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(modeRoot.dataset.mode).toBe('visual');
   });
 
+  it('does not activate a stale pending mode after the host mode attribute is removed', () => {
+    const view = new SearchCollectionViewElement();
+    const root = document.createElement('section');
+    const itemsRoot = document.createElement('ol');
+    root.append(itemsRoot);
+    view.structure = () => ({ root, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.setAttribute('mode', 'visual');
+    view.registerViewMode({ id: 'list', label: 'List' });
+
+    view.removeAttribute('mode');
+    view.registerViewMode({ id: 'visual', label: 'Visual' });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    expect(view.mode).toBe('');
+    expect(view.getAttribute('mode')).toBeNull();
+    expect(root.dataset.mode).toBeUndefined();
+  });
+
   it('rejects an unknown mode and keeps the previous active mode', () => {
     const view = new SearchCollectionViewElement();
     const errors: CustomEvent[] = [];

@@ -97,7 +97,7 @@ export class SearchCollectionViewElement<
     }
 
     this.registeredViewModes.push(plugin);
-    if (this.pendingMode === plugin.id) this.setMode(plugin.id);
+    if (this.pendingMode === plugin.id && this.getAttribute('mode') === plugin.id) this.setMode(plugin.id);
   }
 
   setItems(items: TItem[]) {
@@ -211,6 +211,7 @@ export class SearchCollectionViewElement<
         return;
       }
 
+      this.pendingMode = null;
       this.dispatchComponentError({
         code: 'unknown-mode',
         message: `Unknown view mode "${mode}".`,
