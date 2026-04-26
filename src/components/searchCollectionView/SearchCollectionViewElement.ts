@@ -3,6 +3,7 @@ import type {
   SearchCollectionItemIdResolver,
   SearchCollectionErrorDetail,
   SearchCollectionModeChangeDetail,
+  SearchCollectionSearchStateChangeDetail,
   SearchCollectionRenderContext,
   SearchCollectionRenderer,
   SearchModelPlugin,
@@ -138,8 +139,29 @@ export class SearchCollectionViewElement<
 
   set searchModel(searchModel: SearchModelPlugin<TItem> | null) {
     this._searchModel = searchModel;
-    this._searchState = this.cloneSearchState(searchModel?.initialState ?? {});
-    this.applyCurrentSearchStateToRenderedItems();
+    const nextState = this.cloneSearchState(searchModel?.initialState ?? {});
+
+    if (this.mountedStructure) {
+      this.setSearchState(nextState);
+      return;
+    }
+
+    this._searchState = nextState;
+  }
+
+  get searchState() {
+    return this.cloneSearchState(this._searchState);
+  }
+
+  setSearchState(next: SearchState) {
+    const previousState = this.cloneSearchState(this._searchState);
+    const nextState = this.cloneSearchState(next);
+    const result = this.computeSearchResult(nextState);
+    if (!result) return;
+
+    this._searchState = nextState;
+    this.applySearchResult(result);
+    this.dispatchSearchStateChange(this.cloneSearchState(nextState), previousState);
   }
 
   get hiddenItemClass() {
@@ -637,6 +659,19 @@ export class SearchCollectionViewElement<
           selectedItemIds,
           previousSelectedItemIds,
         },
+      }),
+    );
+  }
+
+  private dispatchSearchStateChange(state: SearchState, previousState: SearchState) {
+    const detail: SearchCollectionSearchStateChangeDetail = {
+      state,
+      previousState,
+    };
+
+    this.dispatchEvent(
+      new CustomEvent('search-state-change', {
+        detail,
       }),
     );
   }

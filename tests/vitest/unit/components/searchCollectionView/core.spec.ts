@@ -1056,4 +1056,52 @@ describe('SearchCollectionViewElement core rendering', () => {
 
     expect(view.searchModel).toBe(plugin);
   });
+
+  it('commits search state atomically and dispatches search-state-change after DOM updates', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const events: CustomEvent[] = [];
+    const hiddenStatesWhenEventFired: boolean[][] = [];
+    view.addEventListener('search-state-change', (event) => {
+      events.push(event as CustomEvent);
+      hiddenStatesWhenEventFired.push([...view.querySelectorAll<HTMLElement>('.row')].map((row) => Boolean(row.hidden)));
+    });
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.searchModel = {
+      match: (item, state) => item.name.includes(state.query ?? ''),
+    };
+    view.items = [
+      { id: 'alpha', name: 'Alpha' },
+      { id: 'beta', name: 'Beta' },
+    ];
+    document.body.append(view);
+
+    view.setSearchState({ query: 'Alpha' });
+
+    expect(events).toHaveLength(1);
+    expect(events[0]?.detail).toEqual({
+      state: { query: 'Alpha' },
+      previousState: {},
+    });
+    expect([...view.querySelectorAll<HTMLElement>('.row')].map((row) => row.hidden)).toEqual([false, true]);
+    expect(hiddenStatesWhenEventFired).toEqual([[false, true]]);
+    expect(events[0]?.detail.state).not.toBe(view.searchState);
+  });
+
+  it('treats setSearchState as complete replacement instead of partial merge', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    view.renderer = () => document.createElement('article');
+    view.searchModel = {
+      initialState: { query: 'a', sort: 'name' },
+    };
+    view.items = [{ id: 'a', name: 'Alpha' }];
+
+    view.setSearchState({ filters: { onlyOwned: true } });
+
+    expect(view.searchState).toEqual({ filters: { onlyOwned: true } });
+  });
 });
