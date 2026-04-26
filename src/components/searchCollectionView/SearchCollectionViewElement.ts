@@ -12,12 +12,18 @@ import type {
 export class SearchCollectionViewElement<
   TItem extends SearchCollectionItem = SearchCollectionItem,
 > extends HTMLElement {
+  static get observedAttributes() {
+    return ['mode'];
+  }
+
   private _items: TItem[] = [];
   private _renderer: SearchCollectionRenderer<TItem> | null = null;
   private _getItemId: SearchCollectionItemIdResolver<TItem> | null = null;
   private _structure: SearchCollectionStructureRenderer | null = null;
   private mountedStructure: SearchCollectionStructure | null = null;
   private registeredViewModes: ViewModePlugin[] = [];
+  private activeMode: string | null = null;
+  private syncingModeAttribute = false;
   private hasReceivedItems = false;
 
   get items() {
@@ -63,6 +69,19 @@ export class SearchCollectionViewElement<
 
   get viewModes(): readonly ViewModePlugin[] {
     return Object.freeze([...this.registeredViewModes]);
+  }
+
+  get mode() {
+    return this.activeMode ?? '';
+  }
+
+  set mode(mode: string) {
+    this.setMode(mode);
+  }
+
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
+    if (name !== 'mode' || oldValue === newValue || this.syncingModeAttribute) return;
+    this.setMode(newValue ?? '');
   }
 
   registerViewMode(plugin: ViewModePlugin) {
@@ -116,12 +135,14 @@ export class SearchCollectionViewElement<
         ...customStructure,
         toolbarRoot,
       };
+      if (this.activeMode) this.syncModeTarget(this.activeMode);
       return this.mountedStructure;
     }
 
     const mountedStructure = this.createDefaultStructure();
     this.append(mountedStructure.toolbarRoot!, mountedStructure.root);
     this.mountedStructure = mountedStructure;
+    if (this.activeMode) this.syncModeTarget(this.activeMode);
     return this.mountedStructure;
   }
 
@@ -178,6 +199,55 @@ export class SearchCollectionViewElement<
     return modeTarget.contains(maybeStructure.itemsRoot);
   }
 
+  private setMode(mode: string) {
+    const plugin = this.registeredViewModes.find((viewMode) => viewMode.id === mode);
+    if (!plugin) {
+      this.dispatchComponentError({
+        code: 'unknown-mode',
+        message: `Unknown view mode "${mode}".`,
+        mode,
+      });
+      this.syncHostModeAttribute(this.activeMode);
+      return;
+    }
+
+    if (this.activeMode === mode) {
+      this.syncHostModeAttribute(mode);
+      this.syncModeTarget(mode);
+      return;
+    }
+
+    const previousMode = this.activeMode;
+    this.activeMode = mode;
+    this.syncHostModeAttribute(mode);
+    this.syncModeTarget(mode);
+    this.dispatchModeChange(mode, previousMode);
+  }
+
+  private syncHostModeAttribute(mode: string | null) {
+    this.syncingModeAttribute = true;
+    try {
+      if (mode === null || mode === '') {
+        this.removeAttribute('mode');
+      } else if (this.getAttribute('mode') !== mode) {
+        this.setAttribute('mode', mode);
+      }
+    } finally {
+      this.syncingModeAttribute = false;
+    }
+  }
+
+  private syncModeTarget(mode: string) {
+    const modeTarget = this.getModeTarget();
+    if (modeTarget) modeTarget.dataset.mode = mode;
+  }
+
+  private getModeTarget() {
+    const structure = this.mountedStructure;
+    if (!structure) return null;
+    return structure.modeRoot ?? structure.root;
+  }
+
   private render(validatedItemIds?: string[]) {
     const structure = this.ensureStructure();
     if (!structure) return;
@@ -200,7 +270,7 @@ export class SearchCollectionViewElement<
           itemId,
           index,
           selected: false,
-          mode: this.getAttribute('mode') ?? '',
+          mode: this.mode,
           emitAction: () => {},
         };
 
@@ -273,6 +343,17 @@ export class SearchCollectionViewElement<
     }
 
     return itemIds;
+  }
+
+  private dispatchModeChange(mode: string, previousMode: string | null) {
+    this.dispatchEvent(
+      new CustomEvent('mode-change', {
+        detail: {
+          mode,
+          previousMode,
+        },
+      }),
+    );
   }
 
   private dispatchRenderComplete(itemIds: string[]) {
