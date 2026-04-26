@@ -147,10 +147,13 @@ export class SearchCollectionViewElement<
   }
 
   set hiddenItemClass(hiddenItemClass: string | null) {
+    const result = this.computeSearchResult(this._searchState);
+    if (!result) return;
+
     const previousHiddenItemClass = this._hiddenItemClass;
-    this._hiddenItemClass = hiddenItemClass;
     this.removeHiddenStateClassTokens(previousHiddenItemClass);
-    this.applyCurrentSearchStateToRenderedItems();
+    this._hiddenItemClass = hiddenItemClass;
+    this.applySearchResult(result);
   }
 
   setSelectedItemIds(ids: Iterable<string | number>) {

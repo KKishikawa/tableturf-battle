@@ -310,12 +310,20 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(rows.map((row) => row.dataset.hidden)).toEqual(['false', 'false', 'true']);
     expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false, true]);
 
-    view.hiddenItemClass = '  is-hidden visually-hidden  ';
+    view.hiddenItemClass = 'is-hidden';
 
     expect(renderCount).toBe(3);
     expect([...view.querySelectorAll<HTMLElement>('.row')]).toEqual(rows);
     expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false, true]);
+    expect(rows.map((row) => row.classList.contains('visually-hidden'))).toEqual([false, false, false]);
+
+    view.hiddenItemClass = '  visually-hidden extra-hidden  ';
+
+    expect(renderCount).toBe(3);
+    expect([...view.querySelectorAll<HTMLElement>('.row')]).toEqual(rows);
+    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false, false]);
     expect(rows.map((row) => row.classList.contains('visually-hidden'))).toEqual([false, false, true]);
+    expect(rows.map((row) => row.classList.contains('extra-hidden'))).toEqual([false, false, true]);
 
     view.hiddenItemClass = null;
 
@@ -323,6 +331,42 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect([...view.querySelectorAll<HTMLElement>('.row')]).toEqual(rows);
     expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false, false]);
     expect(rows.map((row) => row.classList.contains('visually-hidden'))).toEqual([false, false, false]);
+    expect(rows.map((row) => row.classList.contains('extra-hidden'))).toEqual([false, false, false]);
+  });
+
+  it('keeps the previous hidden class when a hidden item class update hits a search error', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string; rank: number }>();
+    const errors: CustomEvent[] = [];
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.hiddenItemClass = 'is-hidden';
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.searchModel = {
+      initialState: { query: 'a', sort: 'rank' },
+      match: () => {
+        throw new Error('match failed');
+      },
+      compare: () => 0,
+    };
+    view.items = [
+      { id: 'alpha', name: 'Alpha', rank: 1 },
+      { id: 'beta', name: 'Beta', rank: 2 },
+    ];
+    document.body.append(view);
+
+    const rows = [...view.querySelectorAll<HTMLElement>('.row')];
+    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false]);
+
+    view.hiddenItemClass = 'visually-hidden';
+
+    expect(view.hiddenItemClass).toBe('is-hidden');
+    expect(errors[errors.length - 1]?.detail.code).toBe('search-error');
+    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false]);
+    expect(rows.map((row) => row.classList.contains('visually-hidden'))).toEqual([false, false]);
   });
 
   it('continues rendering other items when a renderer throws', () => {
