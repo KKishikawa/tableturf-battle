@@ -40,3 +40,20 @@ export interface SearchCollectionErrorDetail {
 export interface SearchCollectionRenderCompleteDetail {
   itemIds: string[];
 }
+
+export interface SearchCollectionItemActionDetail<TItem extends SearchCollectionItem> {
+  itemId: string;
+  item: TItem;
+  action: string;
+  detail?: Record<string, unknown>;
+}
+
+export interface SearchCollectionSelectionAttributeAdapter {
+  selected: string;
+  unselected: string | null;
+}
+
+export interface SearchCollectionSelectionChangeDetail {
+  selectedItemIds: string[];
+  previousSelectedItemIds: string[];
+}
