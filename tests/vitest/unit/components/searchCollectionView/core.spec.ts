@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { SearchCollectionViewElement } from '@/components/searchCollectionView';
+import type { SearchModelPlugin, SearchState } from '@/components/searchCollectionView/types';
 
 describe('SearchCollectionViewElement core rendering', () => {
   afterEach(() => {
@@ -940,5 +941,24 @@ describe('SearchCollectionViewElement core rendering', () => {
     view.setSelectedItemIds(['a']);
 
     expect(view.querySelector<HTMLElement>('.row')?.getAttribute('data-selected')).toBe('1');
+  });
+
+  it('accepts a typed search model plugin API', () => {
+    type Item = { id: string; name: string; rank: number };
+    const initialState: SearchState = {
+      query: 'a',
+      filters: { minRank: 2 },
+      sort: 'rank',
+    };
+    const plugin: SearchModelPlugin<Item> = {
+      initialState,
+      match: (item, state) => item.name.includes(state.query ?? ''),
+      compare: (a, b, state) => (state.sort === 'rank' ? a.rank - b.rank : 0),
+    };
+    const view = new SearchCollectionViewElement<Item>();
+
+    view.searchModel = plugin;
+
+    expect(view.searchModel).toBe(plugin);
   });
 });

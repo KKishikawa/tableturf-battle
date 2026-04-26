@@ -3,8 +3,11 @@ import type {
   SearchCollectionItemIdResolver,
   SearchCollectionErrorDetail,
   SearchCollectionModeChangeDetail,
+  SearchCollectionSearchStateChangeDetail,
   SearchCollectionRenderContext,
   SearchCollectionRenderer,
+  SearchModelPlugin,
+  SearchState,
   SearchCollectionSelectionAttributeAdapter,
   SearchCollectionStructure,
   SearchCollectionStructureRenderer,
@@ -37,6 +40,8 @@ export class SearchCollectionViewElement<
   private pendingMode: string | null = null;
   private syncingModeAttribute = false;
   private hasReceivedItems = false;
+  private _searchModel: SearchModelPlugin<TItem> | null = null;
+  private _searchState: SearchState = {};
 
   get items() {
     return this._items;
@@ -125,6 +130,21 @@ export class SearchCollectionViewElement<
   set selectionAttribute(selectionAttribute: SearchCollectionSelectionAttributeAdapter) {
     this._selectionAttribute = { ...selectionAttribute };
     this.applySelectionStateToRenderedItems();
+  }
+
+  get searchModel() {
+    return this._searchModel;
+  }
+
+  set searchModel(searchModel: SearchModelPlugin<TItem> | null) {
+    const previousState = this.cloneSearchState(this._searchState);
+    this._searchModel = searchModel;
+    this._searchState = this.cloneSearchState(searchModel?.initialState ?? {});
+    const detail: SearchCollectionSearchStateChangeDetail = {
+      state: this.cloneSearchState(this._searchState),
+      previousState,
+    };
+    void detail;
   }
 
   setSelectedItemIds(ids: Iterable<string | number>) {
@@ -351,6 +371,13 @@ export class SearchCollectionViewElement<
 
   private getClassTokens(className: string | undefined) {
     return className?.split(/\s+/).filter(Boolean) ?? [];
+  }
+
+  private cloneSearchState(state: SearchState): SearchState {
+    return {
+      ...state,
+      filters: state.filters ? { ...state.filters } : undefined,
+    };
   }
 
   private installModeStyles(plugin: ViewModePlugin) {
