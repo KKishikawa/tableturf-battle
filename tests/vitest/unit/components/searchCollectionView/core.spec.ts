@@ -337,6 +337,7 @@ describe('SearchCollectionViewElement core rendering', () => {
   it('keeps the previous hidden class when a hidden item class update hits a search error', () => {
     const view = new SearchCollectionViewElement<{ id: string; name: string; rank: number }>();
     const errors: CustomEvent[] = [];
+    let shouldThrow = false;
     view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
     view.hiddenItemClass = 'is-hidden';
     view.renderer = (item) => {
@@ -347,25 +348,29 @@ describe('SearchCollectionViewElement core rendering', () => {
     };
     view.searchModel = {
       initialState: { query: 'a', sort: 'rank' },
-      match: () => {
-        throw new Error('match failed');
+      match: (item) => {
+        if (shouldThrow) throw new Error('match failed');
+        return item.name !== 'Echo';
       },
       compare: () => 0,
     };
     view.items = [
       { id: 'alpha', name: 'Alpha', rank: 1 },
-      { id: 'beta', name: 'Beta', rank: 2 },
+      { id: 'echo', name: 'Echo', rank: 2 },
     ];
     document.body.append(view);
 
     const rows = [...view.querySelectorAll<HTMLElement>('.row')];
-    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false]);
+    expect(errors).toHaveLength(0);
+    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, true]);
+
+    shouldThrow = true;
 
     view.hiddenItemClass = 'visually-hidden';
 
     expect(view.hiddenItemClass).toBe('is-hidden');
     expect(errors[errors.length - 1]?.detail.code).toBe('search-error');
-    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false]);
+    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, true]);
     expect(rows.map((row) => row.classList.contains('visually-hidden'))).toEqual([false, false]);
   });
 
