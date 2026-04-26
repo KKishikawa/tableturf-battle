@@ -374,6 +374,26 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(root.dataset.mode).toBe('visual');
   });
 
+  it('preserves a pre-existing mode attribute until the matching mode is registered', () => {
+    const view = new SearchCollectionViewElement();
+    const modeRoot = document.createElement('section');
+    const root = document.createElement('div');
+    const itemsRoot = document.createElement('ol');
+    root.append(modeRoot);
+    modeRoot.append(itemsRoot);
+    view.structure = () => ({ root, modeRoot, itemsRoot });
+    view.renderer = () => document.createElement('li');
+    view.setAttribute('mode', 'visual');
+
+    view.registerViewMode({ id: 'visual', label: 'Visual' });
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    expect(view.mode).toBe('visual');
+    expect(view.getAttribute('mode')).toBe('visual');
+    expect(modeRoot.dataset.mode).toBe('visual');
+  });
+
   it('rejects an unknown mode and keeps the previous active mode', () => {
     const view = new SearchCollectionViewElement();
     const errors: CustomEvent[] = [];

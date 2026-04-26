@@ -2,6 +2,7 @@ import type {
   SearchCollectionItem,
   SearchCollectionItemIdResolver,
   SearchCollectionErrorDetail,
+  SearchCollectionModeChangeDetail,
   SearchCollectionRenderContext,
   SearchCollectionRenderer,
   SearchCollectionStructure,
@@ -23,6 +24,7 @@ export class SearchCollectionViewElement<
   private mountedStructure: SearchCollectionStructure | null = null;
   private registeredViewModes: ViewModePlugin[] = [];
   private activeMode: string | null = null;
+  private pendingMode: string | null = null;
   private syncingModeAttribute = false;
   private hasReceivedItems = false;
 
@@ -95,6 +97,7 @@ export class SearchCollectionViewElement<
     }
 
     this.registeredViewModes.push(plugin);
+    if (this.pendingMode === plugin.id) this.setMode(plugin.id);
   }
 
   setItems(items: TItem[]) {
@@ -202,6 +205,12 @@ export class SearchCollectionViewElement<
   private setMode(mode: string) {
     const plugin = this.registeredViewModes.find((viewMode) => viewMode.id === mode);
     if (!plugin) {
+      if (this.registeredViewModes.length === 0) {
+        this.pendingMode = mode;
+        this.syncHostModeAttribute(mode);
+        return;
+      }
+
       this.dispatchComponentError({
         code: 'unknown-mode',
         message: `Unknown view mode "${mode}".`,
@@ -219,6 +228,7 @@ export class SearchCollectionViewElement<
 
     const previousMode = this.activeMode;
     this.activeMode = mode;
+    this.pendingMode = null;
     this.syncHostModeAttribute(mode);
     this.syncModeTarget(mode);
     this.dispatchModeChange(mode, previousMode);
@@ -346,12 +356,14 @@ export class SearchCollectionViewElement<
   }
 
   private dispatchModeChange(mode: string, previousMode: string | null) {
+    const detail: SearchCollectionModeChangeDetail = {
+      mode,
+      previousMode,
+    };
+
     this.dispatchEvent(
       new CustomEvent('mode-change', {
-        detail: {
-          mode,
-          previousMode,
-        },
+        detail,
       }),
     );
   }
