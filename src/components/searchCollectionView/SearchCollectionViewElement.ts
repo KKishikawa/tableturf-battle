@@ -23,6 +23,9 @@ export class SearchCollectionViewElement<
   private _structure: SearchCollectionStructureRenderer | null = null;
   private mountedStructure: SearchCollectionStructure | null = null;
   private registeredViewModes: ViewModePlugin[] = [];
+  private activeViewModePlugin: ViewModePlugin | null = null;
+  private installedStyleModes = new Set<string>();
+  private installedModeStyles = new Map<string, HTMLStyleElement>();
   private activeMode: string | null = null;
   private pendingMode: string | null = null;
   private syncingModeAttribute = false;
@@ -97,6 +100,7 @@ export class SearchCollectionViewElement<
     }
 
     this.registeredViewModes.push(plugin);
+    this.installModeStyles(plugin);
     if (this.pendingMode === plugin.id && this.getAttribute('mode') === plugin.id) this.setMode(plugin.id);
   }
 
@@ -138,14 +142,14 @@ export class SearchCollectionViewElement<
         ...customStructure,
         toolbarRoot,
       };
-      if (this.activeMode) this.syncModeTarget(this.activeMode);
+      if (this.activeViewModePlugin) this.applyViewModePlugin(this.activeViewModePlugin, null);
       return this.mountedStructure;
     }
 
     const mountedStructure = this.createDefaultStructure();
     this.append(mountedStructure.toolbarRoot!, mountedStructure.root);
     this.mountedStructure = mountedStructure;
-    if (this.activeMode) this.syncModeTarget(this.activeMode);
+    if (this.activeViewModePlugin) this.applyViewModePlugin(this.activeViewModePlugin, null);
     return this.mountedStructure;
   }
 
@@ -223,15 +227,17 @@ export class SearchCollectionViewElement<
 
     if (this.activeMode === mode) {
       this.syncHostModeAttribute(mode);
-      this.syncModeTarget(mode);
+      this.applyViewModePlugin(plugin, plugin);
       return;
     }
 
     const previousMode = this.activeMode;
+    const previousPlugin = this.activeViewModePlugin;
     this.activeMode = mode;
+    this.activeViewModePlugin = plugin;
     this.pendingMode = null;
     this.syncHostModeAttribute(mode);
-    this.syncModeTarget(mode);
+    this.applyViewModePlugin(plugin, previousPlugin);
     this.dispatchModeChange(mode, previousMode);
   }
 
@@ -248,9 +254,61 @@ export class SearchCollectionViewElement<
     }
   }
 
-  private syncModeTarget(mode: string) {
+  private applyViewModePlugin(plugin: ViewModePlugin, previousPlugin: ViewModePlugin | null) {
     const modeTarget = this.getModeTarget();
-    if (modeTarget) modeTarget.dataset.mode = mode;
+    const structure = this.mountedStructure;
+    if (!modeTarget || !structure) return;
+
+    const pluginChanged = previousPlugin?.id !== plugin.id;
+    if (pluginChanged && previousPlugin) {
+      this.removePluginClasses(previousPlugin, modeTarget);
+      previousPlugin.deactivate?.(modeTarget);
+    }
+
+    modeTarget.dataset.mode = plugin.id;
+    this.addClassTokens(modeTarget, plugin.containerClass);
+    [...structure.itemsRoot.children].forEach((child) => this.applyItemModeClass(child, plugin));
+
+    if (pluginChanged) plugin.activate?.(modeTarget);
+  }
+
+  private removePluginClasses(plugin: ViewModePlugin, modeTarget: HTMLElement) {
+    this.removeClassTokens(modeTarget, plugin.containerClass);
+    const structure = this.mountedStructure;
+    if (!structure) return;
+    [...structure.itemsRoot.children].forEach((child) => this.removeClassTokens(child, plugin.itemClass));
+  }
+
+  private applyItemModeClass(wrapper: Element, plugin = this.activeViewModePlugin) {
+    if (!plugin) return;
+    this.addClassTokens(wrapper, plugin.itemClass);
+  }
+
+  private addClassTokens(element: Element, className: string | undefined) {
+    const tokens = this.getClassTokens(className);
+    if (tokens.length > 0) element.classList.add(...tokens);
+  }
+
+  private removeClassTokens(element: Element, className: string | undefined) {
+    const tokens = this.getClassTokens(className);
+    if (tokens.length > 0) element.classList.remove(...tokens);
+  }
+
+  private getClassTokens(className: string | undefined) {
+    return className?.split(/\s+/).filter(Boolean) ?? [];
+  }
+
+  private installModeStyles(plugin: ViewModePlugin) {
+    if (!plugin.styles || this.installedStyleModes.has(plugin.id)) return;
+    const style = document.createElement('style');
+    style.dataset.viewMode = plugin.id;
+    style.textContent =
+      typeof plugin.styles === 'string'
+        ? plugin.styles
+        : [...plugin.styles.cssRules].map((rule) => rule.cssText).join('\n');
+    this.append(style);
+    this.installedStyleModes.add(plugin.id);
+    this.installedModeStyles.set(plugin.id, style);
   }
 
   private getModeTarget() {
@@ -322,6 +380,7 @@ export class SearchCollectionViewElement<
   private applyItemWrapperState(wrapper: Element, itemId: string) {
     wrapper.setAttribute('data-item-id', itemId);
     wrapper.setAttribute('role', 'listitem');
+    this.applyItemModeClass(wrapper);
   }
 
   private resolveItemIds(items: TItem[]) {
