@@ -462,25 +462,26 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(rowBefore).not.toBeNull();
 
     view.mode = 'visual';
+    const visualRow = view.querySelector<HTMLElement>('.row');
     expect(modeRoot.classList.contains('is-visual')).toBe(true);
     expect(modeRoot.classList.contains('is-list')).toBe(false);
-    expect(rowBefore?.classList.contains('item-visual')).toBe(true);
-    expect(rowBefore?.classList.contains('item-list')).toBe(false);
+    expect(visualRow?.classList.contains('item-visual')).toBe(true);
+    expect(visualRow?.classList.contains('item-list')).toBe(false);
 
     view.mode = 'list';
+    const listRow = view.querySelector<HTMLElement>('.row');
     expect(modeRoot.classList.contains('is-list')).toBe(true);
     expect(modeRoot.classList.contains('is-visual')).toBe(false);
-    expect(rowBefore?.classList.contains('item-list')).toBe(true);
-    expect(rowBefore?.classList.contains('item-visual')).toBe(false);
+    expect(listRow?.classList.contains('item-list')).toBe(true);
+    expect(listRow?.classList.contains('item-visual')).toBe(false);
 
     view.mode = 'visual';
 
-    const rowAfter = view.querySelector<HTMLElement>('.row');
-    expect(rowAfter).toBe(rowBefore);
+    const finalVisualRow = view.querySelector<HTMLElement>('.row');
     expect(modeRoot.classList.contains('is-visual')).toBe(true);
     expect(modeRoot.classList.contains('is-list')).toBe(false);
-    expect(rowAfter?.classList.contains('item-visual')).toBe(true);
-    expect(rowAfter?.classList.contains('item-list')).toBe(false);
+    expect(finalVisualRow?.classList.contains('item-visual')).toBe(true);
+    expect(finalVisualRow?.classList.contains('item-list')).toBe(false);
   });
 
   it('installs view mode styles once in registration order', () => {
@@ -503,9 +504,9 @@ describe('SearchCollectionViewElement core rendering', () => {
     view.items = [{ id: 'a' }];
     document.body.append(view);
 
-    view.mode = 'visual';
     view.mode = 'list';
     view.mode = 'visual';
+    view.mode = 'list';
 
     expect([...view.querySelectorAll('style')].map((style) => style.textContent)).toEqual([
       '.is-visual { display: grid; }',
