@@ -1104,4 +1104,73 @@ describe('SearchCollectionViewElement core rendering', () => {
 
     expect(view.searchState).toEqual({ filters: { onlyOwned: true } });
   });
+
+  it('keeps previous state order and visibility when match throws', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const errors: CustomEvent[] = [];
+    const cause = new Error('match failed');
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.searchModel = {
+      match: (_item, state) => {
+        if (state.query === 'boom') throw cause;
+        return true;
+      },
+    };
+    view.items = [
+      { id: 'b', name: 'Beta' },
+      { id: 'a', name: 'Alpha' },
+    ];
+    document.body.append(view);
+    const rowsBefore = [...view.querySelectorAll<HTMLElement>('.row')];
+
+    view.setSearchState({ query: 'boom' });
+
+    expect(view.searchState).toEqual({});
+    expect([...view.querySelectorAll<HTMLElement>('.row')]).toEqual(rowsBefore);
+    expect(rowsBefore.map((row) => row.hidden)).toEqual([false, false]);
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'search-error',
+      cause,
+    });
+  });
+
+  it('keeps previous state order and visibility when compare throws', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const errors: CustomEvent[] = [];
+    const cause = new Error('compare failed');
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.searchModel = {
+      compare: (_a, _b, state) => {
+        if (state.sort === 'boom') throw cause;
+        return 0;
+      },
+    };
+    view.items = [
+      { id: 'b', name: 'Beta' },
+      { id: 'a', name: 'Alpha' },
+    ];
+    document.body.append(view);
+    const rowsBefore = [...view.querySelectorAll<HTMLElement>('.row')];
+
+    view.setSearchState({ sort: 'boom' });
+
+    expect(view.searchState).toEqual({});
+    expect([...view.querySelectorAll<HTMLElement>('.row')]).toEqual(rowsBefore);
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'search-error',
+      cause,
+    });
+  });
 });
