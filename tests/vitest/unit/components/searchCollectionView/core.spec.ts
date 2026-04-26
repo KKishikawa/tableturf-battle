@@ -1063,7 +1063,9 @@ describe('SearchCollectionViewElement core rendering', () => {
     const hiddenStatesWhenEventFired: boolean[][] = [];
     view.addEventListener('search-state-change', (event) => {
       events.push(event as CustomEvent);
-      hiddenStatesWhenEventFired.push([...view.querySelectorAll<HTMLElement>('.row')].map((row) => Boolean(row.hidden)));
+      hiddenStatesWhenEventFired.push(
+        [...view.querySelectorAll<HTMLElement>('.row')].map((row) => Boolean(row.hidden)),
+      );
     });
     view.renderer = (item) => {
       const row = document.createElement('article');
@@ -1172,5 +1174,62 @@ describe('SearchCollectionViewElement core rendering', () => {
       code: 'search-error',
       cause,
     });
+  });
+
+  it('preserves selected attributes and view mode classes while search reorders items', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    view.selectionAttribute = { selected: '1', unselected: '' };
+    view.setSelectedItemIds(['b']);
+    view.registerViewMode({ id: 'visual', label: 'Visual', itemClass: 'item-visual' });
+    view.mode = 'visual';
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.searchModel = {
+      compare: (a, b) => a.name.localeCompare(b.name),
+    };
+
+    view.items = [
+      { id: 'b', name: 'Beta' },
+      { id: 'a', name: 'Alpha' },
+    ];
+    document.body.append(view);
+
+    const rows = [...view.querySelectorAll<HTMLElement>('.row')];
+    expect(rows.map((row) => row.dataset.itemId)).toEqual(['a', 'b']);
+    expect(rows.map((row) => row.getAttribute('data-selected'))).toEqual(['', '1']);
+    expect(rows.map((row) => row.classList.contains('item-visual'))).toEqual([true, true]);
+  });
+
+  it('applies current search state to newly rendered item sets', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.searchModel = {
+      match: (item, state) => item.name.includes(state.query ?? ''),
+    };
+    view.setSearchState({ query: 'g' });
+
+    view.items = [
+      { id: 'alpha', name: 'Alpha' },
+      { id: 'echo', name: 'Echo' },
+    ];
+    document.body.append(view);
+
+    expect([...view.querySelectorAll<HTMLElement>('.row')].map((row) => row.hidden)).toEqual([true, true]);
+
+    view.items = [
+      { id: 'gamma', name: 'gamma' },
+      { id: 'echo', name: 'Echo' },
+    ];
+
+    expect([...view.querySelectorAll<HTMLElement>('.row')].map((row) => row.hidden)).toEqual([false, true]);
   });
 });
