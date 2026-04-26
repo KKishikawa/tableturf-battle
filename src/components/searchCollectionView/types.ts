@@ -44,6 +44,23 @@ export interface SearchCollectionModeChangeDetail {
   previousMode: string | null;
 }
 
+export interface SearchState {
+  query?: string;
+  filters?: Record<string, unknown>;
+  sort?: string;
+}
+
+export interface SearchModelPlugin<TItem extends SearchCollectionItem> {
+  initialState?: SearchState;
+  match?(item: TItem, state: SearchState): boolean;
+  compare?(a: TItem, b: TItem, state: SearchState): number;
+}
+
+export interface SearchCollectionSearchStateChangeDetail {
+  state: SearchState;
+  previousState: SearchState;
+}
+
 export interface SearchCollectionErrorDetail {
   code:
     | 'missing-item-id'
@@ -52,7 +69,8 @@ export interface SearchCollectionErrorDetail {
     | 'duplicate-mode'
     | 'view-mode-error'
     | 'invalid-structure'
-    | 'renderer-error';
+    | 'renderer-error'
+    | 'search-error';
   message: string;
   cause?: unknown;
   itemId?: string;

@@ -3,8 +3,11 @@ import type {
   SearchCollectionItemIdResolver,
   SearchCollectionErrorDetail,
   SearchCollectionModeChangeDetail,
+  SearchCollectionSearchStateChangeDetail,
   SearchCollectionRenderContext,
   SearchCollectionRenderer,
+  SearchModelPlugin,
+  SearchState,
   SearchCollectionSelectionAttributeAdapter,
   SearchCollectionStructure,
   SearchCollectionStructureRenderer,
@@ -27,6 +30,7 @@ export class SearchCollectionViewElement<
     selected: 'true',
     unselected: 'false',
   };
+  private _hiddenItemClass: string | null = null;
   private renderedItems = new Map<string, { item: TItem; wrapper: Element }>();
   private mountedStructure: SearchCollectionStructure | null = null;
   private registeredViewModes: ViewModePlugin[] = [];
@@ -37,6 +41,8 @@ export class SearchCollectionViewElement<
   private pendingMode: string | null = null;
   private syncingModeAttribute = false;
   private hasReceivedItems = false;
+  private _searchModel: SearchModelPlugin<TItem> | null = null;
+  private _searchState: SearchState = {};
 
   get items() {
     return this._items;
@@ -125,6 +131,51 @@ export class SearchCollectionViewElement<
   set selectionAttribute(selectionAttribute: SearchCollectionSelectionAttributeAdapter) {
     this._selectionAttribute = { ...selectionAttribute };
     this.applySelectionStateToRenderedItems();
+  }
+
+  get searchModel() {
+    return this._searchModel;
+  }
+
+  set searchModel(searchModel: SearchModelPlugin<TItem> | null) {
+    this._searchModel = searchModel;
+    const nextState = this.cloneSearchState(searchModel?.initialState ?? {});
+
+    if (this.mountedStructure) {
+      this.setSearchState(nextState);
+      return;
+    }
+
+    this._searchState = nextState;
+  }
+
+  get searchState() {
+    return this.cloneSearchState(this._searchState);
+  }
+
+  setSearchState(next: SearchState) {
+    const previousState = this.cloneSearchState(this._searchState);
+    const nextState = this.cloneSearchState(next);
+    const result = this.computeSearchResult(nextState);
+    if (!result) return;
+
+    this._searchState = nextState;
+    this.applySearchResult(result);
+    this.dispatchSearchStateChange(this.cloneSearchState(nextState), previousState);
+  }
+
+  get hiddenItemClass() {
+    return this._hiddenItemClass;
+  }
+
+  set hiddenItemClass(hiddenItemClass: string | null) {
+    const result = this.computeSearchResult(this._searchState);
+    if (!result) return;
+
+    const previousHiddenItemClass = this._hiddenItemClass;
+    this.removeHiddenStateClassTokens(previousHiddenItemClass);
+    this._hiddenItemClass = hiddenItemClass;
+    this.applySearchResult(result);
   }
 
   setSelectedItemIds(ids: Iterable<string | number>) {
@@ -353,6 +404,13 @@ export class SearchCollectionViewElement<
     return className?.split(/\s+/).filter(Boolean) ?? [];
   }
 
+  private cloneSearchState(state: SearchState): SearchState {
+    return {
+      ...state,
+      filters: state.filters ? { ...state.filters } : undefined,
+    };
+  }
+
   private installModeStyles(plugin: ViewModePlugin) {
     if (!plugin.styles || this.installedStyleModes.has(plugin.id)) return;
     const style = document.createElement('style');
@@ -424,6 +482,7 @@ export class SearchCollectionViewElement<
         }
       });
 
+      this.applyCurrentSearchStateToRenderedItems();
       this.dispatchRenderComplete(itemIds);
     } finally {
       this.setAttribute('aria-busy', 'false');
@@ -456,6 +515,87 @@ export class SearchCollectionViewElement<
   private applySelectionStateToRenderedItems() {
     for (const [itemId, renderedItem] of this.renderedItems) {
       this.applySelectionState(renderedItem.wrapper, this._selectedItemIds.has(itemId));
+    }
+  }
+
+  private applyCurrentSearchStateToRenderedItems() {
+    const result = this.computeSearchResult(this._searchState);
+    if (!result) return;
+    this.applySearchResult(result);
+  }
+
+  private computeSearchResult(state: SearchState) {
+    const entries = [...this.renderedItems.entries()].map(([itemId, renderedItem], renderedIndex) => ({
+      itemId,
+      item: renderedItem.item,
+      wrapper: renderedItem.wrapper,
+      renderedIndex,
+      matched: true,
+    }));
+
+    try {
+      for (const entry of entries) {
+        entry.matched = this._searchModel?.match?.(entry.item, state) ?? true;
+      }
+
+      if (this._searchModel?.compare) {
+        entries.sort((left, right) => {
+          const compared = this._searchModel?.compare?.(left.item, right.item, state) ?? 0;
+          return compared === 0 ? left.renderedIndex - right.renderedIndex : compared;
+        });
+      }
+
+      return entries;
+    } catch (cause) {
+      this.dispatchComponentError({
+        code: 'search-error',
+        message: 'Search model callback failed.',
+        cause,
+      });
+      return null;
+    }
+  }
+
+  private applySearchResult(
+    entries: { itemId: string; item: TItem; wrapper: Element; renderedIndex: number; matched: boolean }[],
+  ) {
+    const structure = this.mountedStructure;
+    if (!structure) return;
+
+    for (const entry of entries) {
+      this.applyHiddenState(entry.wrapper, !entry.matched);
+      structure.itemsRoot.append(entry.wrapper);
+    }
+
+    this.renderedItems = new Map(entries.map((entry) => [entry.itemId, { item: entry.item, wrapper: entry.wrapper }]));
+  }
+
+  private applyHiddenState(wrapper: Element, hidden: boolean) {
+    if (wrapper instanceof HTMLElement) {
+      wrapper.hidden = hidden;
+    } else if (hidden) {
+      wrapper.setAttribute('hidden', '');
+    } else {
+      wrapper.removeAttribute('hidden');
+    }
+
+    wrapper.setAttribute('data-hidden', String(hidden));
+
+    const hiddenItemClassTokens = this.getClassTokens(this._hiddenItemClass ?? undefined);
+    if (hiddenItemClassTokens.length > 0) {
+      wrapper.classList.toggle(hiddenItemClassTokens[0], hidden);
+      for (let index = 1; index < hiddenItemClassTokens.length; index += 1) {
+        wrapper.classList.toggle(hiddenItemClassTokens[index], hidden);
+      }
+    }
+  }
+
+  private removeHiddenStateClassTokens(hiddenItemClass: string | null) {
+    const classTokens = this.getClassTokens(hiddenItemClass ?? undefined);
+    if (classTokens.length === 0) return;
+
+    for (const renderedItem of this.renderedItems.values()) {
+      renderedItem.wrapper.classList.remove(...classTokens);
     }
   }
 
@@ -519,6 +659,19 @@ export class SearchCollectionViewElement<
           selectedItemIds,
           previousSelectedItemIds,
         },
+      }),
+    );
+  }
+
+  private dispatchSearchStateChange(state: SearchState, previousState: SearchState) {
+    const detail: SearchCollectionSearchStateChangeDetail = {
+      state,
+      previousState,
+    };
+
+    this.dispatchEvent(
+      new CustomEvent('search-state-change', {
+        detail,
       }),
     );
   }

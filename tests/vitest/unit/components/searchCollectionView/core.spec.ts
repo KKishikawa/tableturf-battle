@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { SearchCollectionViewElement } from '@/components/searchCollectionView';
+import type { SearchModelPlugin, SearchState } from '@/components/searchCollectionView/types';
 
 describe('SearchCollectionViewElement core rendering', () => {
   afterEach(() => {
@@ -276,6 +277,101 @@ describe('SearchCollectionViewElement core rendering', () => {
     const wrapper = view.querySelector<HTMLElement>('.scv__item');
     expect(wrapper?.dataset.itemId).toBe('fragment');
     expect(wrapper?.textContent).toBe('Fragment child');
+  });
+
+  it('filters and sorts rendered item wrappers from item data without rerunning the renderer', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string; rank: number }>();
+    let renderCount = 0;
+    view.hiddenItemClass = 'is-hidden';
+    view.renderer = (item) => {
+      renderCount += 1;
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.searchModel = {
+      initialState: { query: 'a', sort: 'rank' },
+      match: (item, state) => item.name.toLowerCase().includes(state.query ?? ''),
+      compare: (a, b, state) => (state.sort === 'rank' ? a.rank - b.rank : 0),
+    };
+
+    view.items = [
+      { id: 'beta', name: 'Beta', rank: 2 },
+      { id: 'alpha', name: 'Alpha', rank: 1 },
+      { id: 'echo', name: 'Echo', rank: 3 },
+    ];
+    document.body.append(view);
+
+    const rows = [...view.querySelectorAll<HTMLElement>('.row')];
+    expect(renderCount).toBe(3);
+    expect(rows.map((row) => row.dataset.itemId)).toEqual(['alpha', 'beta', 'echo']);
+    expect(rows.map((row) => row.hidden)).toEqual([false, false, true]);
+    expect(rows.map((row) => row.dataset.hidden)).toEqual(['false', 'false', 'true']);
+    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false, true]);
+
+    view.hiddenItemClass = 'is-hidden';
+
+    expect(renderCount).toBe(3);
+    expect([...view.querySelectorAll<HTMLElement>('.row')]).toEqual(rows);
+    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false, true]);
+    expect(rows.map((row) => row.classList.contains('visually-hidden'))).toEqual([false, false, false]);
+
+    view.hiddenItemClass = '  visually-hidden extra-hidden  ';
+
+    expect(renderCount).toBe(3);
+    expect([...view.querySelectorAll<HTMLElement>('.row')]).toEqual(rows);
+    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false, false]);
+    expect(rows.map((row) => row.classList.contains('visually-hidden'))).toEqual([false, false, true]);
+    expect(rows.map((row) => row.classList.contains('extra-hidden'))).toEqual([false, false, true]);
+
+    view.hiddenItemClass = null;
+
+    expect(renderCount).toBe(3);
+    expect([...view.querySelectorAll<HTMLElement>('.row')]).toEqual(rows);
+    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, false, false]);
+    expect(rows.map((row) => row.classList.contains('visually-hidden'))).toEqual([false, false, false]);
+    expect(rows.map((row) => row.classList.contains('extra-hidden'))).toEqual([false, false, false]);
+  });
+
+  it('keeps the previous hidden class when a hidden item class update hits a search error', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string; rank: number }>();
+    const errors: CustomEvent[] = [];
+    let shouldThrow = false;
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.hiddenItemClass = 'is-hidden';
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.searchModel = {
+      initialState: { query: 'a', sort: 'rank' },
+      match: (item) => {
+        if (shouldThrow) throw new Error('match failed');
+        return item.name !== 'Echo';
+      },
+      compare: () => 0,
+    };
+    view.items = [
+      { id: 'alpha', name: 'Alpha', rank: 1 },
+      { id: 'echo', name: 'Echo', rank: 2 },
+    ];
+    document.body.append(view);
+
+    const rows = [...view.querySelectorAll<HTMLElement>('.row')];
+    expect(errors).toHaveLength(0);
+    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, true]);
+
+    shouldThrow = true;
+
+    view.hiddenItemClass = 'visually-hidden';
+
+    expect(view.hiddenItemClass).toBe('is-hidden');
+    expect(errors[errors.length - 1]?.detail.code).toBe('search-error');
+    expect(rows.map((row) => row.classList.contains('is-hidden'))).toEqual([false, true]);
+    expect(rows.map((row) => row.classList.contains('visually-hidden'))).toEqual([false, false]);
   });
 
   it('continues rendering other items when a renderer throws', () => {
@@ -940,5 +1036,200 @@ describe('SearchCollectionViewElement core rendering', () => {
     view.setSelectedItemIds(['a']);
 
     expect(view.querySelector<HTMLElement>('.row')?.getAttribute('data-selected')).toBe('1');
+  });
+
+  it('accepts a typed search model plugin API', () => {
+    type Item = { id: string; name: string; rank: number };
+    const initialState: SearchState = {
+      query: 'a',
+      filters: { minRank: 2 },
+      sort: 'rank',
+    };
+    const plugin: SearchModelPlugin<Item> = {
+      initialState,
+      match: (item, state) => item.name.includes(state.query ?? ''),
+      compare: (a, b, state) => (state.sort === 'rank' ? a.rank - b.rank : 0),
+    };
+    const view = new SearchCollectionViewElement<Item>();
+
+    view.searchModel = plugin;
+
+    expect(view.searchModel).toBe(plugin);
+  });
+
+  it('commits search state atomically and dispatches search-state-change after DOM updates', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const events: CustomEvent[] = [];
+    const hiddenStatesWhenEventFired: boolean[][] = [];
+    view.addEventListener('search-state-change', (event) => {
+      events.push(event as CustomEvent);
+      hiddenStatesWhenEventFired.push(
+        [...view.querySelectorAll<HTMLElement>('.row')].map((row) => Boolean(row.hidden)),
+      );
+    });
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.searchModel = {
+      match: (item, state) => item.name.includes(state.query ?? ''),
+    };
+    view.items = [
+      { id: 'alpha', name: 'Alpha' },
+      { id: 'beta', name: 'Beta' },
+    ];
+    document.body.append(view);
+
+    view.setSearchState({ query: 'Alpha' });
+
+    expect(events).toHaveLength(1);
+    expect(events[0]?.detail).toEqual({
+      state: { query: 'Alpha' },
+      previousState: {},
+    });
+    expect([...view.querySelectorAll<HTMLElement>('.row')].map((row) => row.hidden)).toEqual([false, true]);
+    expect(hiddenStatesWhenEventFired).toEqual([[false, true]]);
+    expect(events[0]?.detail.state).not.toBe(view.searchState);
+  });
+
+  it('treats setSearchState as complete replacement instead of partial merge', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    view.renderer = () => document.createElement('article');
+    view.searchModel = {
+      initialState: { query: 'a', sort: 'name' },
+    };
+    view.items = [{ id: 'a', name: 'Alpha' }];
+
+    view.setSearchState({ filters: { onlyOwned: true } });
+
+    expect(view.searchState).toEqual({ filters: { onlyOwned: true } });
+  });
+
+  it('keeps previous state order and visibility when match throws', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const errors: CustomEvent[] = [];
+    const cause = new Error('match failed');
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.searchModel = {
+      match: (_item, state) => {
+        if (state.query === 'boom') throw cause;
+        return true;
+      },
+    };
+    view.items = [
+      { id: 'b', name: 'Beta' },
+      { id: 'a', name: 'Alpha' },
+    ];
+    document.body.append(view);
+    const rowsBefore = [...view.querySelectorAll<HTMLElement>('.row')];
+
+    view.setSearchState({ query: 'boom' });
+
+    expect(view.searchState).toEqual({});
+    expect([...view.querySelectorAll<HTMLElement>('.row')]).toEqual(rowsBefore);
+    expect(rowsBefore.map((row) => row.hidden)).toEqual([false, false]);
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'search-error',
+      cause,
+    });
+  });
+
+  it('keeps previous state order and visibility when compare throws', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const errors: CustomEvent[] = [];
+    const cause = new Error('compare failed');
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.searchModel = {
+      compare: (_a, _b, state) => {
+        if (state.sort === 'boom') throw cause;
+        return 0;
+      },
+    };
+    view.items = [
+      { id: 'b', name: 'Beta' },
+      { id: 'a', name: 'Alpha' },
+    ];
+    document.body.append(view);
+    const rowsBefore = [...view.querySelectorAll<HTMLElement>('.row')];
+
+    view.setSearchState({ sort: 'boom' });
+
+    expect(view.searchState).toEqual({});
+    expect([...view.querySelectorAll<HTMLElement>('.row')]).toEqual(rowsBefore);
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'search-error',
+      cause,
+    });
+  });
+
+  it('preserves selected attributes and view mode classes while search reorders items', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    view.selectionAttribute = { selected: '1', unselected: '' };
+    view.setSelectedItemIds(['b']);
+    view.registerViewMode({ id: 'visual', label: 'Visual', itemClass: 'item-visual' });
+    view.mode = 'visual';
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.searchModel = {
+      compare: (a, b) => a.name.localeCompare(b.name),
+    };
+
+    view.items = [
+      { id: 'b', name: 'Beta' },
+      { id: 'a', name: 'Alpha' },
+    ];
+    document.body.append(view);
+
+    const rows = [...view.querySelectorAll<HTMLElement>('.row')];
+    expect(rows.map((row) => row.dataset.itemId)).toEqual(['a', 'b']);
+    expect(rows.map((row) => row.getAttribute('data-selected'))).toEqual(['', '1']);
+    expect(rows.map((row) => row.classList.contains('item-visual'))).toEqual([true, true]);
+  });
+
+  it('applies current search state to newly rendered item sets', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.searchModel = {
+      match: (item, state) => item.name.includes(state.query ?? ''),
+    };
+    view.setSearchState({ query: 'g' });
+
+    view.items = [
+      { id: 'alpha', name: 'Alpha' },
+      { id: 'echo', name: 'Echo' },
+    ];
+    document.body.append(view);
+
+    expect([...view.querySelectorAll<HTMLElement>('.row')].map((row) => row.hidden)).toEqual([true, true]);
+
+    view.items = [
+      { id: 'gamma', name: 'gamma' },
+      { id: 'echo', name: 'Echo' },
+    ];
+
+    expect([...view.querySelectorAll<HTMLElement>('.row')].map((row) => row.hidden)).toEqual([false, true]);
   });
 });
