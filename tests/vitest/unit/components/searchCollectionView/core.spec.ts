@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { SearchCollectionViewElement } from '@/components/searchCollectionView';
-import type { SearchModelPlugin, SearchState } from '@/components/searchCollectionView/types';
+import type {
+  SearchCollectionItem,
+  SearchModelPlugin,
+  SearchState,
+  SearchUiPlugin,
+} from '@/components/searchCollectionView/types';
 
 describe('SearchCollectionViewElement core rendering', () => {
   afterEach(() => {
@@ -227,6 +232,64 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(errors[errors.length - 1]?.detail.code).toBe('invalid-structure');
     expect(view.querySelector('li')).toBeNull();
     expect(root.parentElement).toBe(externalParent);
+  });
+
+  it('updates search UI context when items are replaced', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const counts: string[] = [];
+    view.searchUi = {
+      render: (context) => {
+        counts.push(`render:${context.items.length}`);
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        root.dataset.count = String(context.items.length);
+        return root;
+      },
+      update: (root, context) => {
+        counts.push(`update:${context.items.length}`);
+        root.setAttribute('data-count', String(context.items.length));
+      },
+    };
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a', name: 'Alpha' }];
+    document.body.append(view);
+
+    view.items = [
+      { id: 'a', name: 'Alpha' },
+      { id: 'b', name: 'Beta' },
+    ];
+
+    expect(counts).toEqual(['render:1', 'update:2']);
+    expect(view.querySelector<HTMLElement>('.search-ui')?.dataset.count).toBe('2');
+  });
+
+  it('updates search UI context when items change without a renderer', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const counts: string[] = [];
+    view.searchUi = {
+      render: (context) => {
+        counts.push(`render:${context.items.length}`);
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        root.dataset.count = String(context.items.length);
+        return root;
+      },
+      update: (root, context) => {
+        counts.push(`update:${context.items.length}`);
+        root.setAttribute('data-count', String(context.items.length));
+      },
+    };
+    view.items = [{ id: 'a', name: 'Alpha' }];
+    document.body.append(view);
+
+    view.items = [
+      { id: 'a', name: 'Alpha' },
+      { id: 'b', name: 'Beta' },
+    ];
+
+    expect(counts).toEqual(['render:1', 'update:2']);
+    expect(view.querySelector<HTMLElement>('.search-ui')?.dataset.count).toBe('2');
+    expect(view.querySelector('.scv__items')?.children).toHaveLength(0);
   });
 
   it('rejects custom structures that reuse the same node for multiple roots', () => {
@@ -1057,6 +1120,388 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(view.searchModel).toBe(plugin);
   });
 
+  it('accepts a typed search UI plugin API', () => {
+    type Item = { id: string; name: string };
+    const plugin: SearchUiPlugin<Item> = {
+      render: (context) => {
+        const root = document.createElement('form');
+        root.dataset.query = context.state.query ?? '';
+        root.dataset.count = String(context.items.length);
+        context.setState({ query: 'updated' });
+        return root;
+      },
+      update: (root, context) => {
+        root.setAttribute('data-query', context.state.query ?? '');
+      },
+      destroy: (root) => {
+        root.remove();
+      },
+    };
+    const view = new SearchCollectionViewElement<Item>();
+
+    view.searchUi = plugin;
+
+    expect(view.searchUi).toBe(plugin);
+  });
+
+  it('lets search UI setState commit a complete replacement search state', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const submittedStates: SearchState[] = [];
+    view.searchModel = {
+      initialState: { query: 'a', sort: 'name' },
+      match: (item, state) => item.name.includes(state.query ?? ''),
+    };
+    view.searchUi = {
+      render: (context) => {
+        submittedStates.push(context.state);
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.addEventListener('click', () => context.setState({ filters: { onlyOwned: true } }));
+        return button;
+      },
+    };
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.items = [
+      { id: 'a', name: 'Alpha' },
+      { id: 'b', name: 'Beta' },
+    ];
+    document.body.append(view);
+
+    view.querySelector('button')?.click();
+
+    expect(submittedStates[0]).toEqual({ query: 'a', sort: 'name' });
+    expect(view.searchState).toEqual({ filters: { onlyOwned: true } });
+    expect([...view.querySelectorAll<HTMLElement>('.row')].map((row) => row.hidden)).toEqual([false, false]);
+  });
+
+  it('calls searchUi.update after search-state-change and DOM updates', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const calls: string[] = [];
+    view.addEventListener('search-state-change', () => {
+      calls.push(`event:${[...view.querySelectorAll<HTMLElement>('.row')].map((row) => row.hidden).join(',')}`);
+    });
+    view.searchModel = {
+      match: (item, state) => item.name.includes(state.query ?? ''),
+    };
+    view.searchUi = {
+      render: () => {
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        return root;
+      },
+      update: (root, context) => {
+        calls.push(
+          `update:${context.state.query}:${[...view.querySelectorAll<HTMLElement>('.row')].map((row) => row.hidden).join(',')}`,
+        );
+        root.setAttribute('data-query', context.state.query ?? '');
+      },
+    };
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.items = [
+      { id: 'alpha', name: 'Alpha' },
+      { id: 'beta', name: 'Beta' },
+    ];
+    document.body.append(view);
+
+    view.setSearchState({ query: 'Alpha' });
+
+    expect(calls).toEqual(['event:false,true', 'update:Alpha:false,true']);
+    expect(view.querySelector<HTMLElement>('.search-ui')?.dataset.query).toBe('Alpha');
+  });
+
+  it('replaces the search UI root after search state commits when update is missing', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const renderedQueries: string[] = [];
+    view.searchUi = {
+      render: (context) => {
+        renderedQueries.push(context.state.query ?? '');
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        root.dataset.query = context.state.query ?? '';
+        return root;
+      },
+    };
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a', name: 'Alpha' }];
+    document.body.append(view);
+    const firstRoot = view.querySelector('.search-ui');
+
+    view.setSearchState({ query: 'next' });
+
+    const secondRoot = view.querySelector('.search-ui');
+    expect(renderedQueries).toEqual(['', 'next']);
+    expect(secondRoot).not.toBe(firstRoot);
+    expect(view.querySelectorAll('.search-ui')).toHaveLength(1);
+    expect((secondRoot as HTMLElement | null)?.dataset.query).toBe('next');
+  });
+
+  it('destroys and removes the previous search UI root when searchUi is replaced', () => {
+    const view = new SearchCollectionViewElement();
+    const destroyed: Element[] = [];
+    const firstPlugin: SearchUiPlugin<SearchCollectionItem> = {
+      render: () => {
+        const root = document.createElement('form');
+        root.className = 'first-search-ui';
+        return root;
+      },
+      destroy: (root) => {
+        destroyed.push(root);
+      },
+    };
+    view.searchUi = firstPlugin;
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+    const firstRoot = view.querySelector('.first-search-ui');
+
+    view.searchUi = {
+      render: () => {
+        const root = document.createElement('form');
+        root.className = 'second-search-ui';
+        return root;
+      },
+    };
+
+    expect(destroyed).toEqual([firstRoot]);
+    expect(view.querySelector('.first-search-ui')).toBeNull();
+    expect(view.querySelector('.second-search-ui')).not.toBeNull();
+  });
+
+  it('destroys previous plugin when replacement reuses the same search UI root', () => {
+    const view = new SearchCollectionViewElement();
+    const destroyed: Element[] = [];
+    const renderedOwners: string[] = [];
+    const sharedRoot = document.createElement('form');
+    sharedRoot.className = 'search-ui';
+    const firstPlugin: SearchUiPlugin<SearchCollectionItem> = {
+      render: () => sharedRoot,
+      destroy: (root) => {
+        destroyed.push(root);
+        root.replaceChildren();
+        root.removeAttribute('data-owner');
+        root.remove();
+      },
+    };
+    const secondPlugin: SearchUiPlugin<SearchCollectionItem> = {
+      render: () => {
+        sharedRoot.dataset.owner = 'second';
+        sharedRoot.replaceChildren(document.createElement('span'));
+        sharedRoot.querySelector('span')!.textContent = 'second';
+        renderedOwners.push(sharedRoot.dataset.owner ?? '');
+        return sharedRoot;
+      },
+    };
+    view.searchUi = firstPlugin;
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+
+    view.searchUi = secondPlugin;
+
+    expect(destroyed).toEqual([sharedRoot]);
+    expect(view.querySelector('.search-ui')).toBe(sharedRoot);
+    expect(sharedRoot.isConnected).toBe(true);
+    expect(sharedRoot.dataset.owner).toBe('second');
+    expect(sharedRoot.textContent).toBe('second');
+    expect(renderedOwners).toEqual(['second', 'second']);
+  });
+
+  it('destroys and removes the current search UI root when searchUi is removed', () => {
+    const view = new SearchCollectionViewElement();
+    const destroyed: Element[] = [];
+    view.searchUi = {
+      render: () => {
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        return root;
+      },
+      destroy: (root) => {
+        destroyed.push(root);
+      },
+    };
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+    const root = view.querySelector('.search-ui');
+
+    view.searchUi = null;
+
+    expect(destroyed).toEqual([root]);
+    expect(view.querySelector('.search-ui')).toBeNull();
+  });
+
+  it('destroys the previous search UI root when update is missing and state replacement re-renders it', () => {
+    const view = new SearchCollectionViewElement();
+    const destroyed: Element[] = [];
+    view.searchUi = {
+      render: (context) => {
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        root.dataset.query = context.state.query ?? '';
+        return root;
+      },
+      destroy: (root) => {
+        destroyed.push(root);
+      },
+    };
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+    const root = view.querySelector('.search-ui');
+
+    view.setSearchState({ query: 'next' });
+
+    expect(destroyed).toEqual([root]);
+    expect(view.querySelector('.search-ui')).not.toBe(root);
+    expect(view.querySelector<HTMLElement>('.search-ui')?.dataset.query).toBe('next');
+  });
+
+  it('keeps reused search UI root when fallback render returns the current root', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const destroyedRoots: Element[] = [];
+    const searchUiRoot = document.createElement('form');
+    searchUiRoot.className = 'search-ui';
+    searchUiRoot.dataset.query = '';
+
+    view.searchUi = {
+      render: (context) => {
+        searchUiRoot.dataset.query = context.state.query ?? '';
+        return searchUiRoot;
+      },
+      destroy: (root) => {
+        destroyedRoots.push(root);
+      },
+    };
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a', name: 'Alpha' }];
+    document.body.append(view);
+
+    const firstRoot = view.querySelector('.search-ui');
+
+    view.setSearchState({ query: 'next' });
+
+    const secondRoot = view.querySelector('.search-ui');
+    expect(firstRoot).toBe(searchUiRoot);
+    expect(secondRoot).toBe(searchUiRoot);
+    expect(secondRoot?.isConnected).toBe(true);
+    expect((secondRoot as HTMLElement | null)?.dataset.query).toBe('next');
+    expect(destroyedRoots).toEqual([]);
+    expect(view.querySelectorAll('.search-ui')).toHaveLength(1);
+  });
+
+  it('recovers when search UI destroy throws during replacement', () => {
+    type Item = { id: string; name: string };
+    const errors: CustomEvent[] = [];
+    const oldRoot = document.createElement('form');
+    const oldPlugin: SearchUiPlugin<Item> = {
+      render: () => oldRoot,
+      destroy: () => {
+        throw new Error('destroy failed');
+      },
+    };
+    const newRoot = document.createElement('form');
+    newRoot.dataset.variant = 'new';
+    const newPlugin: SearchUiPlugin<Item> = {
+      render: () => newRoot,
+    };
+    const view = new SearchCollectionViewElement<Item>();
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.structure = () => {
+      const root = document.createElement('section');
+      const itemsRoot = document.createElement('div');
+      const toolbarRoot = document.createElement('div');
+      root.append(itemsRoot);
+      return { root, itemsRoot, toolbarRoot };
+    };
+    view.items = [{ id: 'a', name: 'Alpha' }];
+    document.body.append(view);
+
+    view.searchUi = oldPlugin;
+    expect(view.querySelector('form')).toBe(oldRoot);
+
+    view.searchUi = newPlugin;
+
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'search-ui-error',
+      cause: expect.any(Error),
+    });
+    expect(oldRoot.isConnected).toBe(false);
+    expect(view.querySelector('form')).toBe(newRoot);
+    expect(newRoot.isConnected).toBe(true);
+  });
+
+  it('keeps the previous search UI root when replacement render throws', () => {
+    const view = new SearchCollectionViewElement();
+    const errors: CustomEvent[] = [];
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.searchUi = {
+      render: (context) => {
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        root.dataset.query = context.state.query ?? '';
+        return root;
+      },
+    };
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+    const previousRoot = view.querySelector('.search-ui');
+    const cause = new Error('render failed');
+    view.searchUi = {
+      render: () => {
+        throw cause;
+      },
+    };
+
+    expect(view.querySelector('.search-ui')).toBe(previousRoot);
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'search-ui-error',
+      cause,
+    });
+  });
+
+  it('keeps the previous search UI root when update throws after state commit', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const errors: CustomEvent[] = [];
+    const cause = new Error('update failed');
+    view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
+    view.searchUi = {
+      render: () => {
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        root.dataset.status = 'stable';
+        return root;
+      },
+      update: () => {
+        throw cause;
+      },
+    };
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a', name: 'Alpha' }];
+    document.body.append(view);
+    const previousRoot = view.querySelector('.search-ui');
+
+    view.setSearchState({ query: 'Alpha' });
+
+    expect(view.searchState).toEqual({ query: 'Alpha' });
+    expect(view.querySelector('.search-ui')).toBe(previousRoot);
+    expect(view.querySelector<HTMLElement>('.search-ui')?.dataset.status).toBe('stable');
+    expect(errors[errors.length - 1]?.detail).toMatchObject({
+      code: 'search-ui-error',
+      cause,
+    });
+  });
+
   it('commits search state atomically and dispatches search-state-change after DOM updates', () => {
     const view = new SearchCollectionViewElement<{ id: string; name: string }>();
     const events: CustomEvent[] = [];
@@ -1231,5 +1676,54 @@ describe('SearchCollectionViewElement core rendering', () => {
     ];
 
     expect([...view.querySelectorAll<HTMLElement>('.row')].map((row) => row.hidden)).toEqual([false, true]);
+  });
+
+  it('mounts search UI root into the default toolbar root', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    view.searchUi = {
+      render: (context) => {
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        root.dataset.query = context.state.query ?? '';
+        root.dataset.count = String(context.items.length);
+        return root;
+      },
+    };
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a', name: 'Alpha' }];
+    document.body.append(view);
+
+    expect(view.querySelector('.scv__toolbar > .search-ui')).not.toBeNull();
+    expect(view.querySelector<HTMLElement>('.search-ui')?.getAttribute('data-query')).toBe('');
+    expect(view.querySelector<HTMLElement>('.search-ui')?.dataset).toMatchObject({
+      count: '1',
+    });
+  });
+
+  it('mounts search UI root into a custom toolbar root without clearing existing toolbar children', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    view.structure = () => {
+      const toolbarRoot = document.createElement('header');
+      toolbarRoot.className = 'toolbar';
+      const title = document.createElement('h2');
+      title.textContent = 'Cards';
+      toolbarRoot.append(title);
+      const root = document.createElement('section');
+      const itemsRoot = document.createElement('ol');
+      root.append(itemsRoot);
+      return { root, itemsRoot, toolbarRoot };
+    };
+    view.searchUi = {
+      render: () => {
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        return root;
+      },
+    };
+    view.renderer = () => document.createElement('li');
+    view.items = [{ id: 'a', name: 'Alpha' }];
+    document.body.append(view);
+
+    expect([...view.querySelectorAll('.toolbar > *')].map((element) => element.tagName)).toEqual(['H2', 'FORM']);
   });
 });
