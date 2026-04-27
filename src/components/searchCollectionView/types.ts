@@ -56,6 +56,18 @@ export interface SearchModelPlugin<TItem extends SearchCollectionItem> {
   compare?(a: TItem, b: TItem, state: SearchState): number;
 }
 
+export interface SearchUiContext<TItem extends SearchCollectionItem> {
+  state: SearchState;
+  setState(next: SearchState): void;
+  items: TItem[];
+}
+
+export interface SearchUiPlugin<TItem extends SearchCollectionItem> {
+  render(context: SearchUiContext<TItem>): Element;
+  update?(root: Element, context: SearchUiContext<TItem>): void;
+  destroy?(root: Element): void;
+}
+
 export interface SearchCollectionSearchStateChangeDetail {
   state: SearchState;
   previousState: SearchState;
@@ -70,7 +82,8 @@ export interface SearchCollectionErrorDetail {
     | 'view-mode-error'
     | 'invalid-structure'
     | 'renderer-error'
-    | 'search-error';
+    | 'search-error'
+    | 'search-ui-error';
   message: string;
   cause?: unknown;
   itemId?: string;
