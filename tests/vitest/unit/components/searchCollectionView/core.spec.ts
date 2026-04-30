@@ -289,6 +289,42 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(calls).toEqual(['render:', 'update:synced']);
   });
 
+  it('updates search UI after render-triggered state sync observes rendered item DOM on initial mount', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const calls: string[] = [];
+    view.searchModel = {
+      match: (item, state) => item.name.includes(state.query ?? ''),
+    };
+    view.searchUi = {
+      render: (context) => {
+        calls.push(`render:${context.state.query ?? ''}`);
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        context.setState({ query: 'Alpha' });
+        return root;
+      },
+      update: (root, context) => {
+        const hiddenStates = [...view.querySelectorAll<HTMLElement>('.row')].map((row) => row.hidden).join(',');
+        calls.push(`update:${context.state.query}:${hiddenStates}`);
+        root.setAttribute('data-hidden-states', hiddenStates);
+      },
+    };
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      row.textContent = item.name;
+      return row;
+    };
+    view.items = [
+      { id: 'alpha', name: 'Alpha' },
+      { id: 'beta', name: 'Beta' },
+    ];
+    document.body.append(view);
+
+    expect(calls).toEqual(['render:', 'update:Alpha:false,true']);
+    expect(view.querySelector<HTMLElement>('.search-ui')?.dataset.hiddenStates).toBe('false,true');
+  });
+
   it('re-renders search UI after render calls setState when update is missing', () => {
     const view = new SearchCollectionViewElement<{ id: string; name: string }>();
     const calls: string[] = [];
