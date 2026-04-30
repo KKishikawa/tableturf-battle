@@ -263,6 +263,54 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(view.querySelector<HTMLElement>('.search-ui')?.dataset.count).toBe('2');
   });
 
+  it('updates search UI after render calls setState before the root is mounted', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const calls: string[] = [];
+    view.searchUi = {
+      render: (context) => {
+        calls.push(`render:${context.state.query ?? ''}`);
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        root.dataset.query = context.state.query ?? '';
+        context.setState({ query: 'synced' });
+        return root;
+      },
+      update: (root, context) => {
+        calls.push(`update:${context.state.query ?? ''}`);
+        root.setAttribute('data-query', context.state.query ?? '');
+      },
+    };
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a', name: 'Alpha' }];
+    document.body.append(view);
+
+    expect(view.searchState).toEqual({ query: 'synced' });
+    expect(view.querySelector<HTMLElement>('.search-ui')?.dataset.query).toBe('synced');
+    expect(calls).toEqual(['render:', 'update:synced']);
+  });
+
+  it('re-renders search UI after render calls setState when update is missing', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const calls: string[] = [];
+    view.searchUi = {
+      render: (context) => {
+        calls.push(`render:${context.state.query ?? ''}`);
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        root.dataset.query = context.state.query ?? '';
+        context.setState({ query: 'synced' });
+        return root;
+      },
+    };
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a', name: 'Alpha' }];
+    document.body.append(view);
+
+    expect(view.searchState).toEqual({ query: 'synced' });
+    expect(view.querySelector<HTMLElement>('.search-ui')?.dataset.query).toBe('synced');
+    expect(calls).toEqual(['render:', 'render:synced']);
+  });
+
   it('updates search UI context when items change without a renderer', () => {
     const view = new SearchCollectionViewElement<{ id: string; name: string }>();
     const counts: string[] = [];
@@ -1340,6 +1388,35 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(view.querySelector('.search-ui')).toBeNull();
   });
 
+  it('destroys and removes the current search UI root when the host disconnects', () => {
+    const view = new SearchCollectionViewElement();
+    const destroyed: Element[] = [];
+    view.searchUi = {
+      render: () => {
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        return root;
+      },
+      destroy: (root) => {
+        destroyed.push(root);
+      },
+    };
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a' }];
+    document.body.append(view);
+    const root = view.querySelector('.search-ui');
+
+    view.remove();
+
+    expect(destroyed).toEqual([root]);
+    expect(view.querySelector('.search-ui')).toBeNull();
+
+    document.body.append(view);
+
+    expect(view.querySelector('.search-ui')).not.toBe(root);
+    expect(view.querySelector('.search-ui')).not.toBeNull();
+  });
+
   it('destroys the previous search UI root when update is missing and state replacement re-renders it', () => {
     const view = new SearchCollectionViewElement();
     const destroyed: Element[] = [];
@@ -1369,13 +1446,16 @@ describe('SearchCollectionViewElement core rendering', () => {
   it('keeps reused search UI root when fallback render returns the current root', () => {
     const view = new SearchCollectionViewElement<{ id: string; name: string }>();
     const destroyedRoots: Element[] = [];
+    const calls: string[] = [];
     const searchUiRoot = document.createElement('form');
     searchUiRoot.className = 'search-ui';
     searchUiRoot.dataset.query = '';
 
     view.searchUi = {
       render: (context) => {
+        calls.push(`render:${context.state.query ?? ''}`);
         searchUiRoot.dataset.query = context.state.query ?? '';
+        context.setState({ query: 'synced' });
         return searchUiRoot;
       },
       destroy: (root) => {
@@ -1394,9 +1474,80 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(firstRoot).toBe(searchUiRoot);
     expect(secondRoot).toBe(searchUiRoot);
     expect(secondRoot?.isConnected).toBe(true);
-    expect((secondRoot as HTMLElement | null)?.dataset.query).toBe('next');
+    expect((secondRoot as HTMLElement | null)?.dataset.query).toBe('synced');
     expect(destroyedRoots).toEqual([]);
+    expect(calls).toEqual(['render:', 'render:synced', 'render:next', 'render:synced']);
     expect(view.querySelectorAll('.search-ui')).toHaveLength(1);
+  });
+
+  it('flushes deferred search UI refresh when searchUi is replaced with a mounted plugin', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const calls: string[] = [];
+    const firstPlugin: SearchUiPlugin<{ id: string; name: string }> = {
+      render: (context) => {
+        calls.push(`initial-render:${context.state.query ?? ''}`);
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        root.dataset.query = context.state.query ?? '';
+        return root;
+      },
+    };
+    view.searchUi = firstPlugin;
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a', name: 'Alpha' }];
+    document.body.append(view);
+
+    view.searchUi = {
+      render: (context) => {
+        calls.push(`replacement-render:${context.state.query ?? ''}`);
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        root.dataset.query = context.state.query ?? '';
+        context.setState({ query: 'synced' });
+        return root;
+      },
+      update: (root, context) => {
+        calls.push(`replacement-update:${context.state.query ?? ''}`);
+        root.setAttribute('data-query', context.state.query ?? '');
+      },
+    };
+
+    expect(view.searchState).toEqual({ query: 'synced' });
+    expect(view.querySelector<HTMLElement>('.search-ui')?.dataset.query).toBe('synced');
+    expect(calls).toEqual(['initial-render:', 'replacement-render:', 'replacement-update:synced']);
+  });
+
+  it('destroys the current search UI root after render-triggered state sync and host removal', () => {
+    const view = new SearchCollectionViewElement<{ id: string; name: string }>();
+    const destroyed: Element[] = [];
+    const calls: string[] = [];
+    view.searchUi = {
+      render: (context) => {
+        calls.push(`render:${context.state.query ?? ''}`);
+        const root = document.createElement('form');
+        root.className = 'search-ui';
+        root.dataset.query = context.state.query ?? '';
+        context.setState({ query: 'synced' });
+        return root;
+      },
+      update: (root, context) => {
+        calls.push(`update:${context.state.query ?? ''}`);
+        root.setAttribute('data-query', context.state.query ?? '');
+      },
+      destroy: (root) => {
+        destroyed.push(root);
+      },
+    };
+    view.renderer = () => document.createElement('article');
+    view.items = [{ id: 'a', name: 'Alpha' }];
+    document.body.append(view);
+
+    const root = view.querySelector('.search-ui');
+    view.remove();
+
+    expect(destroyed).toEqual([root]);
+    expect(view.querySelector('.search-ui')).toBeNull();
+    expect(calls).toEqual(['render:', 'update:synced']);
   });
 
   it('recovers when search UI destroy throws during replacement', () => {

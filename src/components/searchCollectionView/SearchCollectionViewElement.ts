@@ -47,6 +47,8 @@ export class SearchCollectionViewElement<
   private _searchState: SearchState = {};
   private _searchUi: SearchUiPlugin<TItem> | null = null;
   private searchUiRoot: Element | null = null;
+  private renderingSearchUiRoot = false;
+  private shouldRefreshSearchUiAfterRootRender = false;
 
   get items() {
     return this._items;
@@ -104,6 +106,19 @@ export class SearchCollectionViewElement<
   attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
     if (name !== 'mode' || oldValue === newValue || this.syncingModeAttribute) return;
     this.setMode(newValue ?? '');
+  }
+
+  connectedCallback() {
+    this.renderSearchUi();
+  }
+
+  disconnectedCallback() {
+    const previousRoot = this.searchUiRoot;
+    if (!previousRoot) return;
+
+    this.searchUiRoot = null;
+    this.destroySearchUiRoot(this._searchUi, previousRoot);
+    this.removeSearchUiRoot(previousRoot);
   }
 
   registerViewMode(plugin: ViewModePlugin) {
@@ -199,6 +214,7 @@ export class SearchCollectionViewElement<
         }
         this.searchUiRoot = nextRoot;
       }
+      this.flushDeferredSearchUiRefresh();
       return;
     }
 
@@ -209,6 +225,7 @@ export class SearchCollectionViewElement<
     } else {
       this.mountedStructure.toolbarRoot?.append(nextRoot);
     }
+    this.flushDeferredSearchUiRefresh();
   }
 
   setSearchState(next: SearchState) {
@@ -220,6 +237,14 @@ export class SearchCollectionViewElement<
     this._searchState = nextState;
     this.applySearchResult(result);
     this.dispatchSearchStateChange(this.cloneSearchState(nextState), previousState);
+
+    if (this.renderingSearchUiRoot) {
+      if (!this.areSearchStatesEqual(previousState, nextState)) {
+        this.shouldRefreshSearchUiAfterRootRender = true;
+      }
+      return;
+    }
+
     this.updateSearchUi();
   }
 
@@ -472,6 +497,21 @@ export class SearchCollectionViewElement<
     };
   }
 
+  private areSearchStatesEqual(a: SearchState, b: SearchState) {
+    return a.query === b.query && a.sort === b.sort && this.areSearchFiltersEqual(a.filters, b.filters);
+  }
+
+  private areSearchFiltersEqual(a: Record<string, unknown> | undefined, b: Record<string, unknown> | undefined) {
+    if (a === b) return true;
+    if (!a || !b) return false;
+
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+    if (aKeys.length !== bKeys.length) return false;
+
+    return aKeys.every((key) => Object.is(a[key], b[key]));
+  }
+
   private createSearchUiContext(): SearchUiContext<TItem> {
     return {
       state: this.cloneSearchState(this._searchState),
@@ -491,6 +531,7 @@ export class SearchCollectionViewElement<
 
     this.searchUiRoot = nextRoot;
     structure.toolbarRoot?.append(nextRoot);
+    this.flushDeferredSearchUiRefresh();
   }
 
   private updateSearchUi() {
@@ -521,6 +562,7 @@ export class SearchCollectionViewElement<
 
     if (previousRoot === nextRoot) {
       this.searchUiRoot = nextRoot;
+      this.flushDeferredSearchUiRefresh();
       return;
     }
 
@@ -531,11 +573,13 @@ export class SearchCollectionViewElement<
       this.mountedStructure?.toolbarRoot?.append(nextRoot);
     }
     this.searchUiRoot = nextRoot;
+    this.flushDeferredSearchUiRefresh();
   }
 
   private createSearchUiRoot(searchUi: SearchUiPlugin<TItem>) {
     let nextRoot: Element;
     try {
+      this.renderingSearchUiRoot = true;
       nextRoot = searchUi.render(this.createSearchUiContext());
     } catch (cause) {
       this.dispatchComponentError({
@@ -544,6 +588,8 @@ export class SearchCollectionViewElement<
         cause,
       });
       return null;
+    } finally {
+      this.renderingSearchUiRoot = false;
     }
 
     if (!(nextRoot instanceof Element)) {
@@ -555,6 +601,13 @@ export class SearchCollectionViewElement<
     }
 
     return nextRoot;
+  }
+
+  private flushDeferredSearchUiRefresh() {
+    if (!this.shouldRefreshSearchUiAfterRootRender || this.renderingSearchUiRoot) return;
+
+    this.shouldRefreshSearchUiAfterRootRender = false;
+    this.updateSearchUi();
   }
 
   private destroySearchUiRoot(searchUi: SearchUiPlugin<TItem> | null, root: Element) {
