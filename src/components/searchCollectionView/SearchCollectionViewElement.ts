@@ -49,6 +49,8 @@ export class SearchCollectionViewElement<
   private searchUiRoot: Element | null = null;
   private renderingSearchUiRoot = false;
   private shouldRefreshSearchUiAfterRootRender = false;
+  private pendingSearchStateChangeState: SearchState | null = null;
+  private pendingSearchStateChangePreviousState: SearchState | null = null;
 
   get items() {
     return this._items;
@@ -236,15 +238,17 @@ export class SearchCollectionViewElement<
 
     this._searchState = nextState;
     this.applySearchResult(result);
-    this.dispatchSearchStateChange(this.cloneSearchState(nextState), previousState);
 
     if (this.renderingSearchUiRoot) {
+      this.pendingSearchStateChangePreviousState ??= previousState;
+      this.pendingSearchStateChangeState = this.cloneSearchState(nextState);
       if (!this.areSearchStatesEqual(previousState, nextState)) {
         this.shouldRefreshSearchUiAfterRootRender = true;
       }
       return;
     }
 
+    this.dispatchSearchStateChange(this.cloneSearchState(nextState), previousState);
     this.updateSearchUi();
   }
 
@@ -604,10 +608,23 @@ export class SearchCollectionViewElement<
   }
 
   private flushDeferredSearchUiRefresh() {
-    if (!this.shouldRefreshSearchUiAfterRootRender || this.renderingSearchUiRoot) return;
+    if (this.renderingSearchUiRoot) return;
+    const shouldRefreshSearchUi = this.shouldRefreshSearchUiAfterRootRender;
+    if (!shouldRefreshSearchUi && !this.pendingSearchStateChangeState) return;
 
     this.shouldRefreshSearchUiAfterRootRender = false;
-    this.updateSearchUi();
+    this.dispatchPendingSearchStateChange();
+    if (shouldRefreshSearchUi) this.updateSearchUi();
+  }
+
+  private dispatchPendingSearchStateChange() {
+    const state = this.pendingSearchStateChangeState;
+    const previousState = this.pendingSearchStateChangePreviousState;
+    if (!state || !previousState) return;
+
+    this.pendingSearchStateChangeState = null;
+    this.pendingSearchStateChangePreviousState = null;
+    this.dispatchSearchStateChange(this.cloneSearchState(state), previousState);
   }
 
   private refreshSearchUiAfterCollectionRender(shouldRefreshSearchUiAfterRender: boolean) {
