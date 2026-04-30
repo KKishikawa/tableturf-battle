@@ -7,6 +7,8 @@ import type {
   SearchCollectionRenderContext,
   SearchCollectionRenderer,
   SearchModelPlugin,
+  SearchUiContext,
+  SearchUiPlugin,
   SearchState,
   SearchCollectionSelectionAttributeAdapter,
   SearchCollectionStructure,
@@ -43,6 +45,12 @@ export class SearchCollectionViewElement<
   private hasReceivedItems = false;
   private _searchModel: SearchModelPlugin<TItem> | null = null;
   private _searchState: SearchState = {};
+  private _searchUi: SearchUiPlugin<TItem> | null = null;
+  private searchUiRoot: Element | null = null;
+  private renderingSearchUiRoot = false;
+  private shouldRefreshSearchUiAfterRootRender = false;
+  private pendingSearchStateChangeState: SearchState | null = null;
+  private pendingSearchStateChangePreviousState: SearchState | null = null;
 
   get items() {
     return this._items;
@@ -102,6 +110,19 @@ export class SearchCollectionViewElement<
     this.setMode(newValue ?? '');
   }
 
+  connectedCallback() {
+    this.renderSearchUi();
+  }
+
+  disconnectedCallback() {
+    const previousRoot = this.searchUiRoot;
+    if (!previousRoot) return;
+
+    this.searchUiRoot = null;
+    this.destroySearchUiRoot(this._searchUi, previousRoot);
+    this.removeSearchUiRoot(previousRoot);
+  }
+
   registerViewMode(plugin: ViewModePlugin) {
     if (this.registeredViewModes.some((viewMode) => viewMode.id === plugin.id)) {
       this.dispatchComponentError({
@@ -153,6 +174,62 @@ export class SearchCollectionViewElement<
     return this.cloneSearchState(this._searchState);
   }
 
+  get searchUi() {
+    return this._searchUi;
+  }
+
+  set searchUi(searchUi: SearchUiPlugin<TItem> | null) {
+    const previousSearchUi = this._searchUi;
+    const previousRoot = this.searchUiRoot;
+
+    if (!searchUi) {
+      this._searchUi = null;
+      this.searchUiRoot = null;
+      if (previousRoot) {
+        this.destroySearchUiRoot(previousSearchUi, previousRoot);
+        this.removeSearchUiRoot(previousRoot);
+      }
+      return;
+    }
+
+    if (!this.mountedStructure) {
+      this._searchUi = searchUi;
+      return;
+    }
+
+    let nextRoot = this.createSearchUiRoot(searchUi);
+    if (!nextRoot) return;
+
+    this._searchUi = searchUi;
+    if (previousRoot === nextRoot) {
+      this.searchUiRoot = nextRoot;
+      if (previousSearchUi && previousSearchUi !== searchUi) {
+        this.destroySearchUiRoot(previousSearchUi, previousRoot);
+        if (!nextRoot.isConnected) {
+          this.mountedStructure.toolbarRoot?.append(nextRoot);
+        }
+        const repairedRoot = this.createSearchUiRoot(searchUi);
+        if (!repairedRoot) return;
+        if (repairedRoot !== nextRoot) {
+          nextRoot.replaceWith(repairedRoot);
+          nextRoot = repairedRoot;
+        }
+        this.searchUiRoot = nextRoot;
+      }
+      this.flushDeferredSearchUiRefresh();
+      return;
+    }
+
+    this.searchUiRoot = nextRoot;
+    if (previousRoot) {
+      previousRoot.replaceWith(nextRoot);
+      this.destroySearchUiRoot(previousSearchUi, previousRoot);
+    } else {
+      this.mountedStructure.toolbarRoot?.append(nextRoot);
+    }
+    this.flushDeferredSearchUiRefresh();
+  }
+
   setSearchState(next: SearchState) {
     const previousState = this.cloneSearchState(this._searchState);
     const nextState = this.cloneSearchState(next);
@@ -161,7 +238,18 @@ export class SearchCollectionViewElement<
 
     this._searchState = nextState;
     this.applySearchResult(result);
+
+    if (this.renderingSearchUiRoot) {
+      this.pendingSearchStateChangePreviousState ??= previousState;
+      this.pendingSearchStateChangeState = this.cloneSearchState(nextState);
+      if (!this.areSearchStatesEqual(previousState, nextState)) {
+        this.shouldRefreshSearchUiAfterRootRender = true;
+      }
+      return;
+    }
+
     this.dispatchSearchStateChange(this.cloneSearchState(nextState), previousState);
+    this.updateSearchUi();
   }
 
   get hiddenItemClass() {
@@ -227,6 +315,7 @@ export class SearchCollectionViewElement<
         toolbarRoot,
       };
       this.attachItemActionDelegation(this.mountedStructure.itemsRoot);
+      this.renderSearchUi({ deferRefresh: true });
       if (this.activeViewModePlugin) this.applyViewModePlugin(this.activeViewModePlugin, null);
       return this.mountedStructure;
     }
@@ -235,6 +324,7 @@ export class SearchCollectionViewElement<
     this.append(mountedStructure.toolbarRoot!, mountedStructure.root);
     this.mountedStructure = mountedStructure;
     this.attachItemActionDelegation(this.mountedStructure.itemsRoot);
+    this.renderSearchUi({ deferRefresh: true });
     if (this.activeViewModePlugin) this.applyViewModePlugin(this.activeViewModePlugin, null);
     return this.mountedStructure;
   }
@@ -411,6 +501,157 @@ export class SearchCollectionViewElement<
     };
   }
 
+  private areSearchStatesEqual(a: SearchState, b: SearchState) {
+    return a.query === b.query && a.sort === b.sort && this.areSearchFiltersEqual(a.filters, b.filters);
+  }
+
+  private areSearchFiltersEqual(a: Record<string, unknown> | undefined, b: Record<string, unknown> | undefined) {
+    if (a === b) return true;
+    if (!a || !b) return false;
+
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+    if (aKeys.length !== bKeys.length) return false;
+
+    return aKeys.every((key) => Object.is(a[key], b[key]));
+  }
+
+  private createSearchUiContext(): SearchUiContext<TItem> {
+    return {
+      state: this.cloneSearchState(this._searchState),
+      setState: (next) => {
+        this.setSearchState(next);
+      },
+      items: [...this._items],
+    };
+  }
+
+  private renderSearchUi(options: { deferRefresh?: boolean } = {}) {
+    const structure = this.mountedStructure;
+    if (!structure || !this._searchUi || this.searchUiRoot) return;
+
+    const nextRoot = this.createSearchUiRoot(this._searchUi);
+    if (!nextRoot) return;
+
+    this.searchUiRoot = nextRoot;
+    structure.toolbarRoot?.append(nextRoot);
+    if (!options.deferRefresh) this.flushDeferredSearchUiRefresh();
+  }
+
+  private updateSearchUi() {
+    if (!this._searchUi || !this.searchUiRoot) return;
+
+    if (!this._searchUi.update) {
+      this.replaceSearchUiRoot();
+      return;
+    }
+
+    try {
+      this._searchUi.update(this.searchUiRoot, this.createSearchUiContext());
+    } catch (cause) {
+      this.dispatchComponentError({
+        code: 'search-ui-error',
+        message: 'Search UI update failed.',
+        cause,
+      });
+    }
+  }
+
+  private replaceSearchUiRoot() {
+    if (!this._searchUi) return;
+
+    const previousRoot = this.searchUiRoot;
+    const nextRoot = this.createSearchUiRoot(this._searchUi);
+    if (!nextRoot) return;
+
+    if (previousRoot === nextRoot) {
+      this.searchUiRoot = nextRoot;
+      this.flushDeferredSearchUiRefresh();
+      return;
+    }
+
+    if (previousRoot) {
+      previousRoot.replaceWith(nextRoot);
+      this.destroySearchUiRoot(this._searchUi, previousRoot);
+    } else {
+      this.mountedStructure?.toolbarRoot?.append(nextRoot);
+    }
+    this.searchUiRoot = nextRoot;
+    this.flushDeferredSearchUiRefresh();
+  }
+
+  private createSearchUiRoot(searchUi: SearchUiPlugin<TItem>) {
+    let nextRoot: Element;
+    try {
+      this.renderingSearchUiRoot = true;
+      nextRoot = searchUi.render(this.createSearchUiContext());
+    } catch (cause) {
+      this.dispatchComponentError({
+        code: 'search-ui-error',
+        message: 'Search UI render failed.',
+        cause,
+      });
+      return null;
+    } finally {
+      this.renderingSearchUiRoot = false;
+    }
+
+    if (!(nextRoot instanceof Element)) {
+      this.dispatchComponentError({
+        code: 'search-ui-error',
+        message: 'Search UI render must return an Element root.',
+      });
+      return null;
+    }
+
+    return nextRoot;
+  }
+
+  private flushDeferredSearchUiRefresh() {
+    if (this.renderingSearchUiRoot) return;
+    const shouldRefreshSearchUi = this.shouldRefreshSearchUiAfterRootRender;
+    if (!shouldRefreshSearchUi && !this.pendingSearchStateChangeState) return;
+
+    this.shouldRefreshSearchUiAfterRootRender = false;
+    this.dispatchPendingSearchStateChange();
+    if (shouldRefreshSearchUi) this.updateSearchUi();
+  }
+
+  private dispatchPendingSearchStateChange() {
+    const state = this.pendingSearchStateChangeState;
+    const previousState = this.pendingSearchStateChangePreviousState;
+    if (!state || !previousState) return;
+
+    this.pendingSearchStateChangeState = null;
+    this.pendingSearchStateChangePreviousState = null;
+    this.dispatchSearchStateChange(this.cloneSearchState(state), previousState);
+  }
+
+  private refreshSearchUiAfterCollectionRender(shouldRefreshSearchUiAfterRender: boolean) {
+    if (this.shouldRefreshSearchUiAfterRootRender) {
+      this.flushDeferredSearchUiRefresh();
+      return;
+    }
+
+    if (shouldRefreshSearchUiAfterRender) this.updateSearchUi();
+  }
+
+  private destroySearchUiRoot(searchUi: SearchUiPlugin<TItem> | null, root: Element) {
+    try {
+      searchUi?.destroy?.(root);
+    } catch (cause) {
+      this.dispatchComponentError({
+        code: 'search-ui-error',
+        message: 'Search UI destroy failed.',
+        cause,
+      });
+    }
+  }
+
+  private removeSearchUiRoot(root: Element) {
+    root.remove();
+  }
+
   private installModeStyles(plugin: ViewModePlugin) {
     if (!plugin.styles || this.installedStyleModes.has(plugin.id)) return;
     const style = document.createElement('style');
@@ -431,6 +672,7 @@ export class SearchCollectionViewElement<
   }
 
   private render(validatedItemIds?: string[]) {
+    const shouldRefreshSearchUiAfterRender = Boolean(this.mountedStructure && this.searchUiRoot);
     const structure = this.ensureStructure();
     if (!structure) return;
     const itemIds = validatedItemIds ?? this.resolveItemIds(this._items);
@@ -443,6 +685,7 @@ export class SearchCollectionViewElement<
     try {
       if (!this._renderer) {
         this.dispatchRenderComplete([]);
+        this.refreshSearchUiAfterCollectionRender(shouldRefreshSearchUiAfterRender);
         return;
       }
 
@@ -484,6 +727,7 @@ export class SearchCollectionViewElement<
 
       this.applyCurrentSearchStateToRenderedItems();
       this.dispatchRenderComplete(itemIds);
+      this.refreshSearchUiAfterCollectionRender(shouldRefreshSearchUiAfterRender);
     } finally {
       this.setAttribute('aria-busy', 'false');
     }
