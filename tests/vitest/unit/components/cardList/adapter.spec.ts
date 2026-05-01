@@ -94,10 +94,9 @@ describe('CardList SearchCollectionView adapter', () => {
 
     deckInfo.addRow(cards[0]!);
 
-    expect([...deckInfo.body.querySelectorAll<HTMLElement>('li.cardlist_table_row')].map((row) => row.dataset.card_no)).toEqual([
-      '1',
-      '2',
-    ]);
+    expect(
+      [...deckInfo.body.querySelectorAll<HTMLElement>('li.cardlist_table_row')].map((row) => row.dataset.card_no),
+    ).toEqual(['1', '2']);
   });
 
   it('exposes DeckInfo toolbar actions before rows are added', () => {
