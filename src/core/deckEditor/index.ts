@@ -18,8 +18,6 @@ declare global {
   }
 }
 
-const SelTrAttr = 'selected';
-
 const cardListManager = new CardList({ search: true, title: 'カードリスト' });
 cardListManager.addRow(...getCardList().c);
 cardListManager.wrapper.classList.add('deck-tab-item--active', 'card-list-container');
@@ -36,22 +34,11 @@ deckEditManager.showCount = () => {
   defaultShowDeckCountFunc();
   tabBtns[1].innerHTML = deckEditManager.wrapper.querySelector('.table-title-text')!.innerHTML;
 };
-/** 全カード一覧のカード選択をすべて解除する */
-function deselectCards() {
-  ([...cardListManager.body.children] as HTMLElement[]).forEach((tr) => {
-    tr.dataset[SelTrAttr] = '';
-  });
-}
 /** デッキを読み込む */
 function loadDeck(code: string | null | undefined, id?: string) {
   const cardInfo = decodeDeckCode(code);
-  deckEditManager.body.innerHTML = '';
-  deselectCards();
-  cardInfo.forEach((info) => {
-    const tr = cardListManager.findRowByNo(info.n);
-    if (!tr) return;
-    tr.dataset[SelTrAttr] = '1';
-  });
+  deckEditManager.clearRows();
+  cardListManager.setSelectedCardNos(cardInfo.map((info) => info.n));
   deckEditManager.addRow(...cardInfo);
   deckEditManager.body.dataset['id'] = id;
 }
@@ -67,12 +54,12 @@ function loadDeck(code: string | null | undefined, id?: string) {
         const row = el.closest<HTMLElement>('.' + rowClassName)!;
         const info = getCardRowInfo(row);
         deckEditManager.addRow(info);
-        row.dataset[SelTrAttr] = '1';
+        cardListManager.setCardSelected(info.n, true);
       } else if (el.closest('.button-delete')) {
         const row = el.closest<HTMLElement>('.' + rowClassName)!;
         const no = toInt(row.dataset['card_no']);
         deckEditManager.removeRowByNo(no);
-        row.dataset[SelTrAttr] = '';
+        cardListManager.setCardSelected(no, false);
       }
     });
   });
@@ -84,7 +71,7 @@ function loadDeck(code: string | null | undefined, id?: string) {
         const row = el.closest<HTMLElement>('.' + rowClassName)!;
         const no = toInt(row.dataset['card_no']);
         const r = cardListManager.findRowByNo(no);
-        if (r) r.dataset[SelTrAttr] = '';
+        if (r) cardListManager.setCardSelected(no, false);
         deckEditManager.removeRow(row);
       }
     });

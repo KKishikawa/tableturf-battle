@@ -38,3 +38,29 @@ test('select card and clear', async ({ page, cardUtil }) => {
   await cardUtil.getCardByIdFromList(20).getByRole('button', { name: 'デッキから削除' }).click();
   await expect(page.getByText('カードリスト デッキ (0/15)')).toBeInViewport();
 });
+
+test('preserves card row identity and selected display while switching layouts on mobile tabs', async ({
+  page,
+  cardUtil,
+}) => {
+  await page.goto('/');
+  await cardUtil.showCardList();
+
+  const table = page.locator('.card-list-container .cardlist_table');
+  const card = cardUtil.getCardByIdFromList(1);
+  await expect(table).toHaveAttribute('data-layout', 'grid');
+
+  await card.getByRole('button', { name: 'デッキに追加' }).click();
+  await expect(card).toHaveAttribute('data-selected', '1');
+
+  const cardHandle = await card.elementHandle();
+  await page.locator('.card-list-container [data-button_type="table"]').click();
+  await expect(table).toHaveAttribute('data-layout', 'table');
+  expect(await card.evaluate((node, previous) => node === previous, cardHandle)).toBe(true);
+  await expect(card).toHaveAttribute('data-selected', '1');
+
+  await page.locator('.card-list-container [data-button_type="grid"]').click();
+  await expect(table).toHaveAttribute('data-layout', 'grid');
+  expect(await card.evaluate((node, previous) => node === previous, cardHandle)).toBe(true);
+  await expect(card).toHaveAttribute('data-selected', '1');
+});

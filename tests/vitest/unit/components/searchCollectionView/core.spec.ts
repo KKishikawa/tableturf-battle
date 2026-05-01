@@ -12,8 +12,13 @@ describe('SearchCollectionViewElement core rendering', () => {
     document.body.innerHTML = '';
   });
 
+  type NamedItem = {
+    id?: string | number;
+    name: string;
+  };
+
   it('renders item elements from plain object data and an element renderer', () => {
-    const view = new SearchCollectionViewElement();
+    const view = new SearchCollectionViewElement<NamedItem>();
     view.renderer = (item, context) => {
       const row = document.createElement('article');
       row.className = 'row';
@@ -35,7 +40,13 @@ describe('SearchCollectionViewElement core rendering', () => {
   });
 
   it('uses getItemId when item.id is absent', () => {
-    const view = new SearchCollectionViewElement<{ key: number; name: string }>();
+    interface KeyedItem {
+      id?: string | number;
+      key: number;
+      name: string;
+    }
+
+    const view = new SearchCollectionViewElement<KeyedItem>();
     view.getItemId = (item) => item.key;
     view.renderer = (item) => {
       const row = document.createElement('article');
@@ -50,7 +61,7 @@ describe('SearchCollectionViewElement core rendering', () => {
   });
 
   it('keeps previous rendered items when an item id is missing', () => {
-    const view = new SearchCollectionViewElement();
+    const view = new SearchCollectionViewElement<NamedItem>();
     const errors: CustomEvent[] = [];
     view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
     view.renderer = (item) => {
@@ -68,7 +79,7 @@ describe('SearchCollectionViewElement core rendering', () => {
   });
 
   it('keeps previous rendered items when duplicate item ids are provided', () => {
-    const view = new SearchCollectionViewElement();
+    const view = new SearchCollectionViewElement<NamedItem>();
     const errors: CustomEvent[] = [];
     view.addEventListener('component-error', (event) => errors.push(event as CustomEvent));
     view.renderer = (item) => {
@@ -212,6 +223,24 @@ describe('SearchCollectionViewElement core rendering', () => {
     expect(errors[errors.length - 1]?.detail.code).toBe('invalid-structure');
     expect(view.querySelector('li')).toBeNull();
     expect(document.body.firstElementChild).toBe(connectedRoot);
+  });
+
+  it('accepts domain item interfaces without index signatures', () => {
+    interface DomainItem {
+      id?: string | number;
+      name: string;
+    }
+
+    const view = new SearchCollectionViewElement<DomainItem>();
+    view.renderer = (item) => {
+      const row = document.createElement('article');
+      row.textContent = item.name;
+      return row;
+    };
+    view.items = [{ id: 'domain-item', name: 'Domain Item' }];
+    document.body.append(view);
+
+    expect(view.querySelector('article')?.textContent).toBe('Domain Item');
   });
 
   it('rejects custom structure roots already parented outside the returned structure', () => {
@@ -1024,7 +1053,7 @@ describe('SearchCollectionViewElement core rendering', () => {
   });
 
   it('updates selected item wrapper attributes without rerendering items', () => {
-    const view = new SearchCollectionViewElement();
+    const view = new SearchCollectionViewElement<NamedItem>();
     let renderCount = 0;
     const selectionChanges: CustomEvent[] = [];
     view.addEventListener('selection-change', (event) => selectionChanges.push(event as CustomEvent));

@@ -1,9 +1,21 @@
 import mustache from 'mustache';
 import { isValidString, $dom, mesureWidth } from '@/utils';
 import { toInt } from '@/utils/convert';
-import { ICard, RARITY, inkCount, encodeDeckCode, availableInkCount, availableSP } from '@/models/card';
+import {
+  ICard,
+  RARITY,
+  inkCount,
+  encodeDeckCode,
+  availableInkCount,
+  availableSP,
+} from '@/models/card';
 import { createCardGrid } from '@/components/cardGrid';
 import { ModalDialog } from '@/components/dialog';
+import {
+  SearchCollectionViewElement,
+  type SearchCollectionStructure,
+  type ViewModePlugin,
+} from '@/components/searchCollectionView';
 import tableHTML from './table.html.mustache?raw';
 import tableRowHTML from './row.html.mustache?raw';
 import deckInfoHTML from './deckInfoModalBody.html.mustache?raw';
@@ -15,6 +27,7 @@ interface IinternalSortRowInfo {
   gcount: number;
 }
 type sortJudgeFunc = (a: IinternalSortRowInfo, b: IinternalSortRowInfo) => number;
+
 interface IListOparationOpt {
   name?: string;
   maxg: number;
@@ -27,35 +40,60 @@ export interface ICardListOption {
   search: boolean;
   title: string;
 }
+
+type CardListItem = ICard & { id?: string | number };
+
+interface CardListStructure extends SearchCollectionStructure {
+  root: HTMLElement;
+  modeRoot: HTMLElement;
+  itemsRoot: HTMLUListElement;
+  toolbarRoot: HTMLElement;
+}
+
 export class CardList {
-  readonly wrapper: HTMLElement;
-  readonly body: HTMLTableSectionElement;
+  readonly wrapper: SearchCollectionViewElement<CardListItem>;
+  readonly body: HTMLUListElement;
   protected readonly srch: boolean;
+  protected readonly cards: CardListItem[] = [];
+
   constructor(option: ICardListOption) {
-    this.wrapper = $dom(mustache.render(tableHTML, { srch: option.search, title: option.title }));
-    this.body = this.wrapper.querySelector('.cardlist_table_body')!;
+    const template = $dom(mustache.render(tableHTML, { srch: option.search, title: option.title }));
+    const wrapper = new SearchCollectionViewElement<CardListItem>();
+    wrapper.className = template.className;
+    while (template.firstChild) wrapper.append(template.firstChild);
+    const tableCaption = wrapper.querySelector('.table-caption-title') as HTMLElement | null;
+    const table = this.createCardListStructure(tableCaption);
+    this.wrapper = wrapper;
+    this.body = table.itemsRoot;
     this.srch = option.search;
+
+    this.wrapper.structure = () => table;
+    this.wrapper.getItemId = (card) => card.id ?? card.n;
+    this.wrapper.renderer = (card) => createCardRow(card, this.srch);
+    this.wrapper.selectionAttribute = { selected: '1', unselected: null };
+    this.wrapper.hiddenItemClass = 'card--hidden';
+    this.wrapper.registerViewMode(this.createCardListViewMode('grid'));
+    this.wrapper.registerViewMode(this.createCardListViewMode('table'));
+    this.wrapper.mode = 'grid';
+
     {
-      // レイアウト変更ボタン
-      const layoutButtons = this.wrapper.querySelectorAll<HTMLElement>('[data-button_type]');
+      const layoutButtons = table.toolbarRoot.querySelectorAll<HTMLElement>('[data-button_type]');
       layoutButtons.forEach((el) => {
         el.addEventListener('click', (e) => {
-          const table = this.wrapper.querySelector('[data-layout]') as HTMLTableElement;
-          layoutButtons.forEach((el) => el.classList.remove('button-active'));
+          layoutButtons.forEach((button) => button.classList.remove('button-active'));
           const button = e.currentTarget as HTMLButtonElement;
           button.classList.add('button-active');
-          const layoutName = button.dataset['button_type']!;
-          table.dataset['layout'] = layoutName;
+          this.wrapper.mode = button.dataset['button_type']!;
         });
       });
 
-      // ソート変更
-      (this.wrapper.querySelector('.table-sort') as HTMLSelectElement).addEventListener('change', () => {
+      table.toolbarRoot.querySelector<HTMLSelectElement>('.table-sort')?.addEventListener('change', () => {
         this.filterSortRow();
       });
     }
+
     if (option.search) {
-      const form = this.wrapper.querySelector('.cardlist_serch') as HTMLFormElement;
+      const form = table.toolbarRoot.querySelector('.cardlist_serch') as HTMLFormElement;
       form.onsubmit = (e) => {
         e.preventDefault();
         this.filterSortRow();
@@ -63,47 +101,84 @@ export class CardList {
       form.querySelectorAll('.input-clear').forEach((el) =>
         el.addEventListener('click', () => {
           setTimeout(() => {
-            // クリア処理後に処理をするために、イベントハンドリング処理終了後に処理を実行する。
             this.filterSortRow();
           });
         }),
       );
       form.querySelector('.button_search_clear')!.addEventListener('click', () => {
         form.reset();
-        // clearableの状態変更
         form.querySelectorAll<HTMLElement>('[data-clearable]').forEach((el) => {
           el.dataset['clearable'] = '';
         });
         this.filterSortRow();
       });
     }
+
+    const activeModeButton = table.toolbarRoot.querySelector<HTMLButtonElement>('[data-button_type="grid"]');
+    activeModeButton?.classList.add('button-active');
+
+    tableCaption?.remove();
+    this.wrapper.items = this.cards;
   }
+
   findRowByNo(card_no: number) {
     return this.body.querySelector<HTMLElement>(`[data-card_no="${card_no}"]`);
   }
+
   addRow(...cards: ICard[]) {
-    const trs = cards.map((c) => createCardRow(c, this.srch));
-    this.filterSortRow(...trs);
+    this.cards.push(...cards);
+    this.renderCards();
   }
+
   findCardByNo(card_no: number) {
     const tr = this.findRowByNo(card_no);
     if (!tr) return null;
     return getCardRowInfo(tr);
   }
-  removeRowByNo(card_no: number) {
-    this.findRowByNo(card_no)?.remove();
-  }
-  /** リストをフィルター/ソートします */
-  filterSortRow(...added: HTMLElement[]) {
-    const trs = [...(this.body.children as HTMLCollectionOf<HTMLElement>), ...added];
-    const infoR = generateSortRowInfo(trs);
-    if (this.srch) {
-      const text = (this.wrapper.querySelector('.input_cardlist_serch') as HTMLInputElement).value;
-      const inputs = ['min-grid', 'max-grid', 'min-sp', 'max-sp'].map((idName, idx) => {
-        const e = this.wrapper.querySelector(`#${idName}`) as HTMLInputElement;
-        return toInt(e.value, idx & 1 ? Number.MAX_SAFE_INTEGER : 0);
-      });
 
+  removeRowByNo(card_no: number) {
+    const index = this.cards.findIndex((card) => card.n === card_no);
+    if (index >= 0) this.cards.splice(index, 1);
+    this.renderCards();
+  }
+
+  clearRows() {
+    this.cards.length = 0;
+    this.renderCards();
+  }
+
+  setSelectedCardNos(cardNos: Iterable<string | number>) {
+    this.wrapper.setSelectedItemIds(cardNos);
+  }
+
+  setCardSelected(cardNo: string | number, selected: boolean) {
+    const selectedNos = new Set(this.wrapper.selectedItemIds);
+    const key = String(cardNo);
+    if (selected) {
+      selectedNos.add(key);
+    } else {
+      selectedNos.delete(key);
+    }
+    this.wrapper.setSelectedItemIds(selectedNos);
+  }
+
+  checkRow(tr?: HTMLElement) {
+    this.wrapper.setSelectedItemIds(tr ? [tr.dataset['card_no'] ?? ''] : []);
+  }
+
+  filterSortRow() {
+    const sortVal = (this.wrapper.querySelector('.table-sort') as HTMLSelectElement).value;
+    const text = this.srch ? (this.wrapper.querySelector('.input_cardlist_serch') as HTMLInputElement).value : '';
+    const inputs = this.srch
+      ? ['min-grid', 'max-grid', 'min-sp', 'max-sp'].map((idName, idx) => {
+          const e = this.wrapper.querySelector(`#${idName}`) as HTMLInputElement;
+          return toInt(e.value, idx & 1 ? Number.MAX_SAFE_INTEGER : 0);
+        })
+      : [0, Number.MAX_SAFE_INTEGER, 0, Number.MAX_SAFE_INTEGER];
+
+    const cards = [...this.cards];
+    const infoR = generateSortRowInfo(cards.map((card) => this.findRowByNo(card.n)!).filter(Boolean));
+    if (this.srch) {
       filerRow(infoR, {
         name: text,
         ming: inputs[0],
@@ -112,32 +187,83 @@ export class CardList {
         maxsp: inputs[3],
       });
     }
-    const sortVal = (this.wrapper.querySelector('.table-sort') as HTMLSelectElement).value;
+
     infoR.sort(getSortRow(sortVal));
-    infoR.forEach((infos) => {
-      this.body.append(infos.row);
-    });
+    this.body.replaceChildren(...infoR.map((info) => info.row));
   }
-  checkRow(tr?: HTMLElement) {
-    const tableRows = [...this.body.childNodes] as HTMLElement[];
-    tableRows.forEach((row) => {
-      if (row == tr) {
-        tr.dataset['selected'] = '1';
-      } else {
-        row.dataset['selected'] = undefined;
-      }
-    });
+
+  protected renderCards() {
+    this.wrapper.items = [...this.cards];
+    this.filterSortRow();
+  }
+
+  protected createCardListStructure(tableCaption: HTMLElement | null): CardListStructure {
+    const root = document.createElement('div');
+    root.className = 'cardlist_table';
+    root.tabIndex = -1;
+    root.dataset.layout = 'grid';
+
+    const modeRoot = root;
+    modeRoot.dataset.mode = 'grid';
+
+    const head = document.createElement('div');
+    head.className = 'cardlist_table_head';
+    head.innerHTML = `
+      <div class="col-no text-center">
+        <span class="xl:hidden">No.</span><span class="hidden xl:inline">ナンバー</span>
+      </div>
+      <div class="col-gridcount flex items-center justify-center">
+        <div class="gridcount mr-3 after:h-3 after:w-3"></div>
+        <span>マス</span>
+      </div>
+      <div class="col-sp flex items-center justify-center">
+        <div class="sp-fill mr-px h-2 w-2"></div>
+        <span>SP</span>
+      </div>
+      <div class="col-rarity text-center">
+        <span class="hidden sm:inline md:hidden lg:inline">レア度</span>
+      </div>
+      <div class="col-name">名前</div>
+      <div class="col-action"></div>
+    `;
+
+    const itemsRoot = document.createElement('ul');
+    itemsRoot.className = 'cardlist_table_body';
+    itemsRoot.setAttribute('role', 'list');
+    modeRoot.append(head, itemsRoot);
+
+    const toolbarRoot = document.createElement('div');
+    if (tableCaption) {
+      toolbarRoot.className = tableCaption.className;
+      toolbarRoot.innerHTML = tableCaption.innerHTML;
+    } else {
+      toolbarRoot.className = 'cardlist_table_toolbar';
+    }
+
+    return { root, modeRoot, itemsRoot, toolbarRoot };
+  }
+
+  protected createCardListViewMode(id: 'grid' | 'table'): ViewModePlugin {
+    return {
+      id,
+      label: id,
+      activate(modeTarget) {
+        modeTarget.dataset.layout = id;
+        modeTarget.dataset.mode = id;
+      },
+    };
   }
 }
 
 function generateDeckInfoTitle(count: number) {
   return `デッキ (${count}/15)`;
 }
+
 export class DeckInfo extends CardList {
   constructor() {
     super({ search: false, title: generateDeckInfoTitle(0) });
     const btnDeckInfo = this.wrapper.querySelector('#button-deck-info') as HTMLElement;
-    btnDeckInfo.onclick = () => {
+    btnDeckInfo?.addEventListener('click', () => {
       const allInfo = [...(this.body.children as HTMLCollectionOf<HTMLElement>)].map((tr) => {
         const c = getCardRowInfo(tr);
         const gcount = inkCount(c.g, c.sg);
@@ -153,7 +279,6 @@ export class DeckInfo extends CardList {
         [0, new Map(availableInkCount.map((c) => [c, 0])), new Map(availableSP.map((c) => [c, 0]))],
       );
       const toStyleHeightLiteral = (n: number) => (isFinite(n) ? `style="height:${n}%"` : undefined);
-      // マス数の分布
       const _gcs = [...gcountr[1]];
       const gMaxCount = Math.max(..._gcs.map((v) => v[1]));
       const gcs = _gcs
@@ -162,7 +287,6 @@ export class DeckInfo extends CardList {
           v: toStyleHeightLiteral((g[1] * 100) / gMaxCount),
         }))
         .sort((a, b) => a.k - b.k);
-      // spの分布
       const _sp = [...gcountr[2]];
       const spMax = Math.max(..._sp.map((v) => v[1]));
       const sps = _sp
@@ -183,24 +307,46 @@ export class DeckInfo extends CardList {
       modal.element.querySelector(`[data-action="share"]`)?.addEventListener('click', function () {
         showShareMsg(encodeDeckCode(allInfo.map((info) => info.n)));
       });
-    };
+    });
   }
+
   removeRowByNo(card_no: number) {
     const row = super.findRowByNo(card_no);
     if (row) this.removeRow(row);
   }
-  addRow(...cards: ICard[]): void {
-    super.addRow(...cards);
-    this.showCount();
-  }
+
   removeRow(row: HTMLElement) {
-    row.remove();
+    const cardNo = toInt(row.dataset['card_no']);
+    const index = this.cards.findIndex((card) => card.n === cardNo);
+    if (index >= 0) {
+      this.cards.splice(index, 1);
+      this.renderCards();
+    } else {
+      row.remove();
+    }
     this.showCount();
   }
-  /** デッキの枚数をカウントします */
+
+  addRow(...cards: ICard[]): void {
+    const existingCardNos = new Set(this.cards.map((card) => card.n));
+    const uniqueCards = cards.filter((card) => {
+      if (existingCardNos.has(card.n)) return false;
+      existingCardNos.add(card.n);
+      return true;
+    });
+    if (uniqueCards.length > 0) super.addRow(...uniqueCards);
+    this.showCount();
+  }
+
+  clearRows() {
+    super.clearRows();
+    this.showCount();
+  }
+
   getCount() {
     return this.body.childElementCount;
   }
+
   showCount() {
     const count = this.getCount();
     let icon = '';
@@ -211,6 +357,7 @@ export class DeckInfo extends CardList {
     }
     this.wrapper.querySelector('.table-title-text')!.innerHTML = icon + generateDeckInfoTitle(count);
   }
+
   generateDeckCode() {
     const numbers = [...(this.body.children as HTMLCollectionOf<HTMLElement>)]
       .map((e) => toInt(e.dataset['card_no']))
@@ -227,6 +374,7 @@ function generateSortRowInfo(trs: HTMLElement[]): IinternalSortRowInfo[] {
     return { row, info, gcount };
   });
 }
+
 function filerRow(trs: IinternalSortRowInfo[], opt: IListOparationOpt) {
   const filterCondition = (info: IinternalSortRowInfo) => {
     if (isValidString(opt.name) && !info.info.ja.includes(opt.name)) return false;
@@ -256,6 +404,7 @@ const gcountAsc: sortJudgeFunc = (a, b) => {
   if (inf != 0) return inf;
   return noAsc(a, b);
 };
+
 const spAsc: sortJudgeFunc = (a, b) => {
   let inf = spJudge(a, b);
   if (inf != 0) return inf;
@@ -263,11 +412,13 @@ const spAsc: sortJudgeFunc = (a, b) => {
   if (inf != 0) return inf;
   return noAsc(a, b);
 };
+
 const rarityAsc: sortJudgeFunc = (a, b) => {
   const inf = rarityJudge(a, b);
   if (inf != 0) return inf;
   return gcountAsc(a, b);
 };
+
 function getSortRow(orderType: string): sortJudgeFunc {
   switch (orderType) {
     case '1':
@@ -289,7 +440,6 @@ function getSortRow(orderType: string): sortJudgeFunc {
   }
 }
 
-/** 行の内容からカードの情報に変換する */
 export function getCardRowInfo(tr: HTMLElement): ICard {
   const card_no = toInt(tr.dataset['card_no']);
   const card_sp = toInt(tr.querySelector('.card_sp')!.textContent?.trim());

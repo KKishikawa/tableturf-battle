@@ -35,3 +35,28 @@ test('select card and clear', async ({ page, cardUtil }) => {
   await expect(page.locator('li').filter({ hasText: 'N-ZAP85' }).getByRole('button')).toHaveCount(2);
   await page.locator('li').filter({ hasText: 'N-ZAP85' }).getByRole('button').nth(1).click();
 });
+
+test('preserves card row identity and selected display while switching layouts', async ({ page, cardUtil }) => {
+  await page.goto('/');
+
+  const table = page.locator('.card-list-container .cardlist_table');
+  const card = cardUtil.getCardByIdFromList(1);
+  await expect(table).toHaveAttribute('data-layout', 'grid');
+  await expect(card).not.toHaveAttribute('data-selected', '1');
+
+  await card.getByRole('button', { name: 'デッキに追加' }).click();
+  await expect(card).toHaveAttribute('data-selected', '1');
+  await expect(card.getByRole('button', { name: 'デッキに追加' })).toBeHidden();
+  await expect(card.getByRole('button', { name: 'デッキから削除' })).toBeVisible();
+
+  const cardHandle = await card.elementHandle();
+  await page.locator('.card-list-container [data-button_type="table"]').click();
+  await expect(table).toHaveAttribute('data-layout', 'table');
+  expect(await card.evaluate((node, previous) => node === previous, cardHandle)).toBe(true);
+  await expect(card).toHaveAttribute('data-selected', '1');
+
+  await page.locator('.card-list-container [data-button_type="grid"]').click();
+  await expect(table).toHaveAttribute('data-layout', 'grid');
+  expect(await card.evaluate((node, previous) => node === previous, cardHandle)).toBe(true);
+  await expect(card).toHaveAttribute('data-selected', '1');
+});
