@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { CardList, DeckInfo, getCardRowInfo } from '@/components/cardList';
-import { createCardListSearchModel } from '@/components/cardList/searchAdapter';
+import { createCardListSearchModel, createCardListSearchUi } from '@/components/cardList/searchAdapter';
 import type { ICard } from '@/models/card';
 
 const cards: ICard[] = [
@@ -169,5 +169,75 @@ describe('CardList SearchCollectionView adapter', () => {
     expect(rows.map((row) => row.hidden)).toEqual([true, false, false]);
     expect(rows.map((row) => row.dataset.hidden)).toEqual(['true', 'false', 'false']);
     expect(rows.map((row) => row.classList.contains('card--hidden'))).toEqual([true, false, false]);
+  });
+
+  it('drives SearchCollectionView search state from the preserved CardList toolbar controls', () => {
+    const cardList = new CardList({ search: true, title: 'カードリスト' });
+    document.body.append(cardList.wrapper);
+    const states: unknown[] = [];
+    cardList.wrapper.addEventListener('search-state-change', (event) => {
+      states.push((event as CustomEvent).detail.state);
+    });
+    cardList.wrapper.searchModel = createCardListSearchModel();
+    cardList.wrapper.searchUi = createCardListSearchUi(cardList.wrapper, true);
+
+    const searchInput = cardList.wrapper.querySelector<HTMLInputElement>('.input_cardlist_serch')!;
+    const minGrid = cardList.wrapper.querySelector<HTMLInputElement>('#min-grid')!;
+    const maxGrid = cardList.wrapper.querySelector<HTMLInputElement>('#max-grid')!;
+    const minSp = cardList.wrapper.querySelector<HTMLInputElement>('#min-sp')!;
+    const maxSp = cardList.wrapper.querySelector<HTMLInputElement>('#max-sp')!;
+    const sort = cardList.wrapper.querySelector<HTMLSelectElement>('.table-sort')!;
+    const form = cardList.wrapper.querySelector<HTMLFormElement>('.cardlist_serch')!;
+
+    searchInput.value = 'Shooter';
+    minGrid.value = '2';
+    maxGrid.value = '8';
+    minSp.value = '1';
+    maxSp.value = '4';
+    sort.value = '5';
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+    const lastState = states[states.length - 1];
+    expect(lastState).toEqual({
+      query: 'Shooter',
+      sort: '5',
+      filters: {
+        minGrid: 2,
+        maxGrid: 8,
+        minSp: 1,
+        maxSp: 4,
+      },
+    });
+
+    cardList.wrapper.querySelector<HTMLButtonElement>('.button_search_clear')!.click();
+
+    expect(searchInput.value).toBe('');
+    expect(minGrid.value).toBe('');
+    expect(maxGrid.value).toBe('');
+    expect(minSp.value).toBe('');
+    expect(maxSp.value).toBe('');
+    expect(states[states.length - 1]).toEqual({
+      query: '',
+      sort: '5',
+      filters: {
+        minGrid: 0,
+        maxGrid: Number.MAX_SAFE_INTEGER,
+        minSp: 0,
+        maxSp: Number.MAX_SAFE_INTEGER,
+      },
+    });
+  });
+
+  it('keeps the hidden CardList search UI sentinel stable across search state updates', () => {
+    const cardList = new CardList({ search: true, title: 'カードリスト' });
+    document.body.append(cardList.wrapper);
+    cardList.wrapper.searchModel = createCardListSearchModel();
+    cardList.wrapper.searchUi = createCardListSearchUi(cardList.wrapper, true);
+
+    const sentinel = cardList.wrapper.querySelector('.cardlist-search-adapter');
+    cardList.wrapper.setSearchState({ query: 'Shooter' });
+    cardList.wrapper.setSearchState({ query: 'Roller' });
+
+    expect(cardList.wrapper.querySelector('.cardlist-search-adapter')).toBe(sentinel);
   });
 });

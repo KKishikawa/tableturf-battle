@@ -1,6 +1,13 @@
 import { isValidString } from '@/utils';
+import { toInt } from '@/utils/convert';
 import { inkCount, type ICard } from '@/models/card';
-import type { SearchCollectionItem, SearchModelPlugin, SearchState } from '@/components/searchCollectionView';
+import {
+  SearchCollectionViewElement,
+  type SearchCollectionItem,
+  type SearchModelPlugin,
+  type SearchState,
+  type SearchUiPlugin,
+} from '@/components/searchCollectionView';
 
 export interface CardListSearchFilters {
   minGrid: number;
@@ -43,6 +50,86 @@ export function createCardListSearchModel(): SearchModelPlugin<CardListSearchIte
     },
     compare(a, b, state) {
       return compareCardsBySort(a, b, normalizeCardListSearchState(state).sort);
+    },
+  };
+}
+
+export function readCardListSearchState(root: ParentNode, searchEnabled: boolean): CardListSearchState {
+  const sort = root.querySelector<HTMLSelectElement>('.table-sort')?.value ?? '0';
+  if (!searchEnabled) {
+    return createDefaultCardListSearchState(sort);
+  }
+
+  return {
+    query: root.querySelector<HTMLInputElement>('.input_cardlist_serch')?.value ?? '',
+    sort,
+    filters: {
+      minGrid: toInt(root.querySelector<HTMLInputElement>('#min-grid')?.value, 0),
+      maxGrid: toInt(root.querySelector<HTMLInputElement>('#max-grid')?.value, Number.MAX_SAFE_INTEGER),
+      minSp: toInt(root.querySelector<HTMLInputElement>('#min-sp')?.value, 0),
+      maxSp: toInt(root.querySelector<HTMLInputElement>('#max-sp')?.value, Number.MAX_SAFE_INTEGER),
+    },
+  };
+}
+
+export function createCardListSearchUi(
+  view: SearchCollectionViewElement<CardListSearchItem>,
+  searchEnabled: boolean,
+): SearchUiPlugin<CardListSearchItem> {
+  let controller: AbortController | null = null;
+  return {
+    render(context) {
+      const root = document.createElement('span');
+      root.className = 'cardlist-search-adapter';
+      root.hidden = true;
+
+      const nextController = new AbortController();
+      controller = nextController;
+      const syncState = () => context.setState(readCardListSearchState(view, searchEnabled));
+
+      view.querySelector<HTMLSelectElement>('.table-sort')?.addEventListener('change', syncState, {
+        signal: nextController.signal,
+      });
+
+      const form = view.querySelector<HTMLFormElement>('.cardlist_serch');
+      form?.addEventListener(
+        'submit',
+        (event) => {
+          event.preventDefault();
+          syncState();
+        },
+        { signal: nextController.signal },
+      );
+
+      form?.querySelectorAll('.input-clear').forEach((el) =>
+        el.addEventListener(
+          'click',
+          () => {
+            setTimeout(syncState);
+          },
+          { signal: nextController.signal },
+        ),
+      );
+
+      form?.querySelector('.button_search_clear')?.addEventListener(
+        'click',
+        () => {
+          form.reset();
+          form.querySelectorAll<HTMLElement>('[data-clearable]').forEach((el) => {
+            el.dataset['clearable'] = '';
+          });
+          syncState();
+        },
+        { signal: nextController.signal },
+      );
+      return root;
+    },
+    update() {
+      // Visible controls live in CardList; keep this sentinel stable.
+    },
+    destroy() {
+      controller?.abort();
+      controller = null;
     },
   };
 }

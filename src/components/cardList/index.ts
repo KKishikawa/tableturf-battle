@@ -1,5 +1,5 @@
 import mustache from 'mustache';
-import { isValidString, $dom, mesureWidth } from '@/utils';
+import { $dom, mesureWidth } from '@/utils';
 import { toInt } from '@/utils/convert';
 import { ICard, RARITY, inkCount, encodeDeckCode, availableInkCount, availableSP } from '@/models/card';
 import { createCardGrid } from '@/components/cardGrid';
@@ -9,25 +9,11 @@ import {
   type SearchCollectionStructure,
   type ViewModePlugin,
 } from '@/components/searchCollectionView';
+import { createCardListSearchModel, createCardListSearchUi, readCardListSearchState } from './searchAdapter';
 import tableHTML from './table.html.mustache?raw';
 import tableRowHTML from './row.html.mustache?raw';
 import deckInfoHTML from './deckInfoModalBody.html.mustache?raw';
 import { showShareMsg } from '../deckShare';
-
-interface IinternalSortRowInfo {
-  row: HTMLElement;
-  info: ICard;
-  gcount: number;
-}
-type sortJudgeFunc = (a: IinternalSortRowInfo, b: IinternalSortRowInfo) => number;
-
-interface IListOparationOpt {
-  name?: string;
-  maxg: number;
-  ming: number;
-  maxsp: number;
-  minsp: number;
-}
 
 export interface ICardListOption {
   search: boolean;
@@ -65,6 +51,8 @@ export class CardList {
     this.wrapper.renderer = (card) => createCardRow(card, this.srch);
     this.wrapper.selectionAttribute = { selected: '1', unselected: null };
     this.wrapper.hiddenItemClass = 'card--hidden';
+    this.wrapper.searchModel = createCardListSearchModel();
+    this.wrapper.searchUi = createCardListSearchUi(this.wrapper, this.srch);
     this.wrapper.registerViewMode(this.createCardListViewMode('grid'));
     this.wrapper.registerViewMode(this.createCardListViewMode('table'));
     this.wrapper.mode = 'grid';
@@ -78,32 +66,6 @@ export class CardList {
           button.classList.add('button-active');
           this.wrapper.mode = button.dataset['button_type']!;
         });
-      });
-
-      table.toolbarRoot.querySelector<HTMLSelectElement>('.table-sort')?.addEventListener('change', () => {
-        this.filterSortRow();
-      });
-    }
-
-    if (option.search) {
-      const form = table.toolbarRoot.querySelector('.cardlist_serch') as HTMLFormElement;
-      form.onsubmit = (e) => {
-        e.preventDefault();
-        this.filterSortRow();
-      };
-      form.querySelectorAll('.input-clear').forEach((el) =>
-        el.addEventListener('click', () => {
-          setTimeout(() => {
-            this.filterSortRow();
-          });
-        }),
-      );
-      form.querySelector('.button_search_clear')!.addEventListener('click', () => {
-        form.reset();
-        form.querySelectorAll<HTMLElement>('[data-clearable]').forEach((el) => {
-          el.dataset['clearable'] = '';
-        });
-        this.filterSortRow();
       });
     }
 
@@ -160,29 +122,7 @@ export class CardList {
   }
 
   filterSortRow() {
-    const sortVal = (this.wrapper.querySelector('.table-sort') as HTMLSelectElement).value;
-    const text = this.srch ? (this.wrapper.querySelector('.input_cardlist_serch') as HTMLInputElement).value : '';
-    const inputs = this.srch
-      ? ['min-grid', 'max-grid', 'min-sp', 'max-sp'].map((idName, idx) => {
-          const e = this.wrapper.querySelector(`#${idName}`) as HTMLInputElement;
-          return toInt(e.value, idx & 1 ? Number.MAX_SAFE_INTEGER : 0);
-        })
-      : [0, Number.MAX_SAFE_INTEGER, 0, Number.MAX_SAFE_INTEGER];
-
-    const cards = [...this.cards];
-    const infoR = generateSortRowInfo(cards.map((card) => this.findRowByNo(card.n)!).filter(Boolean));
-    if (this.srch) {
-      filerRow(infoR, {
-        name: text,
-        ming: inputs[0],
-        maxg: inputs[1],
-        minsp: inputs[2],
-        maxsp: inputs[3],
-      });
-    }
-
-    infoR.sort(getSortRow(sortVal));
-    this.body.replaceChildren(...infoR.map((info) => info.row));
+    this.wrapper.setSearchState(readCardListSearchState(this.wrapper, this.srch));
   }
 
   protected renderCards() {
@@ -357,79 +297,6 @@ export class DeckInfo extends CardList {
       .filter((n) => n > 0)
       .sort((a, b) => a - b);
     return encodeDeckCode(numbers);
-  }
-}
-
-function generateSortRowInfo(trs: HTMLElement[]): IinternalSortRowInfo[] {
-  return trs.map((row) => {
-    const info = getCardRowInfo(row);
-    const gcount = toInt(row.querySelector('.card_gridcount')!.textContent?.trim());
-    return { row, info, gcount };
-  });
-}
-
-function filerRow(trs: IinternalSortRowInfo[], opt: IListOparationOpt) {
-  const filterCondition = (info: IinternalSortRowInfo) => {
-    if (isValidString(opt.name) && !info.info.ja.includes(opt.name)) return false;
-    if (info.gcount > opt.maxg || info.gcount < opt.ming) return false;
-    if (info.info.sp > opt.maxsp || info.info.sp < opt.minsp) return false;
-    return true;
-  };
-  return trs.map<IinternalSortRowInfo>((t) => {
-    if (filterCondition(t)) {
-      t.row.classList.remove('card--hidden');
-    } else {
-      t.row.classList.add('card--hidden');
-    }
-    return t;
-  });
-}
-
-const noAsc: sortJudgeFunc = (a, b) => a.info.n - b.info.n;
-const gJudge: sortJudgeFunc = (a, b) => a.gcount - b.gcount;
-const spJudge: sortJudgeFunc = (a, b) => a.info.sp - b.info.sp;
-const rarityJudge: sortJudgeFunc = (a, b) => a.info.r - b.info.r;
-
-const gcountAsc: sortJudgeFunc = (a, b) => {
-  let inf = gJudge(a, b);
-  if (inf != 0) return inf;
-  inf = spJudge(a, b);
-  if (inf != 0) return inf;
-  return noAsc(a, b);
-};
-
-const spAsc: sortJudgeFunc = (a, b) => {
-  let inf = spJudge(a, b);
-  if (inf != 0) return inf;
-  inf = gJudge(a, b);
-  if (inf != 0) return inf;
-  return noAsc(a, b);
-};
-
-const rarityAsc: sortJudgeFunc = (a, b) => {
-  const inf = rarityJudge(a, b);
-  if (inf != 0) return inf;
-  return gcountAsc(a, b);
-};
-
-function getSortRow(orderType: string): sortJudgeFunc {
-  switch (orderType) {
-    case '1':
-      return (a, b) => noAsc(b, a);
-    case '2':
-      return gcountAsc;
-    case '3':
-      return (a, b) => gcountAsc(b, a);
-    case '4':
-      return spAsc;
-    case '5':
-      return (a, b) => spAsc(b, a);
-    case '6':
-      return rarityAsc;
-    case '7':
-      return (a, b) => rarityAsc(b, a);
-    default:
-      return noAsc;
   }
 }
 
