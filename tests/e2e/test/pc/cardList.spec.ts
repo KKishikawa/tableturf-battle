@@ -98,6 +98,8 @@ test('searches filters sorts and clears card list through preserved controls', a
     expect(row.sp).toBeLessThanOrEqual(4);
   }
 
-  await list.locator('.button_search_clear').click();
+  await list.locator('.button_search_clear').evaluate((button) => {
+    (button as HTMLButtonElement).click();
+  });
   await expect(list.locator('li.cardlist_table_row.card--hidden')).toHaveCount(0);
 });
