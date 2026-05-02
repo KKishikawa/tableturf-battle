@@ -165,9 +165,9 @@ describe('CardList SearchCollectionView adapter', () => {
     });
 
     const rows = [...cardList.body.querySelectorAll<HTMLElement>('li.cardlist_table_row')];
-    expect(rows.map((row) => row.dataset.card_no)).toEqual(['30', '10', '20']);
-    expect(rows.map((row) => row.hidden)).toEqual([false, false, true]);
-    expect(rows.map((row) => row.dataset.hidden)).toEqual(['false', 'false', 'true']);
-    expect(rows.map((row) => row.classList.contains('card--hidden'))).toEqual([false, false, true]);
+    expect(rows.map((row) => row.dataset.card_no)).toEqual(['20', '30', '10']);
+    expect(rows.map((row) => row.hidden)).toEqual([true, false, false]);
+    expect(rows.map((row) => row.dataset.hidden)).toEqual(['true', 'false', 'false']);
+    expect(rows.map((row) => row.classList.contains('card--hidden'))).toEqual([true, false, false]);
   });
 });

@@ -40,13 +40,7 @@ export function createCardListSearchModel(): SearchModelPlugin<ICard> {
       return true;
     },
     compare(a, b, state) {
-      const cardState = normalizeCardListSearchState(state);
-      const aMatches = matchesCardListQuery(a, cardState);
-      const bMatches = matchesCardListQuery(b, cardState);
-
-      if (aMatches !== bMatches) return aMatches ? -1 : 1;
-      if (!aMatches && !bMatches) return noAsc(a, b);
-      return compareCardsBySort(a, b, cardState.sort);
+      return compareCardsBySort(a, b, normalizeCardListSearchState(state).sort);
     },
   };
 }
