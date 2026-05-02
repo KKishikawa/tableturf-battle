@@ -60,3 +60,44 @@ test('preserves card row identity and selected display while switching layouts',
   expect(await card.evaluate((node, previous) => node === previous, cardHandle)).toBe(true);
   await expect(card).toHaveAttribute('data-selected', '1');
 });
+
+test('searches filters sorts and clears card list through preserved controls', async ({ page }) => {
+  await page.goto('/');
+
+  const list = page.locator('.card-list-container');
+  const visibleRows = list.locator('li.cardlist_table_row:not(.card--hidden)');
+
+  await list.locator('.input_cardlist_serch').fill('シューター');
+  await list.locator('#min-grid').fill('6');
+  await list.locator('#max-grid').fill('12');
+  await list.locator('#min-sp').fill('2');
+  await list.locator('#max-sp').fill('4');
+  await list.locator('.table-sort').selectOption('5');
+  await list.locator('.cardlist_serch').evaluate((form) => {
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+  });
+
+  await expect(visibleRows.first()).toContainText('シューター');
+  await expect(list.locator('li.cardlist_table_row.card--hidden').first()).toHaveAttribute('data-hidden', 'true');
+
+  const firstSp = Number((await visibleRows.first().locator('.card_sp').innerText()).trim());
+  const secondSp = Number((await visibleRows.nth(1).locator('.card_sp').innerText()).trim());
+  expect(firstSp).toBeGreaterThanOrEqual(secondSp);
+
+  for (const row of await visibleRows.evaluateAll((nodes) =>
+    nodes.slice(0, 5).map((node) => ({
+      grid: Number(node.querySelector('.card_gridcount')?.textContent?.trim() ?? '0'),
+      sp: Number(node.querySelector('.card_sp')?.textContent?.trim() ?? '0'),
+      text: node.textContent ?? '',
+    })),
+  )) {
+    expect(row.text).toContain('シューター');
+    expect(row.grid).toBeGreaterThanOrEqual(6);
+    expect(row.grid).toBeLessThanOrEqual(12);
+    expect(row.sp).toBeGreaterThanOrEqual(2);
+    expect(row.sp).toBeLessThanOrEqual(4);
+  }
+
+  await list.locator('.button_search_clear').click();
+  await expect(list.locator('li.cardlist_table_row.card--hidden')).toHaveCount(0);
+});
