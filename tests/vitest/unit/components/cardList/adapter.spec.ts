@@ -240,4 +240,27 @@ describe('CardList SearchCollectionView adapter', () => {
 
     expect(cardList.wrapper.querySelector('.cardlist-search-adapter')).toBe(sentinel);
   });
+
+  it('syncs state through the form onsubmit hook used by the shared input clear handler', () => {
+    const cardList = new CardList({ search: true, title: 'カードリスト' });
+    document.body.append(cardList.wrapper);
+    const states: unknown[] = [];
+    cardList.wrapper.addEventListener('search-state-change', (event) => {
+      states.push((event as CustomEvent).detail.state);
+    });
+    cardList.wrapper.searchModel = createCardListSearchModel();
+    cardList.wrapper.searchUi = createCardListSearchUi(cardList.wrapper, true);
+
+    const searchInput = cardList.wrapper.querySelector<HTMLInputElement>('.input_cardlist_serch')!;
+    const form = cardList.wrapper.querySelector<HTMLFormElement>('.cardlist_serch')!;
+
+    searchInput.value = 'Shooter';
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    expect(states[states.length - 1]).toMatchObject({ query: 'Shooter' });
+
+    searchInput.value = '';
+    form.onsubmit?.(new SubmitEvent('submit'));
+
+    expect(states[states.length - 1]).toMatchObject({ query: '' });
+  });
 });

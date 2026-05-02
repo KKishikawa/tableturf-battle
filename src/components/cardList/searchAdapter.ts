@@ -76,16 +76,15 @@ export function createCardListSearchUi(
   view: SearchCollectionViewElement<CardListSearchItem>,
   searchEnabled: boolean,
 ): SearchUiPlugin<CardListSearchItem> {
-  let controller: AbortController | null = null;
+  let cleanup: (() => void) | null = null;
   return {
     render(context) {
-      controller?.abort();
+      cleanup?.();
       const root = document.createElement('span');
       root.className = 'cardlist-search-adapter';
       root.hidden = true;
 
       const nextController = new AbortController();
-      controller = nextController;
       const syncState = () => context.setState(readCardListSearchState(view, searchEnabled));
 
       view.querySelector<HTMLSelectElement>('.table-sort')?.addEventListener('change', syncState, {
@@ -93,14 +92,14 @@ export function createCardListSearchUi(
       });
 
       const form = view.querySelector<HTMLFormElement>('.cardlist_serch');
-      form?.addEventListener(
-        'submit',
-        (event) => {
-          event.preventDefault();
-          syncState();
-        },
-        { signal: nextController.signal },
-      );
+      const previousOnSubmit = form?.onsubmit ?? null;
+      const handleSubmit = (event: SubmitEvent) => {
+        event.preventDefault();
+        syncState();
+        return false;
+      };
+      if (form) form.onsubmit = handleSubmit;
+      form?.addEventListener('submit', handleSubmit, { signal: nextController.signal });
 
       form?.querySelectorAll('.input-clear').forEach((el) =>
         el.addEventListener(
@@ -123,14 +122,20 @@ export function createCardListSearchUi(
         },
         { signal: nextController.signal },
       );
+      cleanup = () => {
+        nextController.abort();
+        if (form?.onsubmit === handleSubmit) {
+          form.onsubmit = previousOnSubmit;
+        }
+        cleanup = null;
+      };
       return root;
     },
     update() {
       // Visible controls live in CardList; keep this sentinel stable.
     },
     destroy() {
-      controller?.abort();
-      controller = null;
+      cleanup?.();
     },
   };
 }
