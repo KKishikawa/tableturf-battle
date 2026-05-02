@@ -79,6 +79,7 @@ export function createCardListSearchUi(
   let controller: AbortController | null = null;
   return {
     render(context) {
+      controller?.abort();
       const root = document.createElement('span');
       root.className = 'cardlist-search-adapter';
       root.hidden = true;
