@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { CardList, DeckInfo, getCardRowInfo } from '@/components/cardList';
+import { createCardListSearchModel } from '@/components/cardList/searchAdapter';
 import type { ICard } from '@/models/card';
 
 const cards: ICard[] = [
@@ -136,5 +137,37 @@ describe('CardList SearchCollectionView adapter', () => {
 
     expect(deckInfo.body.children).toHaveLength(1);
     expect(deckInfo.getCount()).toBe(1);
+  });
+
+  it('filters and sorts CardList rows from item data instead of rendered DOM text', () => {
+    const cardList = new CardList({ search: true, title: 'カードリスト' });
+    cardList.wrapper.searchModel = createCardListSearchModel();
+    cardList.addRow(
+      { n: 10, r: 1, sp: 5, ja: 'Short Shooter', g: '1', sg: '' },
+      { n: 20, r: 0, sp: 1, ja: 'Long Charger', g: '1111', sg: '' },
+      { n: 30, r: 2, sp: 3, ja: 'Short Roller', g: '11', sg: '' },
+    );
+    document.body.append(cardList.wrapper);
+
+    cardList.findRowByNo(10)!.querySelector<HTMLElement>('.card_name')!.textContent = 'DOM Mismatch';
+    cardList.findRowByNo(20)!.querySelector<HTMLElement>('.card_name')!.textContent = 'Short DOM Only';
+    cardList.findRowByNo(30)!.querySelector<HTMLElement>('.card_sp')!.textContent = '99';
+
+    cardList.wrapper.setSearchState({
+      query: 'Short',
+      sort: '4',
+      filters: {
+        minGrid: 0,
+        maxGrid: 2,
+        minSp: 0,
+        maxSp: Number.MAX_SAFE_INTEGER,
+      },
+    });
+
+    const rows = [...cardList.body.querySelectorAll<HTMLElement>('li.cardlist_table_row')];
+    expect(rows.map((row) => row.dataset.card_no)).toEqual(['30', '10', '20']);
+    expect(rows.map((row) => row.hidden)).toEqual([false, false, true]);
+    expect(rows.map((row) => row.dataset.hidden)).toEqual(['false', 'false', 'true']);
+    expect(rows.map((row) => row.classList.contains('card--hidden'))).toEqual([false, false, true]);
   });
 });
