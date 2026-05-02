@@ -1,4 +1,4 @@
-export type SearchCollectionItem = Record<string, unknown> & {
+export type SearchCollectionItem = {
   id?: string | number;
 };
 
