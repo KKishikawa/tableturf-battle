@@ -1,6 +1,6 @@
 import { isValidString } from '@/utils';
 import { inkCount, type ICard } from '@/models/card';
-import type { SearchModelPlugin, SearchState } from '@/components/searchCollectionView';
+import type { SearchCollectionItem, SearchModelPlugin, SearchState } from '@/components/searchCollectionView';
 
 export interface CardListSearchFilters {
   minGrid: number;
@@ -14,6 +14,8 @@ export type CardListSearchState = SearchState & {
   sort?: string;
   filters?: CardListSearchFilters;
 };
+
+export type CardListSearchItem = ICard & SearchCollectionItem;
 
 const DEFAULT_FILTERS: CardListSearchFilters = {
   minGrid: 0,
@@ -30,7 +32,7 @@ export function createDefaultCardListSearchState(sort = '0'): CardListSearchStat
   };
 }
 
-export function createCardListSearchModel(): SearchModelPlugin<ICard> {
+export function createCardListSearchModel(): SearchModelPlugin<CardListSearchItem> {
   return {
     initialState: createDefaultCardListSearchState(),
     match(card, state) {
