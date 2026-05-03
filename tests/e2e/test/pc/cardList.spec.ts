@@ -19,6 +19,10 @@ test('select card and clear', async ({ page, cardUtil }) => {
   await expect(page.getByText('デッキ内容のクリア Close modal')).toBeInViewport();
   await page.locator('button').filter({ hasText: 'Close modal' }).click();
   await cardUtil.clearAll();
+  await expect(cardUtil.getCardByIdFromList(1)).not.toHaveAttribute('data-selected', '1');
+  await expect(cardUtil.getCardByIdFromList(2)).not.toHaveAttribute('data-selected', '1');
+  await expect(cardUtil.getCardByIdFromList(3)).not.toHaveAttribute('data-selected', '1');
+  await expect(cardUtil.getCardByIdFromList(4)).not.toHaveAttribute('data-selected', '1');
   await expect(page.locator('.table-title-text').nth(1)).toHaveText('デッキ (0/15)');
 
   // add and delete
