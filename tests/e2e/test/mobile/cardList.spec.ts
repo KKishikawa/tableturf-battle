@@ -20,6 +20,11 @@ test('select card and clear', async ({ page, cardUtil }) => {
   await page.locator('button').filter({ hasText: 'Close modal' }).click();
   await page.locator('li').filter({ hasText: 'カードリスト' }).click();
   await cardUtil.clearAll();
+  await cardUtil.showCardList();
+  await expect(cardUtil.getCardByIdFromList(1)).not.toHaveAttribute('data-selected', '1');
+  await expect(cardUtil.getCardByIdFromList(2)).not.toHaveAttribute('data-selected', '1');
+  await expect(cardUtil.getCardByIdFromList(3)).not.toHaveAttribute('data-selected', '1');
+  await expect(cardUtil.getCardByIdFromList(4)).not.toHaveAttribute('data-selected', '1');
   await expect(page.getByText('カードリスト デッキ (0/15)')).toBeInViewport();
 
   // add and delete

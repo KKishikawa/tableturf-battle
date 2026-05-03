@@ -1,5 +1,5 @@
-import { CardList, DeckInfo, getCardRowInfo } from '@/components/cardList';
-import { getCardList, decodeDeckCode } from '@/models/card';
+import { CardList, DeckInfo } from '@/components/cardList';
+import { type ICard, getCardList, decodeDeckCode } from '@/models/card';
 import { $dom } from '@/utils';
 import { toInt } from '@/utils/convert';
 import * as dialog from '@/components/dialog';
@@ -38,45 +38,43 @@ deckEditManager.showCount = () => {
 function loadDeck(code: string | null | undefined, id?: string) {
   const cardInfo = decodeDeckCode(code);
   deckEditManager.clearRows();
-  cardListManager.setSelectedCardNos(cardInfo.map((info) => info.n));
   deckEditManager.addRow(...cardInfo);
+  cardListManager.setSelectedCardNos(cardInfo.map((info) => info.n));
   deckEditManager.body.dataset['id'] = id;
 }
 
-{
-  const rowClassName = 'cardlist_table_row';
-  // カードクリック
-  cardListManager.body.addEventListener('click', (e) => {
-    if (!e.target) return;
-    const el = e.target as HTMLElement;
-    window.setTimeout(() => {
-      if (el.closest('.button-add')) {
-        const row = el.closest<HTMLElement>('.' + rowClassName)!;
-        const info = getCardRowInfo(row);
-        deckEditManager.addRow(info);
-        cardListManager.setCardSelected(info.n, true);
-      } else if (el.closest('.button-delete')) {
-        const row = el.closest<HTMLElement>('.' + rowClassName)!;
-        const no = toInt(row.dataset['card_no']);
-        deckEditManager.removeRowByNo(no);
-        cardListManager.setCardSelected(no, false);
-      }
-    });
-  });
-  deckEditManager.body.addEventListener('click', (e) => {
-    if (!e.target) return;
-    const el = e.target as HTMLElement;
-    window.setTimeout(() => {
-      if (el.closest('.button-delete')) {
-        const row = el.closest<HTMLElement>('.' + rowClassName)!;
-        const no = toInt(row.dataset['card_no']);
-        const r = cardListManager.findRowByNo(no);
-        if (r) cardListManager.setCardSelected(no, false);
-        deckEditManager.removeRow(row);
-      }
-    });
-  });
+function addCardToDeck(info: ICard) {
+  deckEditManager.addRow(info);
+  cardListManager.setCardSelected(info.n, true);
 }
+
+function removeCardFromDeck(cardNo: number) {
+  deckEditManager.removeRowByNo(cardNo);
+  cardListManager.setCardSelected(cardNo, false);
+}
+
+function removeDeckRow(row: HTMLElement) {
+  const no = toInt(row.dataset['card_no']);
+  deckEditManager.removeRow(row);
+  cardListManager.setCardSelected(no, false);
+}
+
+cardListManager.wrapper.addEventListener('item-action', (event) => {
+  const { action, item, itemId } = (event as CustomEvent).detail;
+  if (action === 'add') {
+    addCardToDeck(item as ICard);
+  } else if (action === 'delete') {
+    removeCardFromDeck(toInt(itemId));
+  }
+});
+
+deckEditManager.wrapper.addEventListener('item-action', (event) => {
+  const { action, itemId } = (event as CustomEvent).detail;
+  if (action !== 'delete') return;
+
+  const row = deckEditManager.findRowByNo(toInt(itemId));
+  if (row) removeDeckRow(row);
+});
 
 {
   // タブ切り替え

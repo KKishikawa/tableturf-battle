@@ -82,6 +82,38 @@ describe('CardList SearchCollectionView adapter', () => {
     expect(cardList.findRowByNo(2)?.getAttribute('data-selected')).toBe('1');
   });
 
+  it('emits card list add and delete actions with card data through SearchCollectionView', () => {
+    const cardList = new CardList({ search: true, title: 'カードリスト' });
+    cardList.addRow(...cards);
+    document.body.append(cardList.wrapper);
+    const actions: CustomEvent[] = [];
+    cardList.wrapper.addEventListener('item-action', (event) => actions.push(event as CustomEvent));
+
+    cardList.findRowByNo(2)!.querySelector<HTMLButtonElement>('.button-add')!.click();
+    cardList.findRowByNo(2)!.querySelector<HTMLButtonElement>('.button-delete')!.click();
+
+    expect(actions.map((event) => event.detail.action)).toEqual(['add', 'delete']);
+    expect(actions.map((event) => event.detail.itemId)).toEqual(['2', '2']);
+    expect(actions[0]?.detail.item).toMatchObject(cards[1]!);
+  });
+
+  it('emits deck delete actions with card data through SearchCollectionView', () => {
+    const deckInfo = new DeckInfo();
+    deckInfo.addRow(...cards);
+    document.body.append(deckInfo.wrapper);
+    const actions: CustomEvent[] = [];
+    deckInfo.wrapper.addEventListener('item-action', (event) => actions.push(event as CustomEvent));
+
+    deckInfo.findRowByNo(1)!.querySelector<HTMLButtonElement>('.button-delete')!.click();
+
+    expect(actions).toHaveLength(1);
+    expect(actions[0]?.detail).toMatchObject({
+      action: 'delete',
+      itemId: '1',
+      item: cards[0],
+    });
+  });
+
   it('keeps DeckInfo item state synchronized when rows are removed by element', () => {
     const deckInfo = new DeckInfo();
     deckInfo.addRow(...cards);
